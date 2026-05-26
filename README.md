@@ -2,10 +2,21 @@
 
 A small full-stack demo showing username/password sign-up and login with optional two-factor authentication, QR-code enrollment, TOTP verification, and JWT-backed session access through an httpOnly cookie.
 
-Default local URLs:
+## Table Of Contents
 
-- Backend: `http://localhost:8081`
-- Frontend: `http://localhost:3000`
+- [Project Intent](#project-intent)
+- [Quick Start](#quick-start)
+- [Key Terms](#key-terms)
+- [What Is Implemented](#what-is-implemented)
+- [MFA App](#mfa-app)
+- [API Overview](#api-overview)
+- [Auth Flow](#auth-flow)
+- [Tech Stack](#tech-stack)
+- [Repository Layout](#repository-layout)
+- [Local Setup](#local-setup)
+- [Full Verification Workflow](#full-verification-workflow)
+- [Troubleshooting](#troubleshooting)
+- [Limitations](#limitations)
 
 ## Project Intent
 
@@ -49,6 +60,39 @@ It is intentionally demo-focused rather than production hardened, but it is stru
 - Use the cookie-backed JWT to load the protected profile page
 - Support logout by clearing the session cookie
 
+## MFA App
+
+When MFA is enabled, the app shows a QR code during signup. That QR code is scanned by an authenticator app on your phone.
+
+What it is:
+
+- An authenticator app generates short, time-based 6-digit codes
+- Those codes change every few seconds and are used as the second login factor
+
+Where to get one:
+
+- Google Authenticator
+- Microsoft Authenticator
+- Authy
+- 1Password or any other TOTP-compatible authenticator app
+
+How to use it:
+
+1. Sign up with MFA enabled.
+2. Open your authenticator app and add a new account.
+3. Scan the QR code with your phone camera.
+4. The app will start showing 6-digit codes.
+5. Enter the current code on the login verification screen when prompted.
+
+If MFA is disabled for the account, the login flow skips the QR code and verification step.
+
+## API Overview
+
+- `POST /users` creates a new user and returns the MFA QR code when MFA is enabled
+- `POST /signin` checks username/email plus password and returns a JWT or MFA-required response
+- `POST /verify` checks the 6-digit authenticator code and returns a JWT
+- `GET /users/me` returns the current authenticated user profile
+
 ## Auth Flow
 
 The demo uses a cookie-backed JWT flow for browser sessions:
@@ -79,32 +123,6 @@ What this means:
 - The browser keeps the token in an httpOnly cookie
 - JavaScript cannot read the JWT directly
 - The frontend only checks whether the current cookie-backed session is valid
-
-## MFA App
-
-When MFA is enabled, the app shows a QR code during signup. That QR code is scanned by an authenticator app on your phone.
-
-What it is:
-
-- An authenticator app generates short, time-based 6-digit codes
-- Those codes change every few seconds and are used as the second login factor
-
-Where to get one:
-
-- Google Authenticator
-- Microsoft Authenticator
-- Authy
-- 1Password or any other TOTP-compatible authenticator app
-
-How to use it:
-
-1. Sign up with MFA enabled.
-2. Open your authenticator app and add a new account.
-3. Scan the QR code with your phone camera.
-4. The app will start showing 6-digit codes.
-5. Enter the current code on the login verification screen when prompted.
-
-If MFA is disabled for the account, the login flow skips the QR code and verification step.
 
 ## Tech Stack
 
@@ -148,6 +166,27 @@ Tooling:
 - Java 21 or compatible
 - Node.js and npm
 
+If you do not already have them installed, here is the simplest path for each platform:
+
+macOS:
+
+- Java: `brew install --cask temurin`
+- Node.js: `brew install node`
+- npm comes with Node.js
+
+Ubuntu:
+
+- Java: `sudo apt update && sudo apt install -y openjdk-21-jdk`
+- Node.js and npm: `sudo apt update && sudo apt install -y nodejs npm`
+
+Windows:
+
+- Java: `winget install EclipseAdoptium.Temurin.21.JDK`
+- Node.js: `winget install OpenJS.NodeJS.LTS`
+- npm comes with Node.js
+
+If you prefer, you can also install Java and Node.js from their official download pages instead of using package managers.
+
 ### Environment files
 
 The helper scripts will create `.env` files from the examples if they are missing.
@@ -173,6 +212,11 @@ cd ..
 The frontend helper scripts will also run `npm install` automatically if `node_modules` is missing.
 
 ### Run the apps
+
+Default local URLs:
+
+- Backend: `http://localhost:8081`
+- Frontend: `http://localhost:3000`
 
 Windows:
 
@@ -411,13 +455,6 @@ This is a good final check before a demo or commit.
 - The backend and frontend are configured to use local defaults, so the project should run out of the box after dependencies are installed.
 - If you change the backend port, update `REACT_APP_API_BASE_URL` in `frontend/.env`.
 - The backend secret should be changed for any real deployment.
-
-## API Overview
-
-- `POST /users` creates a new user and returns the MFA QR code when MFA is enabled
-- `POST /signin` checks username/email plus password and returns a JWT or MFA-required response
-- `POST /verify` checks the 6-digit authenticator code and returns a JWT
-- `GET /users/me` returns the current authenticated user profile
 
 ## Troubleshooting
 
