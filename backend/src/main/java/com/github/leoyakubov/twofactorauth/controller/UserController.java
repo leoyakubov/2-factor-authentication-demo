@@ -1,4 +1,4 @@
-package com.github.leoyakubov.twofactorauth.endpoint;
+package com.github.leoyakubov.twofactorauth.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +7,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -18,33 +17,35 @@ import com.github.leoyakubov.twofactorauth.model.User;
 import com.github.leoyakubov.twofactorauth.payload.UserSummary;
 import com.github.leoyakubov.twofactorauth.service.UserService;
 
+import java.util.List;
+
 @RestController
 @Slf4j
-public class UserEndpoint {
+public class UserController {
 
     @Autowired
     private UserService userService;
 
     @GetMapping(value = "/users/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> findUser(@PathVariable("username") String username) {
+    public ResponseEntity<UserSummary> findUser(@PathVariable("username") String username) {
         log.info("retrieving user {}", username);
 
         return  userService
                 .findByUsername(username)
-                .map(user -> ResponseEntity.ok(user))
+                .map(user -> ResponseEntity.ok(convertTo(user)))
                 .orElseThrow(() -> new ResourceNotFoundException(username));
     }
 
     @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> findAll() {
+    public ResponseEntity<List<UserSummary>> findAll() {
         log.info("retrieving all users");
 
         return ResponseEntity
-                .ok(userService.findAll());
+                .ok(userService.findAll().stream().map(this::convertTo).toList());
     }
 
     @GetMapping(value = "/users/me", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('USER') or hasRole('FACEBOOK_USER')")
+    @PreAuthorize("hasRole('USER')")
     @ResponseStatus(HttpStatus.OK)
     public UserSummary getCurrentUser(@AuthenticationPrincipal AuthUserDetails userDetails) {
         return UserSummary
@@ -57,7 +58,7 @@ public class UserEndpoint {
     }
 
     @GetMapping(value = "/users/summary/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getUserSummary(@PathVariable("username") String username) {
+    public ResponseEntity<UserSummary> getUserSummary(@PathVariable("username") String username) {
         log.info("retrieving user {}", username);
 
         return  userService

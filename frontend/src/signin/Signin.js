@@ -1,6 +1,6 @@
-﻿import React, { useEffect, useState } from "react";
-import { Form, Input, Button, notification } from "antd";
-import { Redirect } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Alert, Form, Input, Button } from "antd";
+import { Link, Redirect } from "react-router-dom";
 import {
   UserOutlined,
   LockOutlined,
@@ -13,15 +13,17 @@ const Signin = (props) => {
   const [loading, setLoading] = useState(false);
   const [redirect, setRedirect] = useState();
   const [username, setUsername] = useState();
+  const [errorMessage, setErrorMessage] = useState();
 
   useEffect(() => {
     if (localStorage.getItem("accessToken") !== null) {
       props.history.push("/");
     }
-  }, []);
+  }, [props.history]);
 
   const onFinish = (values) => {
     setLoading(true);
+    setErrorMessage(undefined);
     login(values)
       .then((response) => {
         if (response.mfa) {
@@ -31,23 +33,20 @@ const Signin = (props) => {
           localStorage.setItem("accessToken", response.accessToken);
           props.history.push("/");
         }
-        setLoading(false);
       })
       .catch((error) => {
         if (error.status === 401) {
-          notification.error({
-            message: "Error",
-            description: "Username or Password is incorrect. Please try again!",
-          });
+          setErrorMessage("We couldn't log you in. Check your username or email and password.");
+        } else if (error.status === 404) {
+          setErrorMessage("We couldn't find an account with that username or email.");
+        } else if (error.status === 400) {
+          setErrorMessage("Please check your login details and try again.");
         } else {
-          notification.error({
-            message: "Error",
-            description:
-              error.message || "Sorry! Something went wrong. Please try again!",
-          });
+          setErrorMessage("We couldn't reach the server. Please try again in a moment.");
         }
-        setLoading(false);
-      });
+        console.error("Sign in failed", error);
+      })
+      .finally(() => setLoading(false));
   };
 
   if (redirect) {
@@ -67,12 +66,12 @@ const Signin = (props) => {
       >
         <Form.Item
           name="username"
-          rules={[{ required: true, message: "Please input your Username!" }]}
+          rules={[{ required: true, message: "Please input your username or email!" }]}
         >
           <Input
             size="large"
             prefix={<UserOutlined className="site-form-item-icon" />}
-            placeholder="Username"
+            placeholder="Username or email"
           />
         </Form.Item>
         <Form.Item
@@ -97,7 +96,16 @@ const Signin = (props) => {
             Log in
           </Button>
         </Form.Item>
-        Not a member yet? <a href="/signup">Sign up</a>
+        {errorMessage ? (
+          <Alert
+            style={{ marginBottom: 16 }}
+            type="error"
+            showIcon
+            message="Sign in failed"
+            description={errorMessage}
+          />
+        ) : null}
+        Not a member yet? <Link to="/signup">Sign up</Link>
       </Form>
     </div>
   );

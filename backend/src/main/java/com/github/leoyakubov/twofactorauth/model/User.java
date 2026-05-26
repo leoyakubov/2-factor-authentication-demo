@@ -14,6 +14,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,7 +43,7 @@ public class User {
         this.password = password;
         this.email = email;
         this.active = true;
-        this.roles = new HashSet<>() {{ new Role("USER"); }};
+        this.roles = new HashSet<>(Collections.singleton(Role.USER));
     }
 
     @Id

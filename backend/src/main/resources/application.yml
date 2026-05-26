@@ -1,8 +1,13 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: backend
   data:
     mongodb:
-      database: spring-boot-jwt-auth
-      port: 27018
+      host: ${MONGODB_HOST:localhost}
+      database: ${MONGODB_DATABASE:spring-boot-jwt-auth}
+      port: ${MONGODB_PORT:27018}
 
   mongodb:
     embedded:
@@ -15,23 +20,11 @@ de:
         version: 5.0.5
 
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
 
 security:
-  basic:
-    enable: false
-
   jwt:
-    uri: /auth/**
-    header: Authorization
-    prefix: Bearer
-    expiration: 86400
-    secret: JwtSecretKey
-
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 5000
-        readTimeout: 5000
-        loggerLevel: basic
+    header: ${JWT_HEADER:Authorization}
+    prefix: ${JWT_PREFIX:Bearer}
+    expiration: ${JWT_EXPIRATION:86400}
+    secret: ${JWT_SECRET}

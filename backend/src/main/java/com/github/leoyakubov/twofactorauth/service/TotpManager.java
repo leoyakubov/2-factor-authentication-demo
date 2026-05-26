@@ -28,6 +28,10 @@ public class TotpManager {
     }
 
     public String getUriForImage(String secret) {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalArgumentException("Secret is required to generate a QR code");
+        }
+
         QrData data = new QrData.Builder()
                 .label("Two-factor-auth-test")
                 .secret(secret)

@@ -1,23 +1,29 @@
-﻿.profile-container {
+.profile-container {
   max-width: 420px;
-  margin: 0 auto;
-  margin: 0 auto;
-  margin-top: 40px;
-  /* border: 1px solid #e1e0e0;
-  background-color: #fff;
-  border-radius: 10px; */
+  margin: 40px auto 0;
+}
+
+.logout-button {
+  font-weight: 600;
+  color: #1f1f1f;
+}
+
+.logout-button:hover,
+.logout-button:focus {
+  color: #000;
 }
 
 .user-avatar-circle {
-  width: 150px !important;
-  height: 150px !important;
-  cursor: pointer;
+  background: linear-gradient(135deg, #1677ff 0%, #69b1ff 100%);
+  font-weight: 700;
 }
 
 .ant-card-meta-title {
   font-size: 28px !important;
+  margin-bottom: 8px !important;
 }
 
 .ant-card-meta-description {
   font-size: 14px;
+  color: #666;
 }

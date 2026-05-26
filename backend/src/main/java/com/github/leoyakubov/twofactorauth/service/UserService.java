@@ -22,6 +22,7 @@ import com.github.leoyakubov.twofactorauth.repository.UserRepository;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -49,12 +50,19 @@ public class UserService {
        Authentication authentication = authenticationManager
                .authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
-       User user = userRepository.findByUsername(username).get();
+       User user = userRepository
+               .findByUsername(username)
+               .or(() -> userRepository.findByEmail(username))
+               .orElseThrow(() -> new ResourceNotFoundException(String.format("username %s", username)));
        if(user.isMfa()) {
+           log.info("login accepted for {} and MFA verification is required", user.getUsername());
            return "";
        }
 
-       return jwtTokenManager.generateToken(authentication);
+       Authentication canonicalAuthentication = new UsernamePasswordAuthenticationToken(
+               new AuthUserDetails(user), null, new AuthUserDetails(user).getAuthorities());
+       log.info("login accepted for {} and issuing access token", user.getUsername());
+       return jwtTokenManager.generateToken(canonicalAuthentication);
     }
 
     public String verify(String username, String code) {
@@ -63,9 +71,11 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException( String.format("username %s", username)));
 
         if(!totpManager.verifyCode(code, user.getSecret())) {
+            log.warn("MFA verification failed for {}", username);
             throw new BadRequestException("Code is incorrect");
         }
 
+        log.info("MFA verification succeeded for {}", username);
         return Optional.of(user)
                 .map(AuthUserDetails::new)
                 .map(userDetails -> new UsernamePasswordAuthenticationToken(
@@ -93,14 +103,13 @@ public class UserService {
         }
         user.setActive(true);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(new HashSet<>() {{
-            add(role);
-        }});
+        user.setRoles(new HashSet<>(Set.of(role)));
 
         if(user.isMfa()) {
             user.setSecret(totpManager.generateSecret());
         }
 
+        log.info("saved user {} (mfa={})", user.getUsername(), user.isMfa());
         return userRepository.save(user);
     }
 
@@ -112,6 +121,11 @@ public class UserService {
     public Optional<User> findByUsername(String username) {
         log.info("retrieving user {}", username);
         return userRepository.findByUsername(username);
+    }
+
+    public Optional<User> findByUsernameOrEmail(String identifier) {
+        log.info("retrieving user {}", identifier);
+        return userRepository.findByUsername(identifier).or(() -> userRepository.findByEmail(identifier));
     }
 
     public Optional<User> findById(String id) {

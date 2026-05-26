@@ -1,33 +1,50 @@
-﻿const request = (options) => {
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8081";
+
+const parseBody = async (response) => {
+  const text = await response.text();
+
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    return { message: text };
+  }
+};
+
+const request = async (options) => {
   const headers = new Headers();
 
   if (options.setContentType !== false) {
     headers.append("Content-Type", "application/json");
   }
 
-  if (localStorage.getItem("accessToken")) {
-    headers.append(
-      "Authorization",
-      "Bearer " + localStorage.getItem("accessToken")
-    );
+  const accessToken = localStorage.getItem("accessToken");
+  if (accessToken) {
+    headers.append("Authorization", `Bearer ${accessToken}`);
   }
 
-  const defaults = { headers: headers };
-  options = Object.assign({}, defaults, options);
+  const response = await fetch(options.url, {
+    ...options,
+    headers,
+  });
+  const body = await parseBody(response);
 
-  return fetch(options.url, options).then((response) =>
-    response.json().then((json) => {
-      if (!response.ok) {
-        return Promise.reject(json);
-      }
-      return json;
-    })
-  );
+  if (!response.ok) {
+    const error = new Error(body.message || response.statusText || "Request failed");
+    error.status = response.status;
+    error.body = body;
+    throw error;
+  }
+
+  return body;
 };
 
 export function login(loginRequest) {
   return request({
-    url: "http://localhost:8081/signin",
+    url: `${API_BASE_URL}/signin`,
     method: "POST",
     body: JSON.stringify(loginRequest),
   });
@@ -35,7 +52,7 @@ export function login(loginRequest) {
 
 export function verify(verifyRequest) {
   return request({
-    url: "http://localhost:8081/verify",
+    url: `${API_BASE_URL}/verify`,
     method: "POST",
     body: JSON.stringify(verifyRequest),
   });
@@ -43,7 +60,7 @@ export function verify(verifyRequest) {
 
 export function signup(signupRequest) {
   return request({
-    url: "http://localhost:8081/users",
+    url: `${API_BASE_URL}/users`,
     method: "POST",
     body: JSON.stringify(signupRequest),
   });
@@ -51,11 +68,11 @@ export function signup(signupRequest) {
 
 export function getCurrentUser() {
   if (!localStorage.getItem("accessToken")) {
-    return Promise.reject("No access token set.");
+    return Promise.reject(new Error("No access token set."));
   }
 
   return request({
-    url: "http://localhost:8081/users/me",
+    url: `${API_BASE_URL}/users/me`,
     method: "GET",
   });
 }

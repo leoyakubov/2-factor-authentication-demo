@@ -1,28 +1,41 @@
-﻿import React, { useEffect, useState } from "react";
-import { Form, Input, Button, notification } from "antd";
+import React, { useEffect, useState } from "react";
+import { Alert, Form, Input, Button, notification } from "antd";
+import { Redirect } from "react-router-dom";
 import { DingtalkOutlined } from "@ant-design/icons";
 import { verify } from "../util/ApiUtil";
 import "./VerifyCode.css";
 
 const VerifyCode = (props) => {
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState();
+  const username = props.location?.state?.username;
+
+  useEffect(() => {
+    if (!username) {
+      props.history.replace("/login");
+    }
+  }, [props.history, username]);
 
   const onFinish = (values) => {
     setLoading(true);
+    setErrorMessage(undefined);
 
     const verifyRequest = {
       code: values.code,
-      username: props.location.state.username,
+      username: username,
     };
 
-    console.log(verifyRequest);
     verify(verifyRequest)
       .then((response) => {
         localStorage.setItem("accessToken", response.accessToken);
         props.history.push("/");
-        setLoading(false);
       })
       .catch((error) => {
+        if (error.status === 400) {
+          setErrorMessage("The verification code is incorrect. Please try again.");
+        } else {
+          setErrorMessage("We couldn't verify the code right now. Please try again.");
+        }
         if (error.status === 400) {
           notification.error({
             message: "Error",
@@ -31,16 +44,29 @@ const VerifyCode = (props) => {
         } else {
           notification.error({
             message: "Error",
-            description: "Sorry! Something went wrong. Please try again!",
+            description: error.message || "Sorry! Something went wrong. Please try again!",
           });
         }
-        setLoading(false);
-      });
+      })
+      .finally(() => setLoading(false));
   };
+
+  if (!username) {
+    return <Redirect to="/login" />;
+  }
 
   return (
     <div className="login-container">
       <DingtalkOutlined style={{ fontSize: 50 }} />
+      {errorMessage ? (
+        <Alert
+          style={{ marginBottom: 16, maxWidth: 420 }}
+          type="error"
+          showIcon
+          message="Verification failed"
+          description={errorMessage}
+        />
+      ) : null}
       <Form
         name="normal_login"
         className="login-form"
@@ -55,7 +81,7 @@ const VerifyCode = (props) => {
         </Form.Item>
         <Form.Item>
           <Button
-            onClick={() => props.history.push("/")}
+            onClick={() => props.history.push("/login")}
             shape="round"
             size="large"
           >

@@ -50,8 +50,8 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
         // All secured paths that needs a token are already defined and secured in config class.
         // And If user tried to access without access token, then he won't be authenticated and an exception will be thrown.
 
-        // 3. Get the token
-        String token = header.replace(jwtConfig.getPrefix(), "");
+        // 3. Get the token, trimming any spaces after the prefix
+        String token = header.substring(jwtConfig.getPrefix().length()).trim();
 
         if(tokenProvider.validateToken(token)) {
             Claims claims = tokenProvider.getClaimsFromJWT(token);
