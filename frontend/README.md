@@ -1,20 +1,34 @@
 # frontend
 
-React client for the two-factor auth demo.
+React client for the two-factor authentication demo.
 
-## Local setup
+Default local URL:
 
-- Copy [`.env.example`](./.env.example) to `.env` if you need to override the backend URL
-- Set `REACT_APP_API_BASE_URL` to the backend URL you want to use
-- Run `npm start`
+- `http://localhost:3000`
+
+## Local Setup
+
+1. Copy [`.env.example`](./.env.example) to `.env` if you want to override the backend URL.
+2. Set `REACT_APP_API_BASE_URL` to the backend URL you want to use.
+3. Run `npm start` or use the helper script from the repo root.
+
+The default backend URL is `http://localhost:8081`.
 
 ## Helper Scripts
 
-- Use the root `scripts/run-frontend.sh` or `scripts/run-frontend.cmd` to start the app
-- Use the root `scripts/test-frontend.sh` or `scripts/test-frontend.cmd` to run tests
+- Use `scripts/run-frontend.ps1` or `scripts/run-frontend.sh` to start the app
+- Use `scripts/test-frontend.ps1` or `scripts/test-frontend.sh` to run tests
+- Use `scripts/build-frontend.ps1` or `scripts/build-frontend.sh` to create a production build
 
-## Scripts
+## Available npm Scripts
 
 - `npm start`
 - `npm test`
+- `npm run test:ci`
 - `npm run build`
+- `npm run build:ci`
+
+## Notes
+
+- The frontend talks to the backend through `REACT_APP_API_BASE_URL`
+- If you change the backend port, update the frontend `.env` file too

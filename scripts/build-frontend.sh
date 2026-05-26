@@ -8,4 +8,4 @@ trap 'cd "$ORIGIN"' EXIT
 cd "$ROOT/frontend"
 [ -f .env ] || cp .env.example .env
 [ -d node_modules ] || npm install
-npm run test:ci
+CI=true npm run build:ci

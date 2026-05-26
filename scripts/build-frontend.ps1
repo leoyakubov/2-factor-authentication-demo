@@ -14,7 +14,7 @@ try {
   }
 
   $env:CI = "true"
-  npm run test:ci
+  npm run build:ci
 }
 finally {
   Set-Location $origin

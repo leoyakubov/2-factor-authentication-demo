@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, Avatar } from "antd";
 import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { getCurrentUser } from "../util/ApiUtil";
@@ -9,16 +9,17 @@ const { Meta } = Card;
 const Profile = (props) => {
   const [currentUser, setCurrentUser] = useState({});
 
+  const logout = useCallback(() => {
+    localStorage.removeItem("accessToken");
+    props.history.push("/login");
+  }, [props.history]);
+
   useEffect(() => {
     if (localStorage.getItem("accessToken") === null) {
       props.history.push("/login");
       return;
     }
 
-    loadCurrentUser();
-  }, [props.history]);
-
-  const loadCurrentUser = () => {
     getCurrentUser()
       .then((response) => {
         setCurrentUser(response);
@@ -31,12 +32,7 @@ const Profile = (props) => {
 
         console.error(error);
       });
-  };
-
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    props.history.push("/login");
-  };
+  }, [props.history, logout]);
 
   const getInitials = () => {
     const label = currentUser.name || currentUser.username || "User";
