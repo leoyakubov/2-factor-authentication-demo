@@ -61,6 +61,12 @@
 			<artifactId>de.flapdoodle.embed.mongo.spring3x</artifactId>
 			<version>${flapdoodle.embed.mongo.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.bwaldvogel</groupId>
+			<artifactId>mongo-java-server</artifactId>
+			<version>1.47.0</version>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>dev.samstevens.totp</groupId>

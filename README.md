@@ -20,11 +20,14 @@ It is intentionally demo-focused rather than production hardened, but it is stru
 
 ## Quick Start
 
-1. Copy `backend/.env.example` to `backend/.env` and set `JWT_SECRET`.
+1. Copy `backend/.env.example` to `backend/.env` and set `JWT_SECRET` to a long random secret string used to sign JWTs.
 2. Copy `frontend/.env.example` to `frontend/.env` if you want to override the API URL.
-3. Run `scripts/test-backend.ps1` and `scripts/test-frontend.ps1`.
-4. Run `scripts/run-backend.ps1` and `scripts/run-frontend.ps1`.
-5. Open the app in the browser and walk through signup, MFA enrollment, login, and profile access.
+3. Run the backend tests: `./scripts/test-backend.sh`
+4. Run the frontend tests: `./scripts/test-frontend.sh`
+5. Build the frontend once before a demo: `./scripts/build-frontend.sh`
+6. Start the backend: `./scripts/run-backend.sh`
+7. Start the frontend: `./scripts/run-frontend.sh`
+8. Open the app in the browser and walk through signup, MFA enrollment, login, and profile access.
 
 ## Key Terms
 
