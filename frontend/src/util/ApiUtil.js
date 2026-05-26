@@ -1,3 +1,5 @@
+import { getAccessToken } from "./authStorage";
+
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8081";
 
 const parseBody = async (response) => {
@@ -21,7 +23,7 @@ const request = async (options) => {
     headers.append("Content-Type", "application/json");
   }
 
-  const accessToken = localStorage.getItem("accessToken");
+  const accessToken = getAccessToken();
   if (accessToken) {
     headers.append("Authorization", `Bearer ${accessToken}`);
   }
@@ -67,7 +69,7 @@ export function signup(signupRequest) {
 }
 
 export function getCurrentUser() {
-  if (!localStorage.getItem("accessToken")) {
+  if (!getAccessToken()) {
     return Promise.reject(new Error("No access token set."));
   }
 

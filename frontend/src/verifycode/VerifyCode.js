@@ -3,12 +3,15 @@ import { Alert, Form, Input, Button, notification } from "antd";
 import { Redirect } from "react-router-dom";
 import { DingtalkOutlined } from "@ant-design/icons";
 import { verify } from "../util/ApiUtil";
+import { getVerifyErrorMessage } from "../util/authErrors";
+import { useAuth } from "../auth/AuthContext";
 import "./VerifyCode.css";
 
 const VerifyCode = (props) => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState();
   const username = props.location?.state?.username;
+  const auth = useAuth();
 
   useEffect(() => {
     if (!username) {
@@ -27,26 +30,15 @@ const VerifyCode = (props) => {
 
     verify(verifyRequest)
       .then((response) => {
-        localStorage.setItem("accessToken", response.accessToken);
+        auth.login(response.accessToken);
         props.history.push("/");
       })
       .catch((error) => {
-        if (error.status === 400) {
-          setErrorMessage("The verification code is incorrect. Please try again.");
-        } else {
-          setErrorMessage("We couldn't verify the code right now. Please try again.");
-        }
-        if (error.status === 400) {
-          notification.error({
-            message: "Error",
-            description: "Code is incorrect",
-          });
-        } else {
-          notification.error({
-            message: "Error",
-            description: error.message || "Sorry! Something went wrong. Please try again!",
-          });
-        }
+        setErrorMessage(getVerifyErrorMessage(error));
+        notification.error({
+          message: "Error",
+          description: error.body?.message || error.message || "Sorry! Something went wrong. Please try again!",
+        });
       })
       .finally(() => setLoading(false));
   };

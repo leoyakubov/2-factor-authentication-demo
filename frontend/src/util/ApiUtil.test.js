@@ -3,7 +3,7 @@ import { getCurrentUser, login } from "./ApiUtil";
 describe("ApiUtil", () => {
   beforeEach(() => {
     global.fetch = jest.fn();
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
@@ -35,7 +35,7 @@ describe("ApiUtil", () => {
   });
 
   test("getCurrentUser sends the bearer token when one is available", async () => {
-    localStorage.setItem("accessToken", "token-abc");
+    sessionStorage.setItem("accessToken", "token-abc");
     fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,

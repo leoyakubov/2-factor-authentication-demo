@@ -1,21 +1,25 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, Card, Avatar } from "antd";
+import { Alert, Button, Card, Avatar } from "antd";
 import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { getCurrentUser } from "../util/ApiUtil";
+import { getProfileErrorMessage } from "../util/authErrors";
+import { useAuth } from "../auth/AuthContext";
 import "./Profile.css";
 
 const { Meta } = Card;
 
 const Profile = (props) => {
   const [currentUser, setCurrentUser] = useState({});
+  const [errorMessage, setErrorMessage] = useState();
+  const auth = useAuth();
 
   const logout = useCallback(() => {
-    localStorage.removeItem("accessToken");
+    auth.logout();
     props.history.push("/login");
-  }, [props.history]);
+  }, [auth, props.history]);
 
   useEffect(() => {
-    if (localStorage.getItem("accessToken") === null) {
+    if (!auth.isAuthenticated) {
       props.history.push("/login");
       return;
     }
@@ -30,9 +34,9 @@ const Profile = (props) => {
           return;
         }
 
-        console.error(error);
+        setErrorMessage(getProfileErrorMessage(error));
       });
-  }, [props.history, logout]);
+  }, [auth.isAuthenticated, logout, props.history]);
 
   const getInitials = () => {
     const label = currentUser.name || currentUser.username || "User";
@@ -46,6 +50,15 @@ const Profile = (props) => {
 
   return (
     <div className="profile-container">
+      {errorMessage ? (
+        <Alert
+          style={{ marginBottom: 16, maxWidth: 420 }}
+          type="error"
+          showIcon
+          message="Profile load failed"
+          description={errorMessage}
+        />
+      ) : null}
       <Card
         style={{ width: 420, border: "1px solid #e1e0e0" }}
         actions={[

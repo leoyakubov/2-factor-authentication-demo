@@ -3,6 +3,8 @@ import { Alert, Form, Input, Button, Checkbox } from "antd";
 import { Link } from "react-router-dom";
 import { DingtalkOutlined } from "@ant-design/icons";
 import { signup } from "../util/ApiUtil";
+import { getSignUpErrorMessage } from "../util/authErrors";
+import { useAuth } from "../auth/AuthContext";
 import "./Signup.css";
 
 const Signup = (props) => {
@@ -10,12 +12,13 @@ const Signup = (props) => {
   const [created, setCreated] = useState(false);
   const [qrImageUrl, setQrImageUrl] = useState();
   const [errorMessage, setErrorMessage] = useState();
+  const auth = useAuth();
 
   useEffect(() => {
-    if (localStorage.getItem("accessToken") !== null) {
+    if (auth.isAuthenticated) {
       props.history.push("/");
     }
-  }, [props.history]);
+  }, [auth.isAuthenticated, props.history]);
 
   const onFinish = (values) => {
     setLoading(true);
@@ -26,16 +29,7 @@ const Signup = (props) => {
         setQrImageUrl(response.mfa ? response.secretImageUri : undefined);
       })
       .catch((error) => {
-        if (error.status === 400) {
-          setErrorMessage(
-            error.body?.message?.includes("exists")
-              ? "That username or email is already in use. Try another one."
-              : "Please check the form fields and try again."
-          );
-        } else {
-          setErrorMessage("We couldn't create your account right now. Please try again.");
-        }
-        console.error("Sign up failed", error);
+        setErrorMessage(getSignUpErrorMessage(error));
       })
       .finally(() => setLoading(false));
   };

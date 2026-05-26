@@ -1,5 +1,8 @@
 import React from "react";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
+import { AuthProvider } from "./auth/AuthContext";
+import PrivateRoute from "./auth/PrivateRoute";
+import PublicRoute from "./auth/PublicRoute";
 import Signin from "./signin/Signin";
 import Signup from "./signup/Signup";
 import Profile from "./profile/Profile";
@@ -11,31 +14,18 @@ import "./App.css";
 const App = (props) => {
   return (
     <div className="App">
-      <BrowserRouter>
-        <Switch>
-          <Route exact path="/" render={(props) => <Profile {...props} />} />
-          <Route
-            exact
-            path="/login"
-            render={(props) => <Signin {...props} />}
-          />
-          <Route
-            exact
-            path="/signup"
-            render={(props) => <Signup {...props} />}
-          />
-          <Route
-            exact
-            path="/qrcode"
-            render={(props) => <QrCode {...props} />}
-          />
-          <Route
-            exact
-            path="/verify"
-            render={(props) => <VerifyCode {...props} />}
-          />
-        </Switch>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Switch>
+            <PrivateRoute exact path="/" component={Profile} />
+            <PublicRoute exact path="/login" component={Signin} />
+            <PublicRoute exact path="/signup" component={Signup} />
+            <PublicRoute exact path="/qrcode" component={QrCode} />
+            <PublicRoute exact path="/verify" component={VerifyCode} />
+            <Route render={() => <Redirect to="/login" />} />
+          </Switch>
+        </BrowserRouter>
+      </AuthProvider>
     </div>
   );
 };

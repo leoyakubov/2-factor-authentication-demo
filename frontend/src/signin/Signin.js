@@ -7,6 +7,8 @@ import {
   DingtalkOutlined,
 } from "@ant-design/icons";
 import { login } from "../util/ApiUtil";
+import { getSignInErrorMessage } from "../util/authErrors";
+import { useAuth } from "../auth/AuthContext";
 import "./Signin.css";
 
 const Signin = (props) => {
@@ -14,12 +16,13 @@ const Signin = (props) => {
   const [redirect, setRedirect] = useState();
   const [username, setUsername] = useState();
   const [errorMessage, setErrorMessage] = useState();
+  const auth = useAuth();
 
   useEffect(() => {
-    if (localStorage.getItem("accessToken") !== null) {
+    if (auth.isAuthenticated) {
       props.history.push("/");
     }
-  }, [props.history]);
+  }, [auth.isAuthenticated, props.history]);
 
   const onFinish = (values) => {
     setLoading(true);
@@ -30,21 +33,12 @@ const Signin = (props) => {
           setUsername(values.username);
           setRedirect("/verify");
         } else {
-          localStorage.setItem("accessToken", response.accessToken);
+          auth.login(response.accessToken);
           props.history.push("/");
         }
       })
       .catch((error) => {
-        if (error.status === 401) {
-          setErrorMessage("We couldn't log you in. Check your username or email and password.");
-        } else if (error.status === 404) {
-          setErrorMessage("We couldn't find an account with that username or email.");
-        } else if (error.status === 400) {
-          setErrorMessage("Please check your login details and try again.");
-        } else {
-          setErrorMessage("We couldn't reach the server. Please try again in a moment.");
-        }
-        console.error("Sign in failed", error);
+        setErrorMessage(getSignInErrorMessage(error));
       })
       .finally(() => setLoading(false));
   };

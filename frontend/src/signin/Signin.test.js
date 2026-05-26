@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import Signin from "./Signin";
 import { login } from "../util/ApiUtil";
+import { AuthProvider } from "../auth/AuthContext";
 
 jest.mock("../util/ApiUtil", () => ({
   login: jest.fn(),
@@ -34,20 +35,17 @@ describe("Signin", () => {
   };
 
   beforeEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
     jest.clearAllMocks();
-    jest.spyOn(console, "error").mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
   });
 
   const renderComponent = () =>
     render(
-      <MemoryRouter>
-        <Signin history={history} />
-      </MemoryRouter>
+      <AuthProvider>
+        <MemoryRouter>
+          <Signin history={history} />
+        </MemoryRouter>
+      </AuthProvider>
     );
 
   test("logs in and stores the token for a regular account", async () => {
@@ -69,7 +67,7 @@ describe("Signin", () => {
         password: "secret",
       })
     );
-    expect(localStorage.getItem("accessToken")).toBe("token-123");
+    expect(sessionStorage.getItem("accessToken")).toBe("token-123");
     expect(history.push).toHaveBeenCalledWith("/");
   });
 

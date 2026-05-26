@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import { notification } from "antd";
 import VerifyCode from "./VerifyCode";
 import { verify } from "../util/ApiUtil";
+import { AuthProvider } from "../auth/AuthContext";
 
 jest.mock("../util/ApiUtil", () => ({
   verify: jest.fn(),
@@ -36,7 +37,7 @@ describe("VerifyCode", () => {
   };
 
   beforeEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
     jest.clearAllMocks();
   });
 
@@ -46,9 +47,11 @@ describe("VerifyCode", () => {
 
   const renderComponent = (state = { username: "demo" }) =>
     render(
-      <MemoryRouter>
-        <VerifyCode history={history} location={{ state }} />
-      </MemoryRouter>
+      <AuthProvider>
+        <MemoryRouter>
+          <VerifyCode history={history} location={{ state }} />
+        </MemoryRouter>
+      </AuthProvider>
     );
 
   test("stores the token and navigates home after a valid code", async () => {
@@ -66,7 +69,7 @@ describe("VerifyCode", () => {
         code: "123456",
       })
     );
-    expect(localStorage.getItem("accessToken")).toBe("token-456");
+    expect(sessionStorage.getItem("accessToken")).toBe("token-456");
     expect(history.push).toHaveBeenCalledWith("/");
   });
 

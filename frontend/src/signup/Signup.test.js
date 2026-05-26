@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import Signup from "./Signup";
 import { signup } from "../util/ApiUtil";
+import { AuthProvider } from "../auth/AuthContext";
 
 jest.mock("../util/ApiUtil", () => ({
   signup: jest.fn(),
@@ -15,13 +16,8 @@ describe("Signup", () => {
   };
 
   beforeEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
     jest.clearAllMocks();
-    jest.spyOn(console, "error").mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
   });
 
   const fillForm = async (user) => {
@@ -33,9 +29,11 @@ describe("Signup", () => {
 
   const renderComponent = () =>
     render(
-      <MemoryRouter>
-        <Signup history={history} />
-      </MemoryRouter>
+      <AuthProvider>
+        <MemoryRouter>
+          <Signup history={history} />
+        </MemoryRouter>
+      </AuthProvider>
     );
 
   test("shows the success state and login button after a non-mfa signup", async () => {
