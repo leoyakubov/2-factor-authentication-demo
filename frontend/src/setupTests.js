@@ -3,15 +3,16 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom";
+jest.mock("antd");
 
 const createMatchMedia = (query) => {
   const mediaQueryList = {
     matches: false,
     media: query,
     onchange: null,
-    addListener: (listener) => listener(mediaQueryList),
+    addListener: jest.fn(),
     removeListener: jest.fn(),
-    addEventListener: (_eventName, listener) => listener(mediaQueryList),
+    addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   };
@@ -22,4 +23,15 @@ const createMatchMedia = (query) => {
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: jest.fn().mockImplementation(createMatchMedia),
+});
+
+class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+Object.defineProperty(window, "ResizeObserver", {
+  writable: true,
+  value: ResizeObserver,
 });

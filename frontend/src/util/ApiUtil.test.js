@@ -33,4 +33,28 @@ describe("ApiUtil", () => {
   test("getCurrentUser rejects when there is no access token", async () => {
     await expect(getCurrentUser()).rejects.toThrow("No access token set.");
   });
+
+  test("getCurrentUser sends the bearer token when one is available", async () => {
+    localStorage.setItem("accessToken", "token-abc");
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () =>
+        JSON.stringify({ username: "demo", name: "Demo User" }),
+    });
+
+    const response = await getCurrentUser();
+
+    expect(fetch).toHaveBeenCalledWith(
+      "http://localhost:8081/users/me",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.any(Headers),
+      })
+    );
+    expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBe(
+      "Bearer token-abc"
+    );
+    expect(response).toEqual({ username: "demo", name: "Demo User" });
+  });
 });
