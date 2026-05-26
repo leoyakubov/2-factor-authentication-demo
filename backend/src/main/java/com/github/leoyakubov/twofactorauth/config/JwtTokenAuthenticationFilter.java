@@ -12,9 +12,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.github.leoyakubov.twofactorauth.model.AuthUserDetails;
 import com.github.leoyakubov.twofactorauth.service.JwtTokenManager;
 import com.github.leoyakubov.twofactorauth.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
+@Slf4j
 public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtCookieManager cookieManager;
@@ -46,7 +48,7 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
             String username = claims.getSubject();
 
             UsernamePasswordAuthenticationToken auth =
-                    userService.findByUsername(username)
+            userService.findByUsername(username)
                             .map(AuthUserDetails::new)
                             .map(userDetails -> {
                                 UsernamePasswordAuthenticationToken authentication =
@@ -60,8 +62,10 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
                             .orElse(null);
 
             SecurityContextHolder.getContext().setAuthentication(auth);
+            log.debug("authenticated {} on {} {}", username, request.getMethod(), request.getRequestURI());
         } else {
             SecurityContextHolder.clearContext();
+            log.warn("rejected invalid JWT on {} {}", request.getMethod(), request.getRequestURI());
         }
 
         chain.doFilter(request, response);

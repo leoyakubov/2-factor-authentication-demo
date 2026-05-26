@@ -60,15 +60,15 @@ public class JwtTokenManager {
 
             return true;
         } catch (SignatureException ex) {
-            log.error("Invalid JWT signature");
+            log.debug("invalid JWT signature");
         } catch (MalformedJwtException ex) {
-            log.error("Invalid JWT token");
+            log.debug("invalid JWT token");
         } catch (ExpiredJwtException ex) {
-            log.error("Expired JWT token");
+            log.debug("expired JWT token");
         } catch (UnsupportedJwtException ex) {
-            log.error("Unsupported JWT token");
+            log.debug("unsupported JWT token");
         } catch (IllegalArgumentException ex) {
-            log.error("JWT claims string is empty.");
+            log.debug("JWT claims string is empty");
         }
         return false;
     }

@@ -23,6 +23,8 @@ server:
   port: ${SERVER_PORT:8081}
 
 app:
+  frontend:
+    base-url: ${FRONTEND_ORIGIN:http://localhost:3000}
   cors:
     allowed-origins: ${FRONTEND_ORIGIN:http://localhost:3000}
 

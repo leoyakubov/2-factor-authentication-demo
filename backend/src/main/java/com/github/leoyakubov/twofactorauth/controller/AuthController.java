@@ -103,6 +103,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
+        log.info("logout requested");
         return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, cookieManager.clearCookie().toString())
                 .build();
