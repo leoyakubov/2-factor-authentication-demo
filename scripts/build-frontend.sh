@@ -7,5 +7,12 @@ trap 'cd "$ORIGIN"' EXIT
 
 cd "$ROOT/frontend"
 [ -f .env ] || cp .env.example .env
-[ -d node_modules ] || npm install
+set -a
+. ./.env
+set +a
+[ -d node_modules/vite ] || npm ci --no-audit --no-fund
+[ -d node_modules/vite ] || {
+  echo "vite is still missing after npm ci. Run 'cd frontend && npm install' and try again." >&2
+  exit 1
+}
 CI=true npm run build:ci

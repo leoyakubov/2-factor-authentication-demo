@@ -122,6 +122,8 @@ Backend:
 Frontend:
 
 - React 19.1.1
+- Vite
+- Jest
 - React Router v5
 - Ant Design
 - Fetch API
@@ -307,7 +309,7 @@ Unix/macOS:
 
 Expected result:
 
-- React creates a production `build` folder
+- Vite creates a production `dist` folder
 - The build completes without lint or compilation errors
 
 If you prefer a direct command:

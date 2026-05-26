@@ -1,6 +1,6 @@
 # frontend
 
-React client for the two-factor authentication demo.
+Vite-powered React client for the two-factor authentication demo.
 
 Default local URL:
 
@@ -27,8 +27,10 @@ The default backend URL is `http://localhost:8081`.
 - `npm run test:ci`
 - `npm run build`
 - `npm run build:ci`
+- `npm run preview`
 
 ## Notes
 
 - The frontend talks to the backend through `REACT_APP_API_BASE_URL`
 - If you change the backend port, update the frontend `.env` file too
+- Vite writes production output to `dist/`, not `build/`
