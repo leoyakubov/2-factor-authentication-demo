@@ -5,11 +5,9 @@ import com.github.leoyakubov.twofactorauth.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,14 +15,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -32,15 +28,18 @@ import java.util.Collections;
 public class SecurityCredentialsConfig {
 
     private final JwtConfigProperties jwtConfig;
+    private final CorsProperties corsProperties;
     private final JwtTokenManager tokenProvider;
     private final UserService userService;
     private final UserDetailsService userDetailsService;
 
     public SecurityCredentialsConfig(JwtConfigProperties jwtConfig,
+                                     CorsProperties corsProperties,
                                      JwtTokenManager tokenProvider,
                                      UserService userService,
                                      UserDetailsService userDetailsService) {
         this.jwtConfig = jwtConfig;
+        this.corsProperties = corsProperties;
         this.tokenProvider = tokenProvider;
         this.userService = userService;
         this.userDetailsService = userDetailsService;
@@ -50,9 +49,7 @@ public class SecurityCredentialsConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authz) -> authz
                 .requestMatchers("/error").permitAll()
-                .requestMatchers(HttpMethod.POST, "/signin").permitAll()
-                .requestMatchers(HttpMethod.POST, "/verify").anonymous()
-                .requestMatchers(HttpMethod.POST, "/users").anonymous()
+                .requestMatchers("/signin", "/verify", "/users").permitAll()
                 .anyRequest().authenticated()
         );
 
@@ -71,7 +68,7 @@ public class SecurityCredentialsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(false);
-        config.setAllowedOriginPatterns(Collections.singletonList("*"));
+        config.setAllowedOrigins(corsProperties.getAllowedOrigins());
         config.addAllowedHeader("*");
         config.addAllowedMethod("OPTIONS");
         config.addAllowedMethod("HEAD");
@@ -84,7 +81,7 @@ public class SecurityCredentialsConfig {
         return source;
     }
 
-    @Bean(BeanIds.AUTHENTICATION_MANAGER)
+    @Bean
     public AuthenticationManager authenticationManager() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
@@ -93,7 +90,7 @@ public class SecurityCredentialsConfig {
     }
 
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public PasswordEncoder passwordEncoder() {
+        return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
     }
 }

@@ -1,25 +1,27 @@
 package com.github.leoyakubov.twofactorauth.config;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
-
-@Data
-@NoArgsConstructor
-@Component
+@Getter
+@Setter
+@Validated
+@ConfigurationProperties(prefix = "security.jwt")
 public class JwtConfigProperties {
 
-    @Value("${security.jwt.header:}")
-    private String header;
+    @NotBlank
+    private String header = "Authorization";
 
-    @Value("${security.jwt.prefix:}")
-    private String prefix;
+    @NotBlank
+    private String prefix = "Bearer";
 
-    @Value("${security.jwt.expiration:1234}")
-    private int expiration;
+    @Min(1)
+    private int expiration = 86400;
 
-    @Value("${security.jwt.secret:}")
+    @NotBlank
     private String secret;
 }

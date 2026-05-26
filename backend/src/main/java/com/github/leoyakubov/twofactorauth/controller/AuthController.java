@@ -7,6 +7,7 @@ import com.github.leoyakubov.twofactorauth.model.Profile;
 import com.github.leoyakubov.twofactorauth.model.Role;
 import com.github.leoyakubov.twofactorauth.model.User;
 import com.github.leoyakubov.twofactorauth.payload.JwtAuthenticationResponse;
+import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import com.github.leoyakubov.twofactorauth.payload.LoginRequest;
 import com.github.leoyakubov.twofactorauth.payload.SignUpRequest;
 import com.github.leoyakubov.twofactorauth.payload.SignupResponse;
@@ -15,10 +16,8 @@ import com.github.leoyakubov.twofactorauth.service.TotpManager;
 import com.github.leoyakubov.twofactorauth.service.UserService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,27 +28,32 @@ import java.net.URI;
 @Slf4j
 public class AuthController {
 
-    @Autowired private UserService userService;
-    @Autowired private TotpManager totpManager;
+    private final UserService userService;
+    private final TotpManager totpManager;
+
+    public AuthController(UserService userService, TotpManager totpManager) {
+        this.userService = userService;
+        this.totpManager = totpManager;
+    }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         log.info("sign-in attempt for {}", loginRequest.getUsername());
-        String token = userService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
-        log.info("sign-in completed for {} (mfa={})", loginRequest.getUsername(), !StringUtils.hasText(token));
-        return ResponseEntity.ok(new JwtAuthenticationResponse(token, !StringUtils.hasText(token)));
+        LoginResult result = userService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
+        log.info("sign-in completed for {} (mfa={})", loginRequest.getUsername(), result.mfaRequired());
+        return ResponseEntity.ok(new JwtAuthenticationResponse(result.accessToken(), result.mfaRequired()));
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyCode(@Valid @RequestBody VerifyCodeRequest verifyCodeRequest) {
+    public ResponseEntity<JwtAuthenticationResponse> verifyCode(@Valid @RequestBody VerifyCodeRequest verifyCodeRequest) {
         log.info("mfa verify attempt for {}", verifyCodeRequest.getUsername());
         String token = userService.verify(verifyCodeRequest.getUsername(), verifyCodeRequest.getCode());
         log.info("mfa verify completed for {}", verifyCodeRequest.getUsername());
-        return ResponseEntity.ok(new JwtAuthenticationResponse(token, !StringUtils.hasText(token)));
+        return ResponseEntity.ok(new JwtAuthenticationResponse(token, false));
     }
 
     @PostMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> createUser(@Valid @RequestBody SignUpRequest payload) {
+    public ResponseEntity<SignupResponse> createUser(@Valid @RequestBody SignUpRequest payload) {
         log.info("creating user {}", payload.getUsername());
 
         User user = User

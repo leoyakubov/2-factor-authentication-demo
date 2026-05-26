@@ -22,6 +22,10 @@ de:
 server:
   port: ${SERVER_PORT:8081}
 
+app:
+  cors:
+    allowed-origins: ${FRONTEND_ORIGIN:http://localhost:3000}
+
 security:
   jwt:
     header: ${JWT_HEADER:Authorization}

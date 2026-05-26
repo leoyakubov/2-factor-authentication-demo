@@ -2,7 +2,6 @@ package com.github.leoyakubov.twofactorauth.service;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,9 +17,9 @@ import com.github.leoyakubov.twofactorauth.model.AuthUserDetails;
 import com.github.leoyakubov.twofactorauth.model.Role;
 import com.github.leoyakubov.twofactorauth.model.User;
 import com.github.leoyakubov.twofactorauth.repository.UserRepository;
+import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -46,23 +45,20 @@ public class UserService {
         this.totpManager = totpManager;
     }
 
-    public String loginUser(String username, String password) {
+    public LoginResult loginUser(String username, String password) {
        Authentication authentication = authenticationManager
                .authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
-       User user = userRepository
-               .findByUsername(username)
-               .or(() -> userRepository.findByEmail(username))
-               .orElseThrow(() -> new ResourceNotFoundException(String.format("username %s", username)));
-       if(user.isMfa()) {
-           log.info("login accepted for {} and MFA verification is required", user.getUsername());
-           return "";
+       AuthUserDetails userDetails = (AuthUserDetails) authentication.getPrincipal();
+       if(userDetails.isMfa()) {
+           log.info("login accepted for {} and MFA verification is required", userDetails.getUsername());
+           return LoginResult.mfaRequired();
        }
 
-       Authentication canonicalAuthentication = new UsernamePasswordAuthenticationToken(
-               new AuthUserDetails(user), null, new AuthUserDetails(user).getAuthorities());
-       log.info("login accepted for {} and issuing access token", user.getUsername());
-       return jwtTokenManager.generateToken(canonicalAuthentication);
+        Authentication canonicalAuthentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        log.info("login accepted for {} and issuing access token", userDetails.getUsername());
+        return LoginResult.authenticated(jwtTokenManager.generateToken(canonicalAuthentication));
     }
 
     public String verify(String username, String code) {
@@ -113,11 +109,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public List<User> findAll() {
-        log.info("retrieving all users");
-        return userRepository.findAll();
-    }
-
     public Optional<User> findByUsername(String username) {
         log.info("retrieving user {}", username);
         return userRepository.findByUsername(username);
@@ -126,10 +117,5 @@ public class UserService {
     public Optional<User> findByUsernameOrEmail(String identifier) {
         log.info("retrieving user {}", identifier);
         return userRepository.findByUsername(identifier).or(() -> userRepository.findByEmail(identifier));
-    }
-
-    public Optional<User> findById(String id) {
-        log.info("retrieving user {}", id);
-        return userRepository.findById(id);
     }
 }

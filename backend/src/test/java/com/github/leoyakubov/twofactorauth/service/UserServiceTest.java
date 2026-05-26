@@ -4,10 +4,12 @@ import com.github.leoyakubov.twofactorauth.exception.BadRequestException;
 import com.github.leoyakubov.twofactorauth.exception.EmailAlreadyExistsException;
 import com.github.leoyakubov.twofactorauth.exception.ResourceNotFoundException;
 import com.github.leoyakubov.twofactorauth.exception.UsernameAlreadyExistsException;
+import com.github.leoyakubov.twofactorauth.model.AuthUserDetails;
 import com.github.leoyakubov.twofactorauth.model.Profile;
 import com.github.leoyakubov.twofactorauth.model.Role;
 import com.github.leoyakubov.twofactorauth.model.User;
 import com.github.leoyakubov.twofactorauth.repository.UserRepository;
+import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -106,14 +107,14 @@ class UserServiceTest {
         User user = buildUser("demo", "demo@example.com", "encoded-secret", false);
 
         when(authenticationManager.authenticate(any())).thenReturn(
-                new UsernamePasswordAuthenticationToken("demo", "secret"));
-        when(userRepository.findByUsername("demo")).thenReturn(Optional.of(user));
+                new UsernamePasswordAuthenticationToken(new AuthUserDetails(user), null, new AuthUserDetails(user).getAuthorities()));
         when(jwtTokenManager.generateToken(authenticationCaptor.capture())).thenReturn("jwt-token");
 
-        String token = userService.loginUser("demo", "secret");
+        LoginResult result = userService.loginUser("demo", "secret");
 
-        assertEquals("jwt-token", token);
+        assertEquals("jwt-token", result.accessToken());
         assertEquals("demo", authenticationCaptor.getValue().getName());
+        assertEquals(false, result.mfaRequired());
     }
 
     @Test
@@ -121,29 +122,28 @@ class UserServiceTest {
         User user = buildUser("demo", "demo@example.com", "encoded-secret", false);
 
         when(authenticationManager.authenticate(any())).thenReturn(
-                new UsernamePasswordAuthenticationToken("demo@example.com", "secret"));
-        when(userRepository.findByUsername("demo@example.com")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("demo@example.com")).thenReturn(Optional.of(user));
+                new UsernamePasswordAuthenticationToken(new AuthUserDetails(user), null, new AuthUserDetails(user).getAuthorities()));
         when(jwtTokenManager.generateToken(any())).thenReturn("jwt-token");
 
-        String token = userService.loginUser("demo@example.com", "secret");
+        LoginResult result = userService.loginUser("demo@example.com", "secret");
 
-        assertEquals("jwt-token", token);
+        assertEquals("jwt-token", result.accessToken());
+        assertEquals(false, result.mfaRequired());
         verify(jwtTokenManager).generateToken(any());
     }
 
     @Test
-    void loginUserShouldReturnEmptyStringForMfaUser() {
+    void loginUserShouldRequestMfaForMfaUser() {
         User user = buildUser("demo", "demo@example.com", "encoded-secret", true);
         user.setSecret("mfa-secret");
 
         when(authenticationManager.authenticate(any())).thenReturn(
-                new UsernamePasswordAuthenticationToken("demo", "secret"));
-        when(userRepository.findByUsername("demo")).thenReturn(Optional.of(user));
+                new UsernamePasswordAuthenticationToken(new AuthUserDetails(user), null, new AuthUserDetails(user).getAuthorities()));
 
-        String token = userService.loginUser("demo", "secret");
+        LoginResult result = userService.loginUser("demo", "secret");
 
-        assertEquals("", token);
+        assertEquals(true, result.mfaRequired());
+        assertEquals(null, result.accessToken());
         verify(jwtTokenManager, never()).generateToken(any());
     }
 

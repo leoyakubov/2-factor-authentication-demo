@@ -3,21 +3,17 @@ package com.github.leoyakubov.twofactorauth.controller;
 import com.github.leoyakubov.twofactorauth.model.Profile;
 import com.github.leoyakubov.twofactorauth.model.Role;
 import com.github.leoyakubov.twofactorauth.model.User;
-import com.github.leoyakubov.twofactorauth.payload.JwtAuthenticationResponse;
+import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import com.github.leoyakubov.twofactorauth.payload.LoginRequest;
 import com.github.leoyakubov.twofactorauth.payload.SignUpRequest;
-import com.github.leoyakubov.twofactorauth.payload.SignupResponse;
 import com.github.leoyakubov.twofactorauth.payload.VerifyCodeRequest;
 import com.github.leoyakubov.twofactorauth.service.TotpManager;
 import com.github.leoyakubov.twofactorauth.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.context.TestComponent;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -27,10 +23,8 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -59,7 +53,7 @@ class AuthControllerTest {
         request.setUsername("demo");
         request.setPassword("secret");
 
-        when(userService.loginUser("demo", "secret")).thenReturn("jwt-token");
+        when(userService.loginUser("demo", "secret")).thenReturn(LoginResult.authenticated("jwt-token"));
 
         mockMvc.perform(post("/signin")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -67,6 +61,22 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken", is("jwt-token")))
                 .andExpect(jsonPath("$.mfa", is(false)));
+    }
+
+    @Test
+    void signInShouldReturnMfaRequiredResponse() throws Exception {
+        LoginRequest request = new LoginRequest();
+        request.setUsername("demo");
+        request.setPassword("secret");
+
+        when(userService.loginUser("demo", "secret")).thenReturn(LoginResult.mfaRequired());
+
+        mockMvc.perform(post("/signin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value(nullValue()))
+                .andExpect(jsonPath("$.mfa", is(true)));
     }
 
     @Test

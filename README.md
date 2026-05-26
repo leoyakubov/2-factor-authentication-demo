@@ -383,7 +383,7 @@ This is a good final check before a demo or commit.
 - `POST /users` creates a new user and returns the MFA QR code when MFA is enabled
 - `POST /signin` checks username/email plus password and returns a JWT or MFA-required response
 - `POST /verify` checks the 6-digit authenticator code and returns a JWT
-- `GET /me` returns the current authenticated user profile
+- `GET /users/me` returns the current authenticated user profile
 
 ## Troubleshooting
 
