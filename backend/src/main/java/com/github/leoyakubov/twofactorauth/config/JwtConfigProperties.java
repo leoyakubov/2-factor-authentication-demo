@@ -14,13 +14,13 @@ import org.springframework.validation.annotation.Validated;
 public class JwtConfigProperties {
 
     @NotBlank
-    private String header = "Authorization";
+    private String header;
 
     @NotBlank
-    private String prefix = "Bearer";
+    private String prefix;
 
     @Min(1)
-    private int expiration = 86400;
+    private int expiration;
 
     @NotBlank
     private String secret;
