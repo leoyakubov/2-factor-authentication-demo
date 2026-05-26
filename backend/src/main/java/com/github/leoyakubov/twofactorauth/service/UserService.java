@@ -52,7 +52,7 @@ public class UserService {
        AuthUserDetails userDetails = (AuthUserDetails) authentication.getPrincipal();
        if(userDetails.isMfa()) {
            log.info("login accepted for {} and MFA verification is required", userDetails.getUsername());
-           return LoginResult.mfaRequired();
+           return LoginResult.requiresMfa();
        }
 
         Authentication canonicalAuthentication = new UsernamePasswordAuthenticationToken(

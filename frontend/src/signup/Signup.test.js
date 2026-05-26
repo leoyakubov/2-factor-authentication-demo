@@ -3,11 +3,12 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import Signup from "./Signup";
-import { signup } from "../util/ApiUtil";
+import { getCurrentUser, signup } from "../util/ApiUtil";
 import { AuthProvider } from "../auth/AuthContext";
 
 jest.mock("../util/ApiUtil", () => ({
   signup: jest.fn(),
+  getCurrentUser: jest.fn(),
 }));
 
 describe("Signup", () => {
@@ -16,8 +17,8 @@ describe("Signup", () => {
   };
 
   beforeEach(() => {
-    sessionStorage.clear();
     jest.clearAllMocks();
+    getCurrentUser.mockRejectedValue({ status: 401 });
   });
 
   const fillForm = async (user) => {
@@ -41,6 +42,7 @@ describe("Signup", () => {
     signup.mockResolvedValueOnce({ mfa: false });
 
     renderComponent();
+    await screen.findByPlaceholderText("Name");
     await fillForm(user);
     await user.click(screen.getByRole("button", { name: /signup/i }));
 
@@ -60,6 +62,7 @@ describe("Signup", () => {
     });
 
     renderComponent();
+    await screen.findByPlaceholderText("Name");
     await fillForm(user);
     await user.click(screen.getByRole("button", { name: /signup/i }));
 
@@ -80,6 +83,7 @@ describe("Signup", () => {
     });
 
     renderComponent();
+    await screen.findByPlaceholderText("Name");
     await fillForm(user);
     await user.click(screen.getByRole("button", { name: /signup/i }));
 
@@ -95,6 +99,7 @@ describe("Signup", () => {
     signup.mockRejectedValueOnce({ status: 500 });
 
     renderComponent();
+    await screen.findByPlaceholderText("Name");
     await fillForm(user);
     await user.click(screen.getByRole("button", { name: /signup/i }));
 

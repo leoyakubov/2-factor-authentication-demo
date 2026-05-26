@@ -2,7 +2,7 @@ package com.github.leoyakubov.twofactorauth.payload;
 
 public record LoginResult(boolean mfaRequired, String accessToken) {
 
-    public static LoginResult mfaRequired() {
+    public static LoginResult requiresMfa() {
         return new LoginResult(true, null);
     }
 

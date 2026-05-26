@@ -32,3 +32,7 @@ security:
     prefix: ${JWT_PREFIX:Bearer}
     expiration: ${JWT_EXPIRATION:86400}
     secret: ${JWT_SECRET}
+    cookie-name: ${JWT_COOKIE_NAME:AUTH_TOKEN}
+    cookie-path: ${JWT_COOKIE_PATH:/}
+    cookie-secure: ${JWT_COOKIE_SECURE:false}
+    cookie-same-site: ${JWT_COOKIE_SAME_SITE:Strict}

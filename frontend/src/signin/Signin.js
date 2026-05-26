@@ -19,10 +19,10 @@ const Signin = (props) => {
   const auth = useAuth();
 
   useEffect(() => {
-    if (auth.isAuthenticated) {
+    if (!auth.isChecking && auth.isAuthenticated) {
       props.history.push("/");
     }
-  }, [auth.isAuthenticated, props.history]);
+  }, [auth.isAuthenticated, auth.isChecking, props.history]);
 
   const onFinish = (values) => {
     setLoading(true);
@@ -33,7 +33,7 @@ const Signin = (props) => {
           setUsername(values.username);
           setRedirect("/verify");
         } else {
-          auth.login(response.accessToken);
+          auth.login();
           props.history.push("/");
         }
       })

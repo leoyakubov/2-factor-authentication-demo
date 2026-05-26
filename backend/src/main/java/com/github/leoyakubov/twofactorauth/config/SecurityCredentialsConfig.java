@@ -27,19 +27,19 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityCredentialsConfig {
 
-    private final JwtConfigProperties jwtConfig;
     private final CorsProperties corsProperties;
+    private final JwtCookieManager cookieManager;
     private final JwtTokenManager tokenProvider;
     private final UserService userService;
     private final UserDetailsService userDetailsService;
 
-    public SecurityCredentialsConfig(JwtConfigProperties jwtConfig,
-                                     CorsProperties corsProperties,
+    public SecurityCredentialsConfig(CorsProperties corsProperties,
+                                     JwtCookieManager cookieManager,
                                      JwtTokenManager tokenProvider,
                                      UserService userService,
                                      UserDetailsService userDetailsService) {
-        this.jwtConfig = jwtConfig;
         this.corsProperties = corsProperties;
+        this.cookieManager = cookieManager;
         this.tokenProvider = tokenProvider;
         this.userService = userService;
         this.userDetailsService = userDetailsService;
@@ -49,7 +49,7 @@ public class SecurityCredentialsConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authz) -> authz
                 .requestMatchers("/error").permitAll()
-                .requestMatchers("/signin", "/verify", "/users").permitAll()
+                .requestMatchers("/signin", "/verify", "/logout", "/users").permitAll()
                 .anyRequest().authenticated()
         );
 
@@ -58,7 +58,7 @@ public class SecurityCredentialsConfig {
         http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.exceptionHandling(exConf -> exConf.authenticationEntryPoint((req, resp, ex) ->
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")));
-        http.addFilterBefore(new JwtTokenAuthenticationFilter(jwtConfig, tokenProvider, userService),
+        http.addFilterBefore(new JwtTokenAuthenticationFilter(cookieManager, tokenProvider, userService),
                 UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -67,7 +67,7 @@ public class SecurityCredentialsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(false);
+        config.setAllowCredentials(true);
         config.setAllowedOrigins(corsProperties.getAllowedOrigins());
         config.addAllowedHeader("*");
         config.addAllowedMethod("OPTIONS");

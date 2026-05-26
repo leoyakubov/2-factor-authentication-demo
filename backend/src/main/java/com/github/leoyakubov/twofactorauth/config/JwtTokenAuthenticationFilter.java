@@ -17,16 +17,15 @@ import java.io.IOException;
 
 public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtConfigProperties jwtConfig;
+    private final JwtCookieManager cookieManager;
     private final JwtTokenManager tokenProvider;
     private final UserService userService;
 
     public JwtTokenAuthenticationFilter(
-            JwtConfigProperties jwtConfig,
+            JwtCookieManager cookieManager,
             JwtTokenManager tokenProvider,
             UserService userService) {
-
-        this.jwtConfig = jwtConfig;
+        this.cookieManager = cookieManager;
         this.tokenProvider = tokenProvider;
         this.userService = userService;
     }
@@ -35,14 +34,12 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        String header = request.getHeader(jwtConfig.getHeader());
+        String token = cookieManager.resolveToken(request);
 
-        if(header == null || !header.startsWith(jwtConfig.getPrefix())) {
+        if(token == null || token.isBlank()) {
             chain.doFilter(request, response);
             return;
         }
-
-        String token = header.substring(jwtConfig.getPrefix().length()).trim();
 
         if(tokenProvider.validateToken(token)) {
             Claims claims = tokenProvider.getClaimsFromJWT(token);

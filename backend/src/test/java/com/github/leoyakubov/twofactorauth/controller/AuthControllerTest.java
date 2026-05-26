@@ -3,6 +3,7 @@ package com.github.leoyakubov.twofactorauth.controller;
 import com.github.leoyakubov.twofactorauth.model.Profile;
 import com.github.leoyakubov.twofactorauth.model.Role;
 import com.github.leoyakubov.twofactorauth.model.User;
+import com.github.leoyakubov.twofactorauth.config.JwtCookieManager;
 import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import com.github.leoyakubov.twofactorauth.payload.LoginRequest;
 import com.github.leoyakubov.twofactorauth.payload.SignUpRequest;
@@ -16,18 +17,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
@@ -47,6 +49,9 @@ class AuthControllerTest {
     @MockitoBean
     private TotpManager totpManager;
 
+    @MockitoBean
+    private JwtCookieManager cookieManager;
+
     @Test
     void signInShouldReturnJwtResponse() throws Exception {
         LoginRequest request = new LoginRequest();
@@ -54,13 +59,16 @@ class AuthControllerTest {
         request.setPassword("secret");
 
         when(userService.loginUser("demo", "secret")).thenReturn(LoginResult.authenticated("jwt-token"));
+        when(cookieManager.createCookie("jwt-token"))
+                .thenReturn(ResponseCookie.from("AUTH_TOKEN", "jwt-token").httpOnly(true).path("/").build());
 
         mockMvc.perform(post("/signin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken", is("jwt-token")))
-                .andExpect(jsonPath("$.mfa", is(false)));
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("AUTH_TOKEN=jwt-token")))
+                .andExpect(jsonPath("$.mfa", is(false)))
+                .andExpect(jsonPath("$.accessToken").doesNotExist());
     }
 
     @Test
@@ -69,14 +77,15 @@ class AuthControllerTest {
         request.setUsername("demo");
         request.setPassword("secret");
 
-        when(userService.loginUser("demo", "secret")).thenReturn(LoginResult.mfaRequired());
+        when(userService.loginUser("demo", "secret")).thenReturn(LoginResult.requiresMfa());
 
         mockMvc.perform(post("/signin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value(nullValue()))
-                .andExpect(jsonPath("$.mfa", is(true)));
+                .andExpect(header().doesNotExist("Set-Cookie"))
+                .andExpect(jsonPath("$.mfa", is(true)))
+                .andExpect(jsonPath("$.accessToken").doesNotExist());
     }
 
     @Test
@@ -98,13 +107,16 @@ class AuthControllerTest {
         request.setCode("123456");
 
         when(userService.verify("demo", "123456")).thenReturn("jwt-token");
+        when(cookieManager.createCookie("jwt-token"))
+                .thenReturn(ResponseCookie.from("AUTH_TOKEN", "jwt-token").httpOnly(true).path("/").build());
 
         mockMvc.perform(post("/verify")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken", is("jwt-token")))
-                .andExpect(jsonPath("$.mfa", is(false)));
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("AUTH_TOKEN=jwt-token")))
+                .andExpect(jsonPath("$.mfa", is(false)))
+                .andExpect(jsonPath("$.accessToken").doesNotExist());
     }
 
     @Test
@@ -137,5 +149,15 @@ class AuthControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.mfa", is(true)))
                 .andExpect(jsonPath("$.secretImageUri", is("data:image/png;base64,qr")));
+    }
+
+    @Test
+    void logoutShouldClearTheCookie() throws Exception {
+        when(cookieManager.clearCookie())
+                .thenReturn(ResponseCookie.from("AUTH_TOKEN", "").httpOnly(true).path("/").maxAge(0).build());
+
+        mockMvc.perform(post("/logout"))
+                .andExpect(status().isNoContent())
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("AUTH_TOKEN=")));
     }
 }

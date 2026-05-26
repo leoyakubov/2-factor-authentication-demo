@@ -4,11 +4,12 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { notification } from "antd";
 import VerifyCode from "./VerifyCode";
-import { verify } from "../util/ApiUtil";
+import { getCurrentUser, verify } from "../util/ApiUtil";
 import { AuthProvider } from "../auth/AuthContext";
 
 jest.mock("../util/ApiUtil", () => ({
   verify: jest.fn(),
+  getCurrentUser: jest.fn(),
 }));
 
 jest.mock("react-router-dom", () => {
@@ -37,8 +38,8 @@ describe("VerifyCode", () => {
   };
 
   beforeEach(() => {
-    sessionStorage.clear();
     jest.clearAllMocks();
+    getCurrentUser.mockRejectedValue({ status: 401 });
   });
 
   afterEach(() => {
@@ -54,11 +55,13 @@ describe("VerifyCode", () => {
       </AuthProvider>
     );
 
-  test("stores the token and navigates home after a valid code", async () => {
+  test("navigates home after a valid code", async () => {
     const user = userEvent.setup();
-    verify.mockResolvedValueOnce({ accessToken: "token-456" });
+    verify.mockResolvedValueOnce({ mfa: false });
 
     renderComponent();
+
+    await screen.findByPlaceholderText("Enter code");
 
     await user.type(screen.getByPlaceholderText("Enter code"), "123456");
     await user.click(screen.getByRole("button", { name: /verify/i }));
@@ -69,7 +72,6 @@ describe("VerifyCode", () => {
         code: "123456",
       })
     );
-    expect(sessionStorage.getItem("accessToken")).toBe("token-456");
     expect(history.push).toHaveBeenCalledWith("/");
   });
 
@@ -79,6 +81,8 @@ describe("VerifyCode", () => {
     verify.mockRejectedValueOnce({ status: 400 });
 
     renderComponent();
+
+    await screen.findByPlaceholderText("Enter code");
 
     await user.type(screen.getByPlaceholderText("Enter code"), "000000");
     await user.click(screen.getByRole("button", { name: /verify/i }));
@@ -93,6 +97,9 @@ describe("VerifyCode", () => {
   test("redirects to login when the username is missing", () => {
     renderComponent({});
 
-    expect(screen.getByTestId("redirect")).toHaveAttribute("data-path", "/login");
+    return waitFor(() => {
+      expect(screen.getByTestId("redirect")).toHaveAttribute("data-path", "/login");
+      expect(getCurrentUser).toHaveBeenCalled();
+    });
   });
 });

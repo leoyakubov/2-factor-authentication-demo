@@ -43,6 +43,8 @@ public class User {
         this.active = user.active;
         this.userProfile = user.userProfile;
         this.roles = user.roles;
+        this.mfa = user.mfa;
+        this.secret = user.secret;
     }
 
     public User(String username, String password, String email) {

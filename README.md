@@ -1,6 +1,6 @@
 # two-factor-authentication-demo
 
-A small full-stack demo showing username/password sign-up and login with optional two-factor authentication, QR-code enrollment, TOTP verification, and JWT-backed session access.
+A small full-stack demo showing username/password sign-up and login with optional two-factor authentication, QR-code enrollment, TOTP verification, and JWT-backed session access through an httpOnly cookie.
 
 Default local URLs:
 
@@ -34,7 +34,7 @@ It is intentionally demo-focused rather than production hardened, but it is stru
 - Two-factor authentication (2FA): a login flow that asks for two kinds of proof, usually a password plus a one-time code from an authenticator app
 - QR-code enrollment: the step where the app shows a QR code that links your account to an authenticator app
 - TOTP: time-based one-time password, meaning a 6-digit code that changes every few seconds
-- JWT-backed session access: after login, the backend returns a signed token and the frontend sends it on future requests in the `Authorization` header
+- JWT-backed session access: after login, the backend stores a signed token in an httpOnly cookie and the browser sends it automatically on future requests
 
 ## What Is Implemented
 
@@ -45,8 +45,40 @@ It is intentionally demo-focused rather than production hardened, but it is stru
 - Require a second step when MFA is enabled
 - Verify the 6-digit authenticator code on the backend
 - Return a signed JWT after successful login or MFA verification
-- Use the JWT to load the protected profile page
-- Support logout by clearing the stored access token
+- Store the JWT in an httpOnly cookie instead of JavaScript-readable storage
+- Use the cookie-backed JWT to load the protected profile page
+- Support logout by clearing the session cookie
+
+## Auth Flow
+
+The demo uses a cookie-backed JWT flow for browser sessions:
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant B as Backend
+
+    U->>F: Sign in with username/password
+    F->>B: POST /signin
+    B->>B: Verify credentials
+    B-->>F: 200 OK + Set-Cookie: httpOnly JWT
+    F->>B: GET /users/me
+    Note over F,B: Browser sends the cookie automatically
+    B->>B: Validate JWT signature + expiry
+    B-->>F: User profile
+
+    U->>F: Click logout
+    F->>B: POST /logout
+    B-->>F: 204 No Content + cleared cookie
+```
+
+What this means:
+
+- The backend still stays stateless
+- The browser keeps the token in an httpOnly cookie
+- JavaScript cannot read the JWT directly
+- The frontend only checks whether the current cookie-backed session is valid
 
 ## MFA App
 
@@ -388,7 +420,7 @@ This is a good final check before a demo or commit.
 ## Troubleshooting
 
 - If `8081` is already in use, stop the old backend process and start it again
-- If `/me` returns `401`, clear the browser token once and sign in again
+- If `/me` returns `401`, sign out, clear the browser site data or cookies once, and sign in again
 - If frontend tests complain about missing packages, run `cd frontend && npm install`
 - If the frontend build fails on warnings, run the test/build scripts from the repo root so the environment is set up consistently
 - If the authenticator code fails, make sure the QR code was scanned into the authenticator app for the same user account

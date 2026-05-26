@@ -30,7 +30,7 @@ const VerifyCode = (props) => {
 
     verify(verifyRequest)
       .then((response) => {
-        auth.login(response.accessToken);
+        auth.login();
         props.history.push("/");
       })
       .catch((error) => {

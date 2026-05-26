@@ -1,5 +1,3 @@
-import { getAccessToken } from "./authStorage";
-
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8081";
 
 const parseBody = async (response) => {
@@ -17,20 +15,16 @@ const parseBody = async (response) => {
 };
 
 const request = async (options) => {
-  const headers = new Headers();
+  const headers = new Headers(options.headers || {});
 
-  if (options.setContentType !== false) {
+  if (options.setContentType !== false && options.body) {
     headers.append("Content-Type", "application/json");
-  }
-
-  const accessToken = getAccessToken();
-  if (accessToken) {
-    headers.append("Authorization", `Bearer ${accessToken}`);
   }
 
   const response = await fetch(options.url, {
     ...options,
     headers,
+    credentials: "include",
   });
   const body = await parseBody(response);
 
@@ -69,12 +63,15 @@ export function signup(signupRequest) {
 }
 
 export function getCurrentUser() {
-  if (!getAccessToken()) {
-    return Promise.reject(new Error("No access token set."));
-  }
-
   return request({
     url: `${API_BASE_URL}/users/me`,
     method: "GET",
+  });
+}
+
+export function logout() {
+  return request({
+    url: `${API_BASE_URL}/logout`,
+    method: "POST",
   });
 }

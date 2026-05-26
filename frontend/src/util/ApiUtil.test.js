@@ -1,21 +1,20 @@
-import { getCurrentUser, login } from "./ApiUtil";
+import { getCurrentUser, login, logout } from "./ApiUtil";
 
 describe("ApiUtil", () => {
   beforeEach(() => {
     global.fetch = jest.fn();
-    sessionStorage.clear();
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  test("login posts credentials to the signin endpoint", async () => {
+  test("login posts credentials to the signin endpoint with cookies enabled", async () => {
     fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       text: async () =>
-        JSON.stringify({ accessToken: "token-123", mfa: false }),
+        JSON.stringify({ mfa: false }),
     });
 
     const response = await login({ username: "demo", password: "secret" });
@@ -25,17 +24,14 @@ describe("ApiUtil", () => {
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ username: "demo", password: "secret" }),
+        credentials: "include",
       })
     );
-    expect(response).toEqual({ accessToken: "token-123", mfa: false });
+    expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBeNull();
+    expect(response).toEqual({ mfa: false });
   });
 
-  test("getCurrentUser rejects when there is no access token", async () => {
-    await expect(getCurrentUser()).rejects.toThrow("No access token set.");
-  });
-
-  test("getCurrentUser sends the bearer token when one is available", async () => {
-    sessionStorage.setItem("accessToken", "token-abc");
+  test("getCurrentUser requests the current profile with cookies enabled", async () => {
     fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -50,11 +46,30 @@ describe("ApiUtil", () => {
       expect.objectContaining({
         method: "GET",
         headers: expect.any(Headers),
+        credentials: "include",
       })
     );
-    expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBe(
-      "Bearer token-abc"
-    );
+    expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBeNull();
     expect(response).toEqual({ username: "demo", name: "Demo User" });
+  });
+
+  test("logout posts to the logout endpoint with cookies enabled", async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 204,
+      text: async () => "",
+    });
+
+    const response = await logout();
+
+    expect(fetch).toHaveBeenCalledWith(
+      "http://localhost:8081/logout",
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+      })
+    );
+    expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBeNull();
+    expect(response).toEqual({});
   });
 });

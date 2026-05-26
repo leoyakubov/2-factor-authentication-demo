@@ -186,6 +186,17 @@ class UserServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> userService.verify("missing", "123456"));
     }
 
+    @Test
+    void userCopyConstructorShouldPreserveMfaState() {
+        User user = buildUser("demo", "demo@example.com", "secret", true);
+        user.setSecret("mfa-secret");
+
+        User copied = new User(user);
+
+        assertTrue(copied.isMfa());
+        assertEquals("mfa-secret", copied.getSecret());
+    }
+
     private static User buildUser(String username, String email, String password, boolean mfa) {
         return User.builder()
                 .username(username)

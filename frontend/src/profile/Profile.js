@@ -14,11 +14,16 @@ const Profile = (props) => {
   const auth = useAuth();
 
   const logout = useCallback(() => {
-    auth.logout();
-    props.history.push("/login");
+    auth.logout().finally(() => {
+      props.history.push("/login");
+    });
   }, [auth, props.history]);
 
   useEffect(() => {
+    if (auth.isChecking) {
+      return;
+    }
+
     if (!auth.isAuthenticated) {
       props.history.push("/login");
       return;
@@ -36,7 +41,7 @@ const Profile = (props) => {
 
         setErrorMessage(getProfileErrorMessage(error));
       });
-  }, [auth.isAuthenticated, logout, props.history]);
+  }, [auth.isAuthenticated, auth.isChecking, logout, props.history]);
 
   const getInitials = () => {
     const label = currentUser.name || currentUser.username || "User";

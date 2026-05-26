@@ -24,4 +24,15 @@ public class JwtConfigProperties {
 
     @NotBlank
     private String secret;
+
+    @NotBlank
+    private String cookieName;
+
+    @NotBlank
+    private String cookiePath;
+
+    private boolean cookieSecure;
+
+    @NotBlank
+    private String cookieSameSite;
 }

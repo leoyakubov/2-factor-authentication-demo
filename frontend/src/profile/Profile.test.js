@@ -3,11 +3,12 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import Profile from "./Profile";
-import { getCurrentUser } from "../util/ApiUtil";
+import { getCurrentUser, logout } from "../util/ApiUtil";
 import { AuthProvider } from "../auth/AuthContext";
 
 jest.mock("../util/ApiUtil", () => ({
   getCurrentUser: jest.fn(),
+  logout: jest.fn(),
 }));
 
 describe("Profile", () => {
@@ -16,7 +17,6 @@ describe("Profile", () => {
   };
 
   beforeEach(() => {
-    sessionStorage.clear();
     jest.clearAllMocks();
   });
 
@@ -29,7 +29,9 @@ describe("Profile", () => {
       </AuthProvider>
     );
 
-  test("redirects to login when there is no access token", async () => {
+  test("redirects to login when the session check fails", async () => {
+    getCurrentUser.mockRejectedValueOnce({ status: 401 });
+
     renderComponent();
 
     await waitFor(() => {
@@ -39,12 +41,14 @@ describe("Profile", () => {
 
   test("renders the current user and logs out cleanly", async () => {
     const user = userEvent.setup();
-    sessionStorage.setItem("accessToken", "token-123");
-    getCurrentUser.mockResolvedValueOnce({
-      name: "Galileo Fin",
-      username: "galileo",
-      profilePicture: undefined,
-    });
+    getCurrentUser
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({
+        name: "Galileo Fin",
+        username: "galileo",
+        profilePicture: undefined,
+      });
+    logout.mockResolvedValueOnce({});
 
     renderComponent();
 
@@ -54,19 +58,20 @@ describe("Profile", () => {
 
     await user.click(screen.getByRole("button", { name: /logout/i }));
 
-    expect(sessionStorage.getItem("accessToken")).toBeNull();
+    expect(logout).toHaveBeenCalled();
     expect(history.push).toHaveBeenCalledWith("/login");
   });
 
-  test("clears the token when the current session is unauthorized", async () => {
-    sessionStorage.setItem("accessToken", "token-123");
-    getCurrentUser.mockRejectedValueOnce({ status: 401 });
+  test("shows an error message when the profile request fails", async () => {
+    getCurrentUser
+      .mockResolvedValueOnce({})
+      .mockRejectedValueOnce({ status: 500 });
 
     renderComponent();
 
-    await waitFor(() => {
-      expect(sessionStorage.getItem("accessToken")).toBeNull();
-      expect(history.push).toHaveBeenCalledWith("/login");
-    });
+    expect(await screen.findByText("Profile load failed")).toBeInTheDocument();
+    expect(
+      screen.getByText("We couldn't load your profile right now. Please try again.")
+    ).toBeInTheDocument();
   });
 });
