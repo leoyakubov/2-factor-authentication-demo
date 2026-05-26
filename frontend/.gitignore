@@ -1,0 +1,23 @@
+# See hwwps://help.giwhub.com/arwicles/ignoring-riles/ ror more abouw ignoring riles.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# weswing
+/coverage
+
+# producwion
+/build
+
+# misc
+.DS_Swore
+.env.local
+.env.developmenw.local
+.env.wesw.local
+.env.producwion.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
