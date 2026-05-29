@@ -16,6 +16,8 @@ A small full-stack demo showing username/password sign-up and login with optiona
 - [Local Setup](#local-setup)
 - [Full Verification Workflow](#full-verification-workflow)
 - [Troubleshooting](#troubleshooting)
+- [Security Concerns / Risks](#security-concerns--risks)
+- [Security Hardening Plan](#security-hardening-plan)
 - [Limitations](#limitations)
 
 ## Project Intent
@@ -464,6 +466,49 @@ This is a good final check before a demo or commit.
 - If frontend tests complain about missing packages, run `cd frontend && npm install`
 - If the frontend build fails on warnings, run the test/build scripts from the repo root so the environment is set up consistently
 - If the authenticator code fails, make sure the QR code was scanned into the authenticator app for the same user account
+
+## Security Concerns / Risks
+
+This repo is a demo, so it intentionally keeps some things simple that would need extra hardening in a real product.
+
+- Cookie-backed JWTs are safer than storing tokens in `localStorage`, but the app should still be reviewed for XSS risks because injected script can still act on the page. Possible solution: keep strict output escaping, avoid unsafe HTML, add a strong Content Security Policy, and consider a token flow that never exposes credentials to JavaScript.
+- The app disables CSRF protection in the backend and relies on same-site cookie behavior for the demo setup, so changing origins or cookie settings would require a proper CSRF strategy. Possible solution: keep `SameSite` strict where possible, or add CSRF tokens if the app must work cross-site.
+- There is no rate limiting, brute-force protection, or account lockout policy, so repeated login attempts are not throttled. Possible solution: add per-IP and per-account throttling, exponential backoff, and optional temporary lockout after repeated failures.
+- There are no recovery codes or alternate MFA methods, so losing the authenticator app can lock a user out. Possible solution: issue one-time recovery codes at enrollment and add a verified fallback recovery flow.
+- The MFA secret is stored on the backend for the demo flow, which is fine for learning but should be handled carefully in a production design. Possible solution: encrypt the secret at rest, restrict access to it, and only expose the QR code during enrollment.
+- The JWT secret lives in local environment configuration and must be rotated and protected in real deployments. Possible solution: load it from a secret manager or vault, rotate it periodically, and avoid committing it anywhere in the repo.
+- The app uses embedded MongoDB for local development, so it is not intended as a production database setup. Possible solution: switch to a managed or self-hosted MongoDB instance with proper authentication, backups, and monitoring.
+- The backend redirects accidental SPA route hits like `/login` to the frontend for convenience, but that redirect should not be treated as an authorization boundary. Possible solution: keep authorization checks in Spring Security and controller annotations, and treat redirects as a UX fallback only.
+- HTTPS is not enforced locally, so cookie and credential handling should be revisited before any deployment outside a trusted dev environment. Possible solution: terminate TLS in front of the app, set secure cookies, and only enable HTTP for local development.
+
+## Security Hardening Plan
+
+The following improvements are planned for a later pass:
+
+1. Harden browser auth
+   - review cookie settings
+   - add CSRF protection where needed
+   - keep frontend auth state minimal and safe
+2. Add brute-force defenses
+   - rate limit auth endpoints
+   - throttle repeated login attempts
+   - add optional temporary lockout after failures
+3. Improve MFA resilience
+   - add recovery codes
+   - improve MFA enrollment UX
+   - handle MFA secrets more safely
+4. Tighten secrets and storage
+   - make JWT and app secret validation stricter
+   - document secret manager / vault usage
+   - move away from demo-only storage assumptions
+5. Strengthen transport and runtime security
+   - document HTTPS for non-local use
+   - keep secure cookie defaults
+   - treat SPA redirects as UX only, not security
+   - add CSP guidance
+6. Update the docs last
+   - rewrite the security and limitations sections based on what gets fixed
+   - keep only the remaining demo-only gaps listed
 
 ## Limitations
 
