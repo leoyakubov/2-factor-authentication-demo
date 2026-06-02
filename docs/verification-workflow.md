@@ -1,0 +1,208 @@
+# Full Verification Workflow
+
+Use this checklist to verify the full project from a clean machine.
+
+## 1. Check prerequisites
+
+Make sure these are installed:
+
+- Java 21 or compatible
+- Node.js
+- npm
+
+You can verify them with:
+
+```powershell
+java -version
+node -v
+npm -v
+```
+
+## 2. Prepare environment files
+
+The helper scripts create `.env` files from the example files if they are missing, but it is still a good idea to inspect them first.
+
+Backend:
+
+- `backend/.env.example`
+- `backend/.env`
+
+Frontend:
+
+- `frontend/.env.example`
+- `frontend/.env`
+
+If you want to create them manually:
+
+```powershell
+copy backend\.env.example backend\.env
+copy frontend\.env.example frontend\.env
+```
+
+Set `JWT_SECRET` in `backend/.env` to a long random value if you are not using the default demo value.
+
+## 3. Install frontend dependencies
+
+```powershell
+cd frontend
+npm install
+cd ..
+```
+
+The helper scripts also install dependencies automatically if `node_modules` is missing.
+
+## 4. Run backend tests
+
+Windows:
+
+- `scripts/test-backend.ps1`
+
+Unix/macOS:
+
+- `scripts/test-backend.sh`
+
+Expected result:
+
+- Maven finishes with `BUILD SUCCESS`
+- The Spring context test passes
+
+If you prefer a direct command:
+
+```powershell
+cd backend
+.\mvnw.cmd test
+```
+
+## 5. Run frontend tests
+
+Windows:
+
+- `scripts/test-frontend.ps1`
+
+Unix/macOS:
+
+- `scripts/test-frontend.sh`
+
+Expected result:
+
+- Jest runs once and exits
+- The current frontend tests pass
+
+If you prefer a direct command:
+
+```powershell
+cd frontend
+npm test -- --watchAll=false
+```
+
+## 6. Build the frontend
+
+This is optional, but it is a good final validation step.
+
+Windows:
+
+- `scripts/build-frontend.ps1`
+
+Unix/macOS:
+
+- `scripts/build-frontend.sh`
+
+Expected result:
+
+- Vite creates a production `dist` folder
+- The build completes without lint or compilation errors
+
+If you prefer a direct command:
+
+```powershell
+cd frontend
+npm run build
+```
+
+## 7. Start the backend
+
+Open a new terminal window and run:
+
+Windows:
+
+- `scripts/run-backend.ps1`
+
+Unix/macOS:
+
+- `scripts/run-backend.sh`
+
+Expected result:
+
+- Spring Boot starts successfully
+- The API listens on `http://localhost:8081`
+- Embedded Mongo starts automatically for the demo
+
+If you prefer a direct command:
+
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+
+## 8. Start the frontend
+
+Open another terminal window and run:
+
+Windows:
+
+- `scripts/run-frontend.ps1`
+
+Unix/macOS:
+
+- `scripts/run-frontend.sh`
+
+Expected result:
+
+- React starts successfully
+- The app opens on `http://localhost:3000`
+
+If you prefer a direct command:
+
+```powershell
+cd frontend
+npm start
+```
+
+## 9. Smoke test the UI flow
+
+1. Open the app in the browser.
+2. Go to the signup screen.
+3. Create a new user.
+4. If MFA is enabled, stay on the signup screen and confirm the success message and QR code are shown.
+5. Click the `Login` button to open the login form.
+6. Sign in with the account you just created.
+7. If MFA is enabled, enter the 6-digit code from your authenticator app.
+8. Confirm the profile page loads and shows the avatar and logout button.
+9. Click `Logout` and confirm you are returned to the login screen.
+
+## 10. Verify error handling
+
+Try a few failure cases on purpose:
+
+- Leave a required field blank and submit
+- Enter a wrong password
+- Try a login for a user that does not exist
+- Enter an invalid MFA code, if MFA is enabled
+
+Expected result:
+
+- The UI shows a user-friendly error message
+- The backend logs include a helpful message for the failure
+
+## 11. Optional clean restart check
+
+If you want to verify the app starts cleanly from scratch:
+
+1. Stop both frontend and backend terminals
+2. Close any browser tab that is still open to the app
+3. Start the backend again
+4. Start the frontend again
+5. Repeat the smoke test
+
+This is a good final check before a demo or commit.
+
