@@ -13,6 +13,7 @@
     "react-router-dom": "^5.3.4"
   },
   "scripts": {
+    "postinstall": "node ./scripts/fix-rc-table.mjs",
     "start": "vite --configLoader runner --port 3000 --strictPort",
     "build": "vite build --configLoader runner",
     "build:ci": "vite build --configLoader runner",

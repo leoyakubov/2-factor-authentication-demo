@@ -9,6 +9,7 @@
 # production
 /build
 /dist
+/.vite-cache
 
 # misc
 .DS_Store
