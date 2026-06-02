@@ -45,6 +45,7 @@ public class User {
         this.roles = user.roles;
         this.mfa = user.mfa;
         this.secret = user.secret;
+        this.recoveryCodes = user.recoveryCodes == null ? new HashSet<>() : new HashSet<>(user.recoveryCodes);
     }
 
     public User(String username, String password, String email) {
@@ -86,4 +87,7 @@ public class User {
     private Set<Role> roles;
     private boolean mfa;
     private String secret;
+    @JsonIgnore
+    @Builder.Default
+    private Set<String> recoveryCodes = new HashSet<>();
 }

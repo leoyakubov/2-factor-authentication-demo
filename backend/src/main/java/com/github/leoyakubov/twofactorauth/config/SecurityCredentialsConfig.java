@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -50,19 +51,38 @@ public class SecurityCredentialsConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authz) -> authz
                 .requestMatchers("/error").permitAll()
-                .requestMatchers(HttpMethod.GET, "/", "/login", "/signup", "/verify", "/qrcode").permitAll()
+                .requestMatchers(HttpMethod.GET, "/", "/login", "/signup", "/verify", "/qrcode", "/csrf").permitAll()
                 .requestMatchers("/signin", "/verify", "/logout", "/users").permitAll()
                 .anyRequest().authenticated()
         );
 
         http.cors(Customizer.withDefaults());
-        http.csrf(AbstractHttpConfigurer::disable);
+        http.csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository()));
         http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.exceptionHandling(exConf -> exConf.authenticationEntryPoint((req, resp, ex) ->
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")));
+        http.headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                        "default-src 'self'; " +
+                                "base-uri 'self'; " +
+                                "form-action 'self'; " +
+                                "frame-ancestors 'none'; " +
+                                "img-src 'self' data:; " +
+                                "script-src 'self'; " +
+                                "style-src 'self' 'unsafe-inline'; " +
+                                "connect-src 'self' http://localhost:3000 http://localhost:8081"))
+                .referrerPolicy(referrer -> referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
+        );
         http.addFilterBefore(new JwtTokenAuthenticationFilter(cookieManager, tokenProvider, userService),
                 UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    @Bean
+    public CookieCsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repository.setCookiePath("/");
+        return repository;
     }
 
     @Bean

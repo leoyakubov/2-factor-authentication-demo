@@ -10,6 +10,7 @@ import com.github.leoyakubov.twofactorauth.model.Role;
 import com.github.leoyakubov.twofactorauth.model.User;
 import com.github.leoyakubov.twofactorauth.repository.UserRepository;
 import com.github.leoyakubov.twofactorauth.payload.LoginResult;
+import com.github.leoyakubov.twofactorauth.payload.RegistrationResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,6 +53,12 @@ class UserServiceTest {
     @Mock
     private TotpManager totpManager;
 
+    @Mock
+    private RecoveryCodeManager recoveryCodeManager;
+
+    @Mock
+    private AuthAttemptLimiter authAttemptLimiter;
+
     @Captor
     private ArgumentCaptor<Authentication> authenticationCaptor;
 
@@ -59,17 +66,21 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(passwordEncoder, userRepository, authenticationManager, jwtTokenManager, totpManager);
+        userService = new UserService(passwordEncoder, userRepository, authenticationManager, jwtTokenManager,
+                totpManager, recoveryCodeManager, authAttemptLimiter);
     }
 
     @Test
     void registerUserShouldEncodePasswordAndPersistSecretForMfa() {
         User user = buildUser("demo", "demo@example.com", "secret", true);
+        java.util.List<String> recoveryCodes = java.util.List.of("ABCD-EFGH");
 
         when(userRepository.existsByUsername("demo")).thenReturn(false);
         when(userRepository.existsByEmail("demo@example.com")).thenReturn(false);
         when(passwordEncoder.encode("secret")).thenReturn("encoded-secret");
         when(totpManager.generateSecret()).thenReturn("mfa-secret");
+        when(recoveryCodeManager.generateRecoveryCodes(8)).thenReturn(recoveryCodes);
+        when(recoveryCodeManager.hashCodes(recoveryCodes)).thenReturn(Set.of("hashed-recovery"));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         User saved = userService.registerUser(user, Role.USER);
@@ -78,6 +89,7 @@ class UserServiceTest {
         assertEquals("mfa-secret", saved.getSecret());
         assertTrue(saved.isActive());
         assertEquals(Set.of(Role.USER), saved.getRoles());
+        assertEquals(Set.of("hashed-recovery"), saved.getRecoveryCodes());
         verify(userRepository).save(any(User.class));
     }
 
@@ -175,8 +187,25 @@ class UserServiceTest {
 
         when(userRepository.findByUsername("demo")).thenReturn(Optional.of(user));
         when(totpManager.verifyCode("000000", "mfa-secret")).thenReturn(false);
+        when(recoveryCodeManager.consumeRecoveryCode(user, "000000")).thenReturn(false);
 
         assertThrows(BadRequestException.class, () -> userService.verify("demo", "000000"));
+    }
+
+    @Test
+    void verifyShouldAcceptRecoveryCodeAndConsumeIt() {
+        User user = buildUser("demo", "demo@example.com", "encoded-secret", true);
+        user.setSecret("mfa-secret");
+
+        when(userRepository.findByUsername("demo")).thenReturn(Optional.of(user));
+        when(totpManager.verifyCode("ABCD-EFGH", "mfa-secret")).thenReturn(false);
+        when(recoveryCodeManager.consumeRecoveryCode(user, "ABCD-EFGH")).thenReturn(true);
+        when(jwtTokenManager.generateToken(any())).thenReturn("jwt-token");
+
+        String token = userService.verify("demo", "ABCD-EFGH");
+
+        assertEquals("jwt-token", token);
+        verify(userRepository).save(user);
     }
 
     @Test

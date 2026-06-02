@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import com.github.leoyakubov.twofactorauth.exception.TooManyRequestsException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -57,6 +58,13 @@ public class ApiExceptionHandler {
                                                                HttpServletRequest request) {
         log.warn("validation failed on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, "Please check the form fields and try again.");
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<Map<String, String>> handleTooManyRequests(TooManyRequestsException ex,
+                                                                      HttpServletRequest request) {
+        log.warn("rate limit exceeded on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        return build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

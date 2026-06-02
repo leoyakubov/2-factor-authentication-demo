@@ -10,16 +10,20 @@ import com.github.leoyakubov.twofactorauth.model.User;
 import com.github.leoyakubov.twofactorauth.payload.JwtAuthenticationResponse;
 import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import com.github.leoyakubov.twofactorauth.payload.LoginRequest;
+import com.github.leoyakubov.twofactorauth.payload.RegistrationResult;
 import com.github.leoyakubov.twofactorauth.payload.SignUpRequest;
 import com.github.leoyakubov.twofactorauth.payload.SignupResponse;
 import com.github.leoyakubov.twofactorauth.payload.VerifyCodeRequest;
 import com.github.leoyakubov.twofactorauth.service.TotpManager;
 import com.github.leoyakubov.twofactorauth.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,9 +45,11 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
+                                                                       HttpServletRequest request) {
         log.info("sign-in attempt for {}", loginRequest.getUsername());
-        LoginResult result = userService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
+        LoginResult result = userService.loginUser(loginRequest.getUsername(), loginRequest.getPassword(),
+                request.getRemoteAddr());
         log.info("sign-in completed for {} (mfa={})", loginRequest.getUsername(), result.mfaRequired());
         if (result.mfaRequired()) {
             return ResponseEntity.ok(new JwtAuthenticationResponse(true));
@@ -55,9 +61,11 @@ public class AuthController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<JwtAuthenticationResponse> verifyCode(@Valid @RequestBody VerifyCodeRequest verifyCodeRequest) {
+    public ResponseEntity<JwtAuthenticationResponse> verifyCode(@Valid @RequestBody VerifyCodeRequest verifyCodeRequest,
+                                                                 HttpServletRequest request) {
         log.info("mfa verify attempt for {}", verifyCodeRequest.getUsername());
-        String token = userService.verify(verifyCodeRequest.getUsername(), verifyCodeRequest.getCode());
+        String token = userService.verify(verifyCodeRequest.getUsername(), verifyCodeRequest.getCode(),
+                request.getRemoteAddr());
         log.info("mfa verify completed for {}", verifyCodeRequest.getUsername());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookieManager.createCookie(token).toString())
@@ -65,7 +73,8 @@ public class AuthController {
     }
 
     @PostMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SignupResponse> createUser(@Valid @RequestBody SignUpRequest payload) {
+    public ResponseEntity<SignupResponse> createUser(@Valid @RequestBody SignUpRequest payload,
+                                                     HttpServletRequest request) {
         log.info("creating user {}", payload.getUsername());
 
         User user = User
@@ -80,14 +89,15 @@ public class AuthController {
                 .mfa(payload.isMfa())
                 .build();
 
-        User saved;
+        RegistrationResult registrationResult;
         try {
-             saved = userService.registerUser(user, Role.USER);
+             registrationResult = userService.registerUser(user, Role.USER, request.getRemoteAddr());
         } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
             log.warn("signup rejected for {}: {}", payload.getUsername(), e.getMessage());
             throw new BadRequestException(e.getMessage());
         }
 
+        User saved = registrationResult.user();
         log.info("user created {} (mfa={})", saved.getUsername(), saved.isMfa());
 
         URI location = ServletUriComponentsBuilder
@@ -98,7 +108,8 @@ public class AuthController {
                 .created(location)
                 .body(new SignupResponse(
                         saved.isMfa(),
-                        saved.isMfa() ? totpManager.getUriForImage(saved.getSecret()) : null));
+                        saved.isMfa() ? totpManager.getUriForImage(saved.getSecret()) : null,
+                        registrationResult.recoveryCodes()));
     }
 
     @PostMapping("/logout")
@@ -107,5 +118,10 @@ public class AuthController {
         return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, cookieManager.clearCookie().toString())
                 .build();
+    }
+
+    @GetMapping("/csrf")
+    public ResponseEntity<Void> csrf(CsrfToken token) {
+        return ResponseEntity.noContent().build();
     }
 }

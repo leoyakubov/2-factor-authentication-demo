@@ -6,6 +6,7 @@ import com.github.leoyakubov.twofactorauth.model.User;
 import com.github.leoyakubov.twofactorauth.config.JwtCookieManager;
 import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import com.github.leoyakubov.twofactorauth.payload.LoginRequest;
+import com.github.leoyakubov.twofactorauth.payload.RegistrationResult;
 import com.github.leoyakubov.twofactorauth.payload.SignUpRequest;
 import com.github.leoyakubov.twofactorauth.payload.VerifyCodeRequest;
 import com.github.leoyakubov.twofactorauth.service.TotpManager;
@@ -25,6 +26,7 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -58,7 +60,7 @@ class AuthControllerTest {
         request.setUsername("demo");
         request.setPassword("secret");
 
-        when(userService.loginUser("demo", "secret")).thenReturn(LoginResult.authenticated("jwt-token"));
+        when(userService.loginUser(eq("demo"), eq("secret"), anyString())).thenReturn(LoginResult.authenticated("jwt-token"));
         when(cookieManager.createCookie("jwt-token"))
                 .thenReturn(ResponseCookie.from("AUTH_TOKEN", "jwt-token").httpOnly(true).path("/").build());
 
@@ -77,7 +79,7 @@ class AuthControllerTest {
         request.setUsername("demo");
         request.setPassword("secret");
 
-        when(userService.loginUser("demo", "secret")).thenReturn(LoginResult.requiresMfa());
+        when(userService.loginUser(eq("demo"), eq("secret"), anyString())).thenReturn(LoginResult.requiresMfa());
 
         mockMvc.perform(post("/signin")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -106,7 +108,7 @@ class AuthControllerTest {
         request.setUsername("demo");
         request.setCode("123456");
 
-        when(userService.verify("demo", "123456")).thenReturn("jwt-token");
+        when(userService.verify(eq("demo"), eq("123456"), anyString())).thenReturn("jwt-token");
         when(cookieManager.createCookie("jwt-token"))
                 .thenReturn(ResponseCookie.from("AUTH_TOKEN", "jwt-token").httpOnly(true).path("/").build());
 
@@ -140,7 +142,8 @@ class AuthControllerTest {
                 .secret("mfa-secret")
                 .build();
 
-        when(userService.registerUser(any(User.class), eq(Role.USER))).thenReturn(saved);
+        when(userService.registerUser(any(User.class), eq(Role.USER), anyString())).thenReturn(
+                new RegistrationResult(saved, java.util.List.of("ABCD-EFGH")));
         when(totpManager.getUriForImage("mfa-secret")).thenReturn("data:image/png;base64,qr");
 
         mockMvc.perform(post("/users")
@@ -148,7 +151,8 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.mfa", is(true)))
-                .andExpect(jsonPath("$.secretImageUri", is("data:image/png;base64,qr")));
+                .andExpect(jsonPath("$.secretImageUri", is("data:image/png;base64,qr")))
+                .andExpect(jsonPath("$.recoveryCodes[0]", is("ABCD-EFGH")));
     }
 
     @Test

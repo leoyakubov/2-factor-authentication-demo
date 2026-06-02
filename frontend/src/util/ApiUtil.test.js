@@ -3,9 +3,11 @@ import { getCurrentUser, login, logout } from "./ApiUtil";
 describe("ApiUtil", () => {
   beforeEach(() => {
     global.fetch = jest.fn();
+    document.cookie = "XSRF-TOKEN=test-xsrf";
   });
 
   afterEach(() => {
+    document.cookie = "XSRF-TOKEN=; Max-Age=0";
     jest.restoreAllMocks();
   });
 
@@ -28,6 +30,7 @@ describe("ApiUtil", () => {
       })
     );
     expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBeNull();
+    expect(fetch.mock.calls[0][1].headers.get("X-XSRF-TOKEN")).toBe("test-xsrf");
     expect(response).toEqual({ mfa: false });
   });
 
@@ -70,6 +73,7 @@ describe("ApiUtil", () => {
       })
     );
     expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBeNull();
+    expect(fetch.mock.calls[0][1].headers.get("X-XSRF-TOKEN")).toBe("test-xsrf");
     expect(response).toEqual({});
   });
 });

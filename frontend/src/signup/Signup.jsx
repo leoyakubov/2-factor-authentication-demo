@@ -11,6 +11,7 @@ const Signup = (props) => {
   const [loading, setLoading] = useState(false);
   const [created, setCreated] = useState(false);
   const [qrImageUrl, setQrImageUrl] = useState();
+  const [recoveryCodes, setRecoveryCodes] = useState([]);
   const [errorMessage, setErrorMessage] = useState();
   const auth = useAuth();
 
@@ -23,10 +24,12 @@ const Signup = (props) => {
   const onFinish = (values) => {
     setLoading(true);
     setErrorMessage(undefined);
+    setRecoveryCodes([]);
     signup(values)
       .then((response) => {
         setCreated(true);
         setQrImageUrl(response.mfa ? response.secretImageUri : undefined);
+        setRecoveryCodes(response.recoveryCodes || []);
       })
       .catch((error) => {
         setErrorMessage(getSignUpErrorMessage(error));
@@ -55,6 +58,30 @@ const Signup = (props) => {
                 src={qrImageUrl}
                 alt="Two-factor authentication QR code"
                 style={{ maxWidth: "100%", marginBottom: 16 }}
+              />
+            </div>
+          ) : null}
+          {recoveryCodes.length > 0 ? (
+            <div style={{ marginBottom: 16 }}>
+              <Alert
+                type="info"
+                showIcon
+                message="Save your recovery codes"
+                description={
+                  <div>
+                    <p style={{ marginBottom: 8 }}>
+                      Keep these codes in a safe place. Each code can be used once
+                      if you lose access to your authenticator app.
+                    </p>
+                    <ul style={{ paddingLeft: 20, marginBottom: 0 }}>
+                      {recoveryCodes.map((code) => (
+                        <li key={code}>
+                          <code>{code}</code>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                }
               />
             </div>
           ) : null}
