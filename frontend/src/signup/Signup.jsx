@@ -1,25 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Alert, Form, Input, Button, Checkbox } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { DingtalkOutlined } from "@ant-design/icons";
-import { signup } from "../util/ApiUtil";
-import { getSignUpErrorMessage } from "../util/authErrors";
+import { signup } from "../shared/api/apiClient";
+import { getSignUpErrorMessage } from "../shared/auth/authErrors";
 import { useAuth } from "../auth/AuthContext";
 import "./Signup.css";
 
-const Signup = (props) => {
+const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [created, setCreated] = useState(false);
   const [qrImageUrl, setQrImageUrl] = useState();
   const [recoveryCodes, setRecoveryCodes] = useState([]);
   const [errorMessage, setErrorMessage] = useState();
   const auth = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!auth.isChecking && auth.isAuthenticated) {
-      props.history.push("/");
+      navigate("/", { replace: true });
     }
-  }, [auth.isAuthenticated, auth.isChecking, props.history]);
+  }, [auth.isAuthenticated, auth.isChecking, navigate]);
 
   const onFinish = (values) => {
     setLoading(true);
@@ -90,7 +91,7 @@ const Signup = (props) => {
             shape="round"
             size="large"
             block
-            onClick={() => props.history.push("/login")}
+            onClick={() => navigate("/login")}
           >
             Login
           </Button>

@@ -9,8 +9,8 @@ Default local URL:
 ## Local Setup
 
 1. Copy [`.env.example`](./.env.example) to `.env` if you want to override the backend URL.
-2. Set `REACT_APP_API_BASE_URL` to the backend URL you want to use.
-3. Run `npm start` or use the helper script from the repo root.
+2. Set `VITE_API_BASE_URL` to the backend URL you want to use.
+3. Run `npm run dev` or use the helper script from the repo root.
 
 The default backend URL is `http://localhost:8081`.
 
@@ -22,6 +22,7 @@ The default backend URL is `http://localhost:8081`.
 
 ## Available npm Scripts
 
+- `npm run dev`
 - `npm start`
 - `npm test`
 - `npm run test:ci`
@@ -31,6 +32,6 @@ The default backend URL is `http://localhost:8081`.
 
 ## Notes
 
-- The frontend talks to the backend through `REACT_APP_API_BASE_URL`
+- The frontend talks to the backend through `VITE_API_BASE_URL`
 - If you change the backend port, update the frontend `.env` file too
 - Vite writes production output to `dist/`, not `build/`

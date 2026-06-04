@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import PrivateRoute from "./auth/PrivateRoute";
 import PublicRoute from "./auth/PublicRoute";
@@ -16,14 +16,49 @@ const App = (props) => {
     <div className="App">
       <AuthProvider>
         <BrowserRouter>
-          <Switch>
-            <PrivateRoute exact path="/" component={Profile} />
-            <PublicRoute exact path="/login" component={Signin} />
-            <PublicRoute exact path="/signup" component={Signup} />
-            <PublicRoute exact path="/qrcode" component={QrCode} />
-            <PublicRoute exact path="/verify" component={VerifyCode} />
-            <Route render={() => <Redirect to="/login" />} />
-          </Switch>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <Signin />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/signup"
+              element={
+                <PublicRoute>
+                  <Signup />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/qrcode"
+              element={
+                <PublicRoute>
+                  <QrCode />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/verify"
+              element={
+                <PublicRoute>
+                  <VerifyCode />
+                </PublicRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
         </BrowserRouter>
       </AuthProvider>
     </div>

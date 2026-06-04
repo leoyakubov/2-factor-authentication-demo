@@ -3,19 +3,26 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import Profile from "./Profile";
-import { getCurrentUser, logout } from "../util/ApiUtil";
+import { getCurrentUser, logout } from "../shared/api/apiClient";
 import { AuthProvider } from "../auth/AuthContext";
 
-jest.mock("../util/ApiUtil", () => ({
+jest.mock("../shared/api/apiClient", () => ({
   getCurrentUser: jest.fn(),
   logout: jest.fn(),
 }));
 
-describe("Profile", () => {
-  const history = {
-    push: jest.fn(),
-  };
+const mockNavigate = jest.fn();
 
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom");
+
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
+describe("Profile", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -24,7 +31,7 @@ describe("Profile", () => {
     render(
       <AuthProvider>
         <MemoryRouter>
-          <Profile history={history} />
+          <Profile />
         </MemoryRouter>
       </AuthProvider>
     );
@@ -35,7 +42,7 @@ describe("Profile", () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(history.push).toHaveBeenCalledWith("/login");
+      expect(mockNavigate).toHaveBeenCalledWith("/login", { replace: true });
     });
   });
 
@@ -59,7 +66,7 @@ describe("Profile", () => {
     await user.click(screen.getByRole("button", { name: /logout/i }));
 
     expect(logout).toHaveBeenCalled();
-    expect(history.push).toHaveBeenCalledWith("/login");
+    expect(mockNavigate).toHaveBeenCalledWith("/login", { replace: true });
   });
 
   test("shows an error message when the profile request fails", async () => {

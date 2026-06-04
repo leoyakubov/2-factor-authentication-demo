@@ -38,7 +38,7 @@ try {
     throw "vite is still missing after npm ci. Run 'cd frontend; npm install' and try again."
   }
 
-  & npm start
+  & npm run dev
 }
 finally {
   Set-Location $origin

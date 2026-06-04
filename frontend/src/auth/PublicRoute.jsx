@@ -1,18 +1,19 @@
 import React from "react";
-import { Redirect, Route } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
-const PublicRoute = ({ component: Component, ...rest }) => {
+const PublicRoute = ({ children }) => {
   const { isAuthenticated, isChecking } = useAuth();
 
-  return (
-    <Route
-      {...rest}
-      render={(props) =>
-        isChecking ? null : isAuthenticated ? <Redirect to="/" /> : <Component {...props} />
-      }
-    />
-  );
+  if (isChecking) {
+    return null;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 };
 
 export default PublicRoute;

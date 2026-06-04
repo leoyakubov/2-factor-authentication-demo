@@ -15,4 +15,4 @@ set +a
   echo "vite is still missing after npm ci. Run 'cd frontend && npm install' and try again." >&2
   exit 1
 }
-npm start
+npm run dev

@@ -3,38 +3,26 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import Signin from "./Signin";
-import { getCurrentUser, login } from "../util/ApiUtil";
+import { getCurrentUser, login } from "../shared/api/apiClient";
 import { AuthProvider } from "../auth/AuthContext";
 
-jest.mock("../util/ApiUtil", () => ({
+jest.mock("../shared/api/apiClient", () => ({
   login: jest.fn(),
   getCurrentUser: jest.fn(),
 }));
+
+const mockNavigate = jest.fn();
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom");
 
   return {
     ...actual,
-    Redirect: ({ to }) => {
-      const target = typeof to === "string" ? { pathname: to } : to;
-
-      return (
-        <div
-          data-testid="redirect"
-          data-path={target.pathname}
-          data-state={JSON.stringify(target.state || {})}
-        />
-      );
-    },
+    useNavigate: () => mockNavigate,
   };
 });
 
 describe("Signin", () => {
-  const history = {
-    push: jest.fn(),
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
     getCurrentUser.mockRejectedValue({ status: 401 });
@@ -44,7 +32,7 @@ describe("Signin", () => {
     render(
       <AuthProvider>
         <MemoryRouter>
-          <Signin history={history} />
+          <Signin />
         </MemoryRouter>
       </AuthProvider>
     );
@@ -70,7 +58,7 @@ describe("Signin", () => {
         password: "secret",
       })
     );
-    expect(history.push).toHaveBeenCalledWith("/");
+    expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true });
   });
 
   test("redirects to verify when mfa is required", async () => {
@@ -89,11 +77,9 @@ describe("Signin", () => {
     await user.click(screen.getByRole("button", { name: /log in/i }));
 
     await waitFor(() =>
-      expect(screen.getByTestId("redirect")).toHaveAttribute("data-path", "/verify")
-    );
-    expect(screen.getByTestId("redirect")).toHaveAttribute(
-      "data-state",
-      JSON.stringify({ username: "demo" })
+      expect(mockNavigate).toHaveBeenCalledWith("/verify", {
+        state: { username: "demo" },
+      })
     );
   });
 

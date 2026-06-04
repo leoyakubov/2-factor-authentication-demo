@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8081";
+import { API_BASE_URL } from "../config/appConfig";
+
 const XSRF_COOKIE_NAME = "XSRF-TOKEN";
 let csrfTokenRequestPromise;
 

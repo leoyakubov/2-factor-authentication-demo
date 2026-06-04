@@ -1,23 +1,25 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Button, Card, Avatar } from "antd";
+import { useNavigate } from "react-router-dom";
 import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
-import { getCurrentUser } from "../util/ApiUtil";
-import { getProfileErrorMessage } from "../util/authErrors";
+import { getCurrentUser } from "../shared/api/apiClient";
+import { getProfileErrorMessage } from "../shared/auth/authErrors";
 import { useAuth } from "../auth/AuthContext";
 import "./Profile.css";
 
 const { Meta } = Card;
 
-const Profile = (props) => {
+const Profile = () => {
   const [currentUser, setCurrentUser] = useState({});
   const [errorMessage, setErrorMessage] = useState();
   const auth = useAuth();
+  const navigate = useNavigate();
 
   const logout = useCallback(() => {
     auth.logout().finally(() => {
-      props.history.push("/login");
+      navigate("/login", { replace: true });
     });
-  }, [auth, props.history]);
+  }, [auth, navigate]);
 
   useEffect(() => {
     if (auth.isChecking) {
@@ -25,7 +27,7 @@ const Profile = (props) => {
     }
 
     if (!auth.isAuthenticated) {
-      props.history.push("/login");
+      navigate("/login", { replace: true });
       return;
     }
 
@@ -41,7 +43,7 @@ const Profile = (props) => {
 
         setErrorMessage(getProfileErrorMessage(error));
       });
-  }, [auth.isAuthenticated, auth.isChecking, logout, props.history]);
+  }, [auth.isAuthenticated, auth.isChecking, logout, navigate]);
 
   const getInitials = () => {
     const label = currentUser.name || currentUser.username || "User";

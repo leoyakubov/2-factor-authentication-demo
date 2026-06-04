@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { Alert, Form, Input, Button, notification } from "antd";
-import { Redirect } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { DingtalkOutlined } from "@ant-design/icons";
-import { verify } from "../util/ApiUtil";
-import { getVerifyErrorMessage } from "../util/authErrors";
+import { verify } from "../shared/api/apiClient";
+import { getVerifyErrorMessage } from "../shared/auth/authErrors";
 import { useAuth } from "../auth/AuthContext";
 import "./VerifyCode.css";
 
-const VerifyCode = (props) => {
+const VerifyCode = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState();
-  const username = props.location?.state?.username;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const username = location.state?.username;
   const auth = useAuth();
 
   useEffect(() => {
     if (!username) {
-      props.history.replace("/login");
+      navigate("/login", { replace: true });
     }
-  }, [props.history, username]);
+  }, [navigate, username]);
 
   const onFinish = (values) => {
     setLoading(true);
@@ -31,7 +33,7 @@ const VerifyCode = (props) => {
     verify(verifyRequest)
       .then((response) => {
         auth.login();
-        props.history.push("/");
+        navigate("/", { replace: true });
       })
       .catch((error) => {
         setErrorMessage(getVerifyErrorMessage(error));
@@ -44,7 +46,7 @@ const VerifyCode = (props) => {
   };
 
   if (!username) {
-    return <Redirect to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
   return (
@@ -73,7 +75,7 @@ const VerifyCode = (props) => {
         </Form.Item>
         <Form.Item>
           <Button
-            onClick={() => props.history.push("/login")}
+            onClick={() => navigate("/login", { replace: true })}
             shape="round"
             size="large"
           >

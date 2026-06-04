@@ -4,20 +4,25 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { notification } from "antd";
 import VerifyCode from "./VerifyCode";
-import { getCurrentUser, verify } from "../util/ApiUtil";
+import { getCurrentUser, verify } from "../shared/api/apiClient";
 import { AuthProvider } from "../auth/AuthContext";
 
-jest.mock("../util/ApiUtil", () => ({
+jest.mock("../shared/api/apiClient", () => ({
   verify: jest.fn(),
   getCurrentUser: jest.fn(),
 }));
+
+const mockNavigate = jest.fn();
+let mockLocation = { state: { username: "demo" } };
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom");
 
   return {
     ...actual,
-    Redirect: ({ to }) => {
+    useNavigate: () => mockNavigate,
+    useLocation: () => mockLocation,
+    Navigate: ({ to }) => {
       const target = typeof to === "string" ? { pathname: to } : to;
 
       return (
@@ -32,11 +37,6 @@ jest.mock("react-router-dom", () => {
 });
 
 describe("VerifyCode", () => {
-  const history = {
-    push: jest.fn(),
-    replace: jest.fn(),
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
     getCurrentUser.mockRejectedValue({ status: 401 });
@@ -50,7 +50,7 @@ describe("VerifyCode", () => {
     render(
       <AuthProvider>
         <MemoryRouter>
-          <VerifyCode history={history} location={{ state }} />
+          <VerifyCode />
         </MemoryRouter>
       </AuthProvider>
     );
@@ -58,6 +58,7 @@ describe("VerifyCode", () => {
   test("navigates home after a valid code", async () => {
     const user = userEvent.setup();
     verify.mockResolvedValueOnce({ mfa: false });
+    mockLocation = { state: { username: "demo" } };
 
     renderComponent();
 
@@ -72,13 +73,14 @@ describe("VerifyCode", () => {
         code: "123456",
       })
     );
-    expect(history.push).toHaveBeenCalledWith("/");
+    expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true });
   });
 
   test("shows a friendly error for an invalid code", async () => {
     const user = userEvent.setup();
     jest.spyOn(notification, "error").mockImplementation(() => {});
     verify.mockRejectedValueOnce({ status: 400 });
+    mockLocation = { state: { username: "demo" } };
 
     renderComponent();
 
@@ -95,6 +97,7 @@ describe("VerifyCode", () => {
   });
 
   test("redirects to login when the username is missing", () => {
+    mockLocation = { state: {} };
     renderComponent({});
 
     return waitFor(() => {

@@ -4,12 +4,17 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import QrCode from "./QrCode";
 
+const mockNavigate = jest.fn();
+let mockLocation = { state: {} };
+
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom");
 
   return {
     ...actual,
-    Redirect: ({ to }) => {
+    useNavigate: () => mockNavigate,
+    useLocation: () => mockLocation,
+    Navigate: ({ to }) => {
       const target = typeof to === "string" ? { pathname: to } : to;
 
       return (
@@ -24,23 +29,17 @@ jest.mock("react-router-dom", () => {
 });
 
 describe("QrCode", () => {
-  const history = {
-    push: jest.fn(),
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   test("renders the qr code and continues to login", async () => {
     const user = userEvent.setup();
+    mockLocation = { state: { imageUrl: "data:image/png;base64,qr-code" } };
 
     render(
       <MemoryRouter>
-        <QrCode
-          history={history}
-          location={{ state: { imageUrl: "data:image/png;base64,qr-code" } }}
-        />
+        <QrCode />
       </MemoryRouter>
     );
 
@@ -55,13 +54,15 @@ describe("QrCode", () => {
       screen.getByRole("button", { name: /continue to login/i })
     );
 
-    expect(history.push).toHaveBeenCalledWith("/login");
+    expect(mockNavigate).toHaveBeenCalledWith("/login", { replace: true });
   });
 
   test("redirects to signup when there is no qr image", () => {
+    mockLocation = { state: {} };
+
     render(
       <MemoryRouter>
-        <QrCode history={history} location={{ state: {} }} />
+        <QrCode />
       </MemoryRouter>
     );
 

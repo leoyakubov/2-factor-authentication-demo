@@ -1,4 +1,4 @@
-import { getCurrentUser, login, logout } from "./ApiUtil";
+import { getCurrentUser, login, logout } from "./apiClient";
 
 describe("ApiUtil", () => {
   beforeEach(() => {

@@ -1,15 +1,17 @@
 import React from "react";
 import { Button, Typography } from "antd";
-import { Redirect } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { DingtalkOutlined } from "@ant-design/icons";
 import "./QrCode.css";
 
-const QrCode = (props) => {
+const QrCode = () => {
   const { Title } = Typography;
-  const imageUrl = props.location?.state?.imageUrl;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const imageUrl = location.state?.imageUrl;
 
   if (!imageUrl) {
-    return <Redirect to="/signup" />;
+    return <Navigate to="/signup" replace />;
   }
 
   return (
@@ -18,7 +20,7 @@ const QrCode = (props) => {
       <Title level={4}>Scan the QR code using an authenticator app</Title>
       <img src={imageUrl} alt="Two-factor authentication QR code" />
       <Button
-        onClick={() => props.history.push("/login")}
+        onClick={() => navigate("/login", { replace: true })}
         shape="round"
         className="login-form-button"
         size="large"

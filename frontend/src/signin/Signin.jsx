@@ -1,28 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { Alert, Form, Input, Button } from "antd";
-import { Link, Redirect } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   UserOutlined,
   LockOutlined,
   DingtalkOutlined,
 } from "@ant-design/icons";
-import { login } from "../util/ApiUtil";
-import { getSignInErrorMessage } from "../util/authErrors";
+import { login } from "../shared/api/apiClient";
+import { getSignInErrorMessage } from "../shared/auth/authErrors";
 import { useAuth } from "../auth/AuthContext";
 import "./Signin.css";
 
-const Signin = (props) => {
+const Signin = () => {
   const [loading, setLoading] = useState(false);
-  const [redirect, setRedirect] = useState();
-  const [username, setUsername] = useState();
   const [errorMessage, setErrorMessage] = useState();
   const auth = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!auth.isChecking && auth.isAuthenticated) {
-      props.history.push("/");
+      navigate("/", { replace: true });
     }
-  }, [auth.isAuthenticated, auth.isChecking, props.history]);
+  }, [auth.isAuthenticated, auth.isChecking, navigate]);
 
   const onFinish = (values) => {
     setLoading(true);
@@ -30,11 +29,10 @@ const Signin = (props) => {
     login(values)
       .then((response) => {
         if (response.mfa) {
-          setUsername(values.username);
-          setRedirect("/verify");
+          navigate("/verify", { state: { username: values.username } });
         } else {
           auth.login();
-          props.history.push("/");
+          navigate("/", { replace: true });
         }
       })
       .catch((error) => {
@@ -42,12 +40,6 @@ const Signin = (props) => {
       })
       .finally(() => setLoading(false));
   };
-
-  if (redirect) {
-    return (
-      <Redirect to={{ pathname: redirect, state: { username: username } }} />
-    );
-  }
 
   return (
     <div className="login-container">

@@ -3,19 +3,26 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import Signup from "./Signup";
-import { getCurrentUser, signup } from "../util/ApiUtil";
+import { getCurrentUser, signup } from "../shared/api/apiClient";
 import { AuthProvider } from "../auth/AuthContext";
 
-jest.mock("../util/ApiUtil", () => ({
+jest.mock("../shared/api/apiClient", () => ({
   signup: jest.fn(),
   getCurrentUser: jest.fn(),
 }));
 
-describe("Signup", () => {
-  const history = {
-    push: jest.fn(),
-  };
+const mockNavigate = jest.fn();
 
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom");
+
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
+describe("Signup", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     getCurrentUser.mockRejectedValue({ status: 401 });
@@ -32,7 +39,7 @@ describe("Signup", () => {
     render(
       <AuthProvider>
         <MemoryRouter>
-          <Signup history={history} />
+          <Signup />
         </MemoryRouter>
       </AuthProvider>
     );
@@ -73,6 +80,21 @@ describe("Signup", () => {
     expect(
       screen.getByAltText("Two-factor authentication QR code")
     ).toHaveAttribute("src", "data:image/png;base64,qr-code");
+  });
+
+  test("navigates to login from the success screen", async () => {
+    const user = userEvent.setup();
+    signup.mockResolvedValueOnce({ mfa: false });
+
+    renderComponent();
+    await screen.findByPlaceholderText("Name");
+    await fillForm(user);
+    await user.click(screen.getByRole("button", { name: /signup/i }));
+
+    await screen.findByText("Account created");
+    await user.click(screen.getByRole("button", { name: /login/i }));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/login");
   });
 
   test("shows a friendly error when the account already exists", async () => {
