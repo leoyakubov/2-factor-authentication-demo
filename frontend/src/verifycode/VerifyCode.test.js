@@ -63,6 +63,11 @@ describe("VerifyCode", () => {
     renderComponent();
 
     await screen.findByPlaceholderText("Enter code");
+    expect(
+      screen.getByText(
+        "Enter the 6-digit code from your authenticator app or one of your recovery codes."
+      )
+    ).toBeInTheDocument();
 
     await user.type(screen.getByPlaceholderText("Enter code"), "123456");
     await user.click(screen.getByRole("button", { name: /verify/i }));

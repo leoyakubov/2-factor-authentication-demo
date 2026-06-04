@@ -31,7 +31,7 @@ _Signup, MFA enrollment, login, and protected profile access in one short walkth
 
 ## Project Snapshot
 
-- Backend: Java 21, Spring Boot 4.0.6, Spring Security, MongoDB
+- Backend: Java 21+ target, Spring Boot 4.0.6, Spring Security, MongoDB
 - Frontend: React 19.2.7, Vite 8.0.16, React Router 7.16.0, Ant Design 6.4.3
 - Testing: JUnit 5, Mockito, Jest 30.4.2, React Testing Library 16.3.2
 - Auth: JWT in `httpOnly` cookies with CSRF protection
@@ -107,7 +107,7 @@ This project was built to demonstrate:
 
 ## Prerequisites
 
-- Backend requires Java 21 JDK.
+- Backend requires Java 21 JDK or newer.
 - Frontend requires Node.js and npm.
 - On Windows, you can run the `.sh` scripts from Git Bash or WSL.
 - If your shell already provides the right tools, the same `.sh` scripts also work on Linux and macOS.

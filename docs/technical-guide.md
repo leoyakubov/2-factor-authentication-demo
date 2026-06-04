@@ -105,7 +105,7 @@ What this means:
 
 Backend:
 
-- Java 21
+- Java 21+ target
 - Spring Boot 3.5.14
 - Spring Security
 - Spring Web

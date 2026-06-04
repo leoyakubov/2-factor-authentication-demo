@@ -67,6 +67,9 @@ const VerifyCode = () => {
         initialValues={{ remember: true }}
         onFinish={onFinish}
       >
+        <p style={{ marginBottom: 16, textAlign: "center" }}>
+          Enter the 6-digit code from your authenticator app or one of your recovery codes.
+        </p>
         <Form.Item
           name="code"
           rules={[{ required: true, message: "Code is required" }]}

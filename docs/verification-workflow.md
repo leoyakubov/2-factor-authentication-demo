@@ -6,7 +6,7 @@ Use this checklist to verify the full project from a clean machine.
 
 Make sure these are installed:
 
-- Java 21 or compatible
+- Java 21 or newer
 - Node.js
 - npm
 
