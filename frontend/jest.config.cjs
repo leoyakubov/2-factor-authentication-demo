@@ -7,5 +7,5 @@ module.exports = {
   moduleNameMapper: {
     "\\.(css|less|sass|scss)$": "<rootDir>/test/styleMock.cjs",
   },
-  testPathIgnorePatterns: ["/node_modules/", "/build/"],
+  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
 };

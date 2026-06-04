@@ -6,7 +6,7 @@ spring:
   data:
     mongodb:
       host: ${MONGODB_HOST:localhost}
-      database: ${MONGODB_DATABASE:spring-boot-jwt-auth}
+      database: ${MONGODB_DATABASE:two-factor-authentication-demo}
       port: ${MONGODB_PORT:27018}
 
 server:
@@ -41,7 +41,28 @@ security:
       window: ${AUTH_RATE_LIMIT_WINDOW:PT10M}
       lockout: ${AUTH_RATE_LIMIT_LOCKOUT:PT15M}
   headers:
-    content-security-policy: "${CONTENT_SECURITY_POLICY:default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' ${FRONTEND_ORIGIN:http://localhost:3000} ${BACKEND_ORIGIN:http://localhost:8081}}"
+    content-security-policy-override: ${CONTENT_SECURITY_POLICY:}
+    content-security-policy:
+      default-src:
+        - "'self'"
+      base-uri:
+        - "'self'"
+      form-action:
+        - "'self'"
+      frame-ancestors:
+        - "'none'"
+      img-src:
+        - "'self'"
+        - "data:"
+      script-src:
+        - "'self'"
+      style-src:
+        - "'self'"
+        - "'unsafe-inline'"
+      connect-src:
+        - "'self'"
+        - ${FRONTEND_ORIGIN:http://localhost:3000}
+        - ${BACKEND_ORIGIN:http://localhost:8081}
 
 logging:
   pattern:

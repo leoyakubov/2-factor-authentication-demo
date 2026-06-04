@@ -1,162 +1,93 @@
-# 2-factor-authentication-demo
+# 2-Factor Authentication Demo
 
-A full-stack demo that shows username/password sign-up and login with optional two-factor authentication, QR-code enrollment, TOTP verification, and JWT-backed browser sessions using an `httpOnly` cookie.
+A full-stack authentication demo built for portfolio, interview, and learning use. It demonstrates a browser-friendly signup and login flow with optional TOTP-based two-factor authentication, QR-code enrollment, recovery codes, CSRF protection, and JWT sessions stored in an `httpOnly` cookie.
 
 ## Preview
 
-![Demo GIF](docs/images/demo.gif)
-
-_Signup, MFA enrollment, login, and protected profile access in one short walkthrough._
+![Demo animation](docs/images/demo.gif)
 
 | Signup | MFA enrollment |
 | --- | --- |
-| ![Signup screen](docs/images/signup-form.png) | ![MFA enrollment](docs/images/signup-mfa.png) |
+| ![Signup screen](docs/images/signup-form.png) | ![MFA enrollment screen](docs/images/signup-mfa.png) |
 | Login | Profile |
-| ![Login screen](docs/images/login-form.png) | ![Profile page](docs/images/profile-page.png) |
+| ![Login screen](docs/images/login-form.png) | ![Profile screen](docs/images/profile-page.png) |
 
-## Table Of Contents
+## Tech Stack
 
-- [Project Snapshot](#project-snapshot)
-- [What Is Implemented](#what-is-implemented)
-- [Architecture](#architecture)
-- [Demo Media](#demo-media)
-- [Portfolio Summary](#portfolio-summary)
-- [Why This Project](#why-this-project)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Testing](#testing)
-- [Test Types](#test-types)
-- [Docs](#docs)
-- [Project Status](#project-status)
-
-## Project Snapshot
-
-- Backend: Java 21+ target, Spring Boot 4.0.6, Spring Security, MongoDB
+- Backend: Java 21+, Spring Boot 4.0.6, Spring Security, Spring Data MongoDB, Maven
 - Frontend: React 19.2.7, Vite 8.0.16, React Router 7.16.0, Ant Design 6.4.3
-- Testing: JUnit 5, Mockito, Jest 30.4.2, React Testing Library 16.3.2
-- Auth: JWT in `httpOnly` cookies with CSRF protection
-- MFA: TOTP with QR-code enrollment and recovery codes
-- Data: MongoDB for local development
+- Authentication: BCrypt password hashing, JWT in `httpOnly` cookies, CSRF token flow
+- MFA: TOTP authenticator codes, QR enrollment, one-time recovery codes
+- Testing: JUnit 5, Mockito, embedded Mongo integration tests, Jest 30.4.2, React Testing Library 16.3.2
 
 ## What Is Implemented
 
-- Sign up with username, email, password, display name, and optional MFA
+- User signup with username, email, display name, password, and optional MFA
 - QR-code enrollment for authenticator apps
-- TOTP verification during login
-- One-time recovery codes for MFA-enabled accounts
-- JWT-backed session access through an `httpOnly` cookie
-- CSRF protection for state-changing requests
-- Rate limiting for sign-in, sign-up, and MFA verification
-- Logout by clearing the session cookie
-- Backend and frontend tests
+- Login with username or email and password
+- MFA verification with an authenticator code or one-time recovery code
+- JWT-backed browser session stored in an `httpOnly` cookie
+- CSRF bootstrap and protected state-changing requests
+- Protected profile page loaded from the backend
+- Logout by clearing the auth cookie
+- User-friendly frontend validation and error messages
+- Backend request logging with request IDs
+- Backend unit, slice, and integration tests
+- Frontend component and API utility tests
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     User["User"] --> Browser["Browser"]
-    Browser --> Frontend["React + Vite frontend"]
-    Frontend -->|POST /users, /signin, /verify| Backend["Spring Boot API"]
-    Frontend -->|GET /users/me, GET /csrf| Backend
-    Backend -->|JWT in httpOnly cookie| Browser
-    Backend --> Mongo["MongoDB / embedded Mongo for local dev"]
+    Browser --> Frontend["React + Vite"]
+    Frontend -->|GET /csrf| Backend["Spring Boot API"]
+    Frontend -->|POST /users, /signin, /verify, /logout| Backend
+    Frontend -->|GET /users/me| Backend
+    Backend -->|Set-Cookie: httpOnly JWT| Browser
+    Backend --> Mongo["Embedded MongoDB for local demo"]
     Backend --> TOTP["TOTP + QR generation"]
-    Backend --> CSRF["CSRF protection"]
+    Backend --> Security["Spring Security + CSRF + rate limiting"]
 ```
 
-The frontend keeps the UI and auth flow lightweight, while the backend owns the security-sensitive parts:
-
-- credential validation
-- MFA enrollment and verification
-- JWT issuance and cookie handling
-- CSRF protection
-- rate limiting
-
-## Demo Media
-
-Recommended screenshots or a short GIF for GitHub or interview use:
-
-- signup screen with the MFA option visible
-- QR enrollment screen with the generated code
-- login flow showing the MFA verification step
-- profile page with the avatar and logout button
-
-See [`docs/demo-media.md`](docs/demo-media.md) for a small capture checklist.
-
-## Portfolio Summary
-
-GitHub repo description:
-
-> Full-stack Spring Boot and React demo with optional TOTP-based MFA, QR enrollment, JWT-backed `httpOnly` cookie sessions, CSRF protection, and rate limiting.
-
-CV bullets:
-
-- Built a full-stack authentication demo with optional MFA, QR enrollment, JWT cookie sessions, CSRF protection, and rate limiting using Spring Boot, React, and MongoDB.
-- Added recovery codes and security hardening to move the project beyond a basic tutorial implementation.
-- Organized the repo with a clean README, supporting docs, and a guided demo flow for interviews and portfolio review.
-
-## Why This Project
-
-This project was built to demonstrate:
-
-- a realistic full-stack auth flow
-- a browser-friendly MFA experience
-- practical Spring Boot and React architecture
-- security tradeoffs and hardening decisions
-- a repo that is easy to run and present in an interview
-
-## Prerequisites
-
-- Backend requires Java 21 JDK or newer.
-- Frontend requires Node.js and npm.
-- On Windows, you can run the `.sh` scripts from Git Bash or WSL.
-- If your shell already provides the right tools, the same `.sh` scripts also work on Linux and macOS.
+The frontend owns the user experience. The backend owns credentials, password hashing, MFA secrets, token issuing, cookie handling, CSRF checks, rate limiting, and protected profile access.
 
 ## Quick Start
 
-1. Copy `backend/.env.example` to `backend/.env` and set `JWT_SECRET` to a long random string.
-2. Copy `frontend/.env.example` to `frontend/.env` if you want to override the API URL.
-3. Run the full backend verification flow, including unit, slice, and integration tests: `./scripts/backend-verify.sh`
-4. Run the full frontend verification flow: `./scripts/frontend-verify.sh`
-5. Start the backend: `./scripts/backend-run.sh`
-6. Start the frontend: `./scripts/frontend-run.sh`
-7. Open the app and walk through signup, MFA enrollment, login, and profile access.
+Prerequisites for a new machine:
 
-## Testing
+- Java 21 JDK or newer
+- Node.js and npm
+- Git Bash, WSL, Linux, or macOS shell for the `.sh` scripts
 
-Backend:
+Run locally:
 
-- `./scripts/backend-verify.sh` runs the full backend verification flow, including unit, slice, and integration tests
+1. Clone the repo and open the project root.
+2. Copy `backend/.env.example` to `backend/.env`.
+3. Set `JWT_SECRET` in `backend/.env` to a long random value with at least 32 characters.
+4. Optional: copy `frontend/.env.example` to `frontend/.env` if you want to change the backend URL.
+5. Verify the backend: `./scripts/backend-verify.sh`
+6. Verify the frontend: `./scripts/frontend-verify.sh`
+7. Start the backend: `./scripts/backend-run.sh`
+8. Start the frontend: `./scripts/frontend-run.sh`
+9. Open `http://localhost:3000` and walk through signup, MFA enrollment, login, and profile access.
 
-Frontend:
+Docker is not required for the local demo workflow. The backend uses embedded MongoDB for local development and integration tests.
 
-- `./scripts/frontend-verify.sh` runs frontend tests and then the production build
+## Limitations
 
-Backend integration tests use embedded Mongo, so you do not need Docker for the demo workflow.
-The app also uses embedded Mongo for local development; the default version is set to a recent MongoDB release so it works better on modern WSL/Linux setups.
+- This is a demo project, not a production-ready identity platform.
+- Local development runs over HTTP; production use should enforce HTTPS and secure deployment defaults.
+- MFA secrets are stored by the backend for the demo flow and should be encrypted at rest in production.
+- Rate limiting is in-memory, so it resets when the backend restarts.
+- Password reset, email verification, and account recovery flows are not implemented.
+- Embedded MongoDB is convenient for local demos, but production deployments should use managed or separately operated MongoDB.
 
-On Windows, run the same `.sh` scripts from Git Bash or WSL.
-
-## Test Types
-
-- Unit tests check a single class or function in isolation and usually mock everything else.
-- Slice tests check one Spring layer in isolation, such as controller or repository behavior, without starting the whole app.
-- Integration tests check several layers together, usually with the real Spring context and a test database.
-
-For this repo:
-
-- backend unit and slice tests are the fast feedback loop
-- backend integration tests are the higher-confidence workflow
-- frontend tests cover React components, UI behavior, and utility logic
-
-## Docs
+## More Details
 
 - [Technical guide](docs/technical-guide.md)
-- [Demo media checklist](docs/demo-media.md)
 - [Security guide](docs/security-guide.md)
-- [Full verification workflow](docs/verification-workflow.md)
+- [Verification workflow](docs/verification-workflow.md)
 - [Troubleshooting](docs/troubleshooting.md)
-
-## Project Status
-
-The app is demo-ready and the latest work focused on security hardening, documentation cleanup, and presentation polish.
+- [Demo media checklist](docs/demo-media.md)
+- [Portfolio notes](docs/portfolio-notes.md)

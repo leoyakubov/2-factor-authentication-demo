@@ -10,51 +10,15 @@ prepare_frontend() {
   set +a
 
   if [ ! -f test/setupTests.cjs ]; then
-    mkdir -p test
-    cat > test/setupTests.cjs <<'EOF'
-require("@testing-library/jest-dom");
-const { TextDecoder, TextEncoder } = require("node:util");
-
-jest.mock("antd");
-
-if (typeof global.TextEncoder === "undefined") {
-  global.TextEncoder = TextEncoder;
-}
-
-if (typeof global.TextDecoder === "undefined") {
-  global.TextDecoder = TextDecoder;
-}
-
-const createMatchMedia = (query) => ({
-  matches: false,
-  media: query,
-  onchange: null,
-  addListener: jest.fn(),
-  removeListener: jest.fn(),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  dispatchEvent: jest.fn(),
-});
-
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: jest.fn().mockImplementation(createMatchMedia),
-});
-
-class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
-Object.defineProperty(window, "ResizeObserver", {
-  writable: true,
-  value: ResizeObserver,
-});
-EOF
+    echo "Missing frontend/test/setupTests.cjs. Restore the committed test setup file and try again." >&2
+    exit 1
   fi
 
-  case "$(uname -s):$(uname -m)" in
+  shell_name="$(uname -s 2>/dev/null || echo unknown)"
+  machine_name="$(uname -m 2>/dev/null || echo unknown)"
+  platform_key="$shell_name:$machine_name"
+
+  case "$platform_key" in
     Linux:x86_64)
       rolldown_binding_ok() {
         [ -d node_modules/@rolldown/binding-linux-x64-gnu ] || [ -f node_modules/rolldown/rolldown-binding.linux-x64-gnu.node ]
@@ -79,11 +43,28 @@ EOF
 
   if [ ! -d node_modules ]; then
     npm ci --no-audit --no-fund
+    printf '%s\n' "$platform_key" > node_modules/.frontend-platform
   fi
 
   if [ ! -d node_modules/vite ] || [ ! -d node_modules/jest ] || ! rolldown_binding_ok; then
-    shell_name="$(uname -s 2>/dev/null || echo unknown)"
-    echo "Frontend dependencies are missing, incomplete, or were installed for a different shell/platform ($shell_name). Run 'cd frontend && npm ci' in the same environment you plan to use for the app (Git Bash, WSL, Linux, or macOS) and try again." >&2
+    echo "Frontend dependencies are missing, incomplete, or were installed for a different shell/platform ($platform_key)." >&2
+    echo "" >&2
+    echo "node_modules contains native packages and cannot be shared safely between Windows, Git Bash, WSL, Linux, and macOS." >&2
+    echo "" >&2
+    case "$shell_name:$(pwd)" in
+      Linux:/mnt/*)
+        echo "You are running from WSL inside the Windows filesystem (/mnt/...). If npm previously installed Windows-native packages here, WSL may fail with EIO when trying to replace them." >&2
+        echo "" >&2
+        echo "Recommended options:" >&2
+        echo "1. Best: clone or move the repo into the WSL filesystem, for example ~/projects/2-factor-authentication-demo, then run ./scripts/frontend-verify.sh there." >&2
+        echo "2. If you want to keep the repo on C:, delete frontend/node_modules from Windows File Explorer or PowerShell, then run 'cd frontend && npm ci' from WSL." >&2
+        ;;
+      *)
+        echo "Delete frontend/node_modules, then run 'cd frontend && npm ci' in the same environment you plan to use for the app." >&2
+        ;;
+    esac
     exit 1
   fi
+
+  printf '%s\n' "$platform_key" > node_modules/.frontend-platform
 }

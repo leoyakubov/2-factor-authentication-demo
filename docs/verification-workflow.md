@@ -39,17 +39,23 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-Set `JWT_SECRET` in `backend/.env` to a long random value if you are not using the default demo value.
+Set `JWT_SECRET` in `backend/.env` to a long random value with at least 32 characters.
 
 ## 3. Install frontend dependencies
 
 ```sh
 cd frontend
-npm install
+npm ci
 cd ..
 ```
 
-The helper scripts also install dependencies automatically if `node_modules` is missing.
+The helper scripts install dependencies automatically only when `node_modules` is missing. If dependencies were installed in a different shell or platform, delete `frontend/node_modules`, then run `npm ci` from the same environment you plan to use.
+
+Important for Windows + WSL:
+
+- `node_modules` contains native packages and should not be shared between Windows/Git Bash and WSL.
+- If the repo is under `/mnt/c/...`, WSL can hit `EIO` when replacing Windows-native binaries.
+- The most reliable WSL setup is to keep the repo inside the WSL filesystem, for example `~/projects/2-factor-authentication-demo`.
 
 ## 4. Run backend verification
 

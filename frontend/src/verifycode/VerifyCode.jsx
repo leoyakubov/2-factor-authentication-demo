@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Form, Input, Button, notification } from "antd";
+import { Alert, Form, Input, Button } from "antd";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { DingtalkOutlined } from "@ant-design/icons";
 import { verify } from "../shared/api/apiClient";
@@ -31,16 +31,12 @@ const VerifyCode = () => {
     };
 
     verify(verifyRequest)
-      .then((response) => {
+      .then(() => {
         auth.login();
         navigate("/", { replace: true });
       })
       .catch((error) => {
         setErrorMessage(getVerifyErrorMessage(error));
-        notification.error({
-          message: "Error",
-          description: error.body?.message || error.message || "Sorry! Something went wrong. Please try again!",
-        });
       })
       .finally(() => setLoading(false));
   };
@@ -88,7 +84,7 @@ const VerifyCode = () => {
             shape="round"
             size="large"
             htmlType="submit"
-            className="verify-form-button "
+            className="verify-form-button"
             loading={loading}
           >
             Verify

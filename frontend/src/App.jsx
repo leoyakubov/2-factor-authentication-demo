@@ -1,64 +1,67 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import PrivateRoute from "./auth/PrivateRoute";
 import PublicRoute from "./auth/PublicRoute";
-import Signin from "./signin/Signin";
-import Signup from "./signup/Signup";
-import Profile from "./profile/Profile";
-import QrCode from "./qrcode/QrCode";
-import VerifyCode from "./verifycode/VerifyCode";
 
 import "./App.css";
 
-const App = (props) => {
+const Signin = lazy(() => import("./signin/Signin"));
+const Signup = lazy(() => import("./signup/Signup"));
+const Profile = lazy(() => import("./profile/Profile"));
+const QrCode = lazy(() => import("./qrcode/QrCode"));
+const VerifyCode = lazy(() => import("./verifycode/VerifyCode"));
+
+const App = () => {
   return (
     <div className="App">
       <AuthProvider>
         <BrowserRouter>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <PrivateRoute>
-                  <Profile />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <Signin />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/signup"
-              element={
-                <PublicRoute>
-                  <Signup />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/qrcode"
-              element={
-                <PublicRoute>
-                  <QrCode />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/verify"
-              element={
-                <PublicRoute>
-                  <VerifyCode />
-                </PublicRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
+          <Suspense fallback={null}>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <Profile />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Signin />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/signup"
+                element={
+                  <PublicRoute>
+                    <Signup />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/qrcode"
+                element={
+                  <PublicRoute>
+                    <QrCode />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/verify"
+                element={
+                  <PublicRoute>
+                    <VerifyCode />
+                  </PublicRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </AuthProvider>
     </div>

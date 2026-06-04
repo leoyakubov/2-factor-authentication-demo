@@ -5,8 +5,8 @@ import com.github.leoyakubov.twofactorauth.config.properties.CorsProperties;
 import com.github.leoyakubov.twofactorauth.config.properties.JwtConfigProperties;
 import com.github.leoyakubov.twofactorauth.config.properties.SecurityHeaderProperties;
 import com.github.leoyakubov.twofactorauth.service.JwtTokenService;
-import com.github.leoyakubov.twofactorauth.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,7 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -63,14 +62,12 @@ public class SecurityCredentialsConfig {
 
         http.cors(Customizer.withDefaults());
         http.csrf(csrf -> csrf
-                .csrfTokenRepository(csrfTokenRepository())
-                .ignoringRequestMatchers(ApiRoutes.SIGNIN_PATH, ApiRoutes.VERIFY_PATH,
-                        ApiRoutes.USERS_PATH, ApiRoutes.LOGOUT_PATH, ApiRoutes.CSRF_PATH));
+                .csrfTokenRepository(csrfTokenRepository()));
         http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.exceptionHandling(exConf -> exConf.authenticationEntryPoint((req, resp, ex) ->
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")));
         http.headers(headers -> headers
-                .contentSecurityPolicy(csp -> csp.policyDirectives(securityHeaderProperties.contentSecurityPolicy()))
+                .contentSecurityPolicy(csp -> csp.policyDirectives(securityHeaderProperties.contentSecurityPolicyHeaderValue()))
                 .referrerPolicy(referrer -> referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
         );
         http.addFilterBefore(jwtTokenAuthenticationFilter,
@@ -105,8 +102,8 @@ public class SecurityCredentialsConfig {
     }
 
     @Bean
-    public JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter(UserService userService) {
-        return new JwtTokenAuthenticationFilter(cookieManager, tokenProvider, userService);
+    public JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter(UserDetailsService userDetailsService) {
+        return new JwtTokenAuthenticationFilter(cookieManager, tokenProvider, userDetailsService);
     }
 
     @Bean

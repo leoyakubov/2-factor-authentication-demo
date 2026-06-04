@@ -6,7 +6,6 @@ import com.github.leoyakubov.twofactorauth.model.Profile;
 import com.github.leoyakubov.twofactorauth.model.Role;
 import com.github.leoyakubov.twofactorauth.model.User;
 import com.github.leoyakubov.twofactorauth.service.JwtTokenService;
-import com.github.leoyakubov.twofactorauth.service.UserService;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.AfterEach;
@@ -16,8 +15,8 @@ import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
-import java.util.Optional;
 import java.util.Set;
 import java.time.Duration;
 
@@ -30,9 +29,9 @@ class JwtTokenAuthenticationFilterTest {
     private final JwtConfigProperties jwtConfig = createJwtConfig();
     private final JwtCookieManager cookieManager = new JwtCookieManager(jwtConfig);
     private final JwtTokenService jwtTokenService = Mockito.mock(JwtTokenService.class);
-    private final UserService userService = Mockito.mock(UserService.class);
+    private final UserDetailsService userDetailsService = Mockito.mock(UserDetailsService.class);
     private final JwtTokenAuthenticationFilter filter =
-            new JwtTokenAuthenticationFilter(cookieManager, jwtTokenService, userService);
+            new JwtTokenAuthenticationFilter(cookieManager, jwtTokenService, userDetailsService);
 
     @AfterEach
     void tearDown() {
@@ -47,7 +46,7 @@ class JwtTokenAuthenticationFilterTest {
         when(jwtTokenService.validateToken(token)).thenReturn(true);
         when(jwtTokenService.getClaimsFromJWT(token)).thenReturn(
                 Jwts.claims().subject("demo").build());
-        when(userService.findByUsername("demo")).thenReturn(Optional.of(user));
+        when(userDetailsService.loadUserByUsername("demo")).thenReturn(new AuthUserDetails(user));
 
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users/me");
         request.setCookies(new Cookie("AUTH_TOKEN", token));
@@ -69,7 +68,7 @@ class JwtTokenAuthenticationFilterTest {
         when(jwtTokenService.validateToken(token)).thenReturn(true);
         when(jwtTokenService.getClaimsFromJWT(token)).thenReturn(
                 Jwts.claims().subject("demo").build());
-        when(userService.findByUsername("demo")).thenReturn(Optional.of(user));
+        when(userDetailsService.loadUserByUsername("demo")).thenReturn(new AuthUserDetails(user));
 
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users/me");
         request.addHeader("Authorization", "Bearer   " + token + "   ");

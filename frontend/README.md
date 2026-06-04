@@ -33,4 +33,4 @@ The default backend URL is `http://localhost:8081`.
 
 - The frontend talks to the backend through `VITE_API_BASE_URL`
 - If you change the backend port, update the frontend `.env` file too
-- Vite writes production output to `dist/`, not `build/`
+- Vite writes production output to `dist/`

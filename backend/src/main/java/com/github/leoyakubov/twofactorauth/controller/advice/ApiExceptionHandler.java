@@ -5,6 +5,8 @@ import com.github.leoyakubov.twofactorauth.exception.EmailAlreadyExistsException
 import com.github.leoyakubov.twofactorauth.exception.ResourceNotFoundException;
 import com.github.leoyakubov.twofactorauth.exception.TooManyRequestsException;
 import com.github.leoyakubov.twofactorauth.exception.UsernameAlreadyExistsException;
+import com.github.leoyakubov.twofactorauth.payload.ApiErrorResponse;
+import com.github.leoyakubov.twofactorauth.payload.ValidationErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,83 +28,79 @@ import java.util.stream.Collectors;
 public class ApiExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<Map<String, String>> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
+    public ResponseEntity<ApiErrorResponse> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
         log.warn("bad request on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(UsernameAlreadyExistsException.class)
-    public ResponseEntity<Map<String, String>> handleUsernameExists(UsernameAlreadyExistsException ex,
+    public ResponseEntity<ApiErrorResponse> handleUsernameExists(UsernameAlreadyExistsException ex,
                                                                     HttpServletRequest request) {
         log.warn("signup rejected on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<Map<String, String>> handleEmailExists(EmailAlreadyExistsException ex,
+    public ResponseEntity<ApiErrorResponse> handleEmailExists(EmailAlreadyExistsException ex,
                                                                  HttpServletRequest request) {
         log.warn("signup rejected on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNotFound(ResourceNotFoundException ex,
+    public ResponseEntity<ApiErrorResponse> handleNotFound(ResourceNotFoundException ex,
                                                               HttpServletRequest request) {
         log.warn("resource not found on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return build(HttpStatus.NOT_FOUND, "We couldn't find an account with that username or email.");
     }
 
     @ExceptionHandler({BadCredentialsException.class, AuthenticationException.class})
-    public ResponseEntity<Map<String, String>> handleAuthentication(AuthenticationException ex,
+    public ResponseEntity<ApiErrorResponse> handleAuthentication(AuthenticationException ex,
                                                                     HttpServletRequest request) {
         log.warn("authentication failed on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return build(HttpStatus.UNAUTHORIZED, "We couldn't sign you in. Check your credentials and try again.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex,
+    public ResponseEntity<ValidationErrorResponse> handleValidation(MethodArgumentNotValidException ex,
                                                                HttpServletRequest request) {
         log.warn("validation failed on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildValidationBody(ex));
     }
 
     @ExceptionHandler(TooManyRequestsException.class)
-    public ResponseEntity<Map<String, String>> handleTooManyRequests(TooManyRequestsException ex,
+    public ResponseEntity<ApiErrorResponse> handleTooManyRequests(TooManyRequestsException ex,
                                                                       HttpServletRequest request) {
         log.warn("rate limit exceeded on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNoResourceFound(NoResourceFoundException ex,
+    public ResponseEntity<ApiErrorResponse> handleNoResourceFound(NoResourceFoundException ex,
                                                                      HttpServletRequest request) {
         log.warn("resource not found on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return build(HttpStatus.NOT_FOUND, "We couldn't find that page or resource.");
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGeneric(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ApiErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
         log.error("unexpected error on {} {}", request.getMethod(), request.getRequestURI(), ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong. Please try again.");
     }
 
-    private ResponseEntity<Map<String, String>> build(HttpStatus status, String message) {
-        Map<String, String> body = new LinkedHashMap<>();
-        body.put("message", message);
-        return ResponseEntity.status(status).body(body);
+    private ResponseEntity<ApiErrorResponse> build(HttpStatus status, String message) {
+        return ResponseEntity.status(status).body(new ApiErrorResponse(message));
     }
 
-    private Map<String, Object> buildValidationBody(MethodArgumentNotValidException ex) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("message", "Please review the highlighted fields and try again.");
-        body.put("errors", ex.getBindingResult().getFieldErrors().stream()
+    private ValidationErrorResponse buildValidationBody(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
                         error -> error.getField(),
                         this::toFriendlyFieldMessage,
                         (first, second) -> first,
-                        LinkedHashMap::new
-                )));
-        return body;
+                        java.util.LinkedHashMap::new
+                ));
+        return new ValidationErrorResponse("Please review the highlighted fields and try again.", errors);
     }
 
     private String toFriendlyFieldMessage(org.springframework.validation.FieldError error) {

@@ -8,6 +8,7 @@
 - The demo uses embedded MongoDB for local development
 - The JWT secret is loaded from local environment configuration and should be rotated and managed securely in a real deployment
 - The app does not enforce HTTPS locally
+- Rate limiting is in-memory and resets when the backend restarts
 
 ## Security Concerns / Risks
 
@@ -24,7 +25,6 @@ This repo is a demo, so it intentionally keeps some things simple that would nee
 The next useful hardening steps are:
 
 1. Tighten secrets and storage
-   - make JWT and app secret validation stricter
    - document secret manager / vault usage
    - move away from demo-only storage assumptions
 2. Strengthen transport and runtime security
@@ -36,4 +36,3 @@ The next useful hardening steps are:
    - password reset flow
    - optional recovery-email workflow
    - stronger admin recovery path for lost MFA access
-

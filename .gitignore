@@ -23,3 +23,23 @@
 hs_err_pid*
 replay_pid*
 .idea/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Java / Maven
+target/
+
+# Node / frontend
+node_modules/
+dist/
+coverage/
+.vite/
+.vite-cache/
+npm-debug.log*
+
+# OS/editor noise
+.DS_Store
+.vscode/

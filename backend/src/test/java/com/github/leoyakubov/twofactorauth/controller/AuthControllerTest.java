@@ -11,8 +11,10 @@ import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import com.github.leoyakubov.twofactorauth.payload.RegistrationResult;
 import com.github.leoyakubov.twofactorauth.payload.SignUpRequest;
 import com.github.leoyakubov.twofactorauth.payload.VerifyCodeRequest;
+import com.github.leoyakubov.twofactorauth.service.AuthenticationService;
+import com.github.leoyakubov.twofactorauth.service.MfaVerificationService;
+import com.github.leoyakubov.twofactorauth.service.RegistrationService;
 import com.github.leoyakubov.twofactorauth.service.TotpService;
-import com.github.leoyakubov.twofactorauth.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +43,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AuthControllerTest {
 
     @Mock
-    private UserService userService;
+    private AuthenticationService authenticationService;
+
+    @Mock
+    private RegistrationService registrationService;
+
+    @Mock
+    private MfaVerificationService mfaVerificationService;
 
     @Mock
     private TotpService totpService;
@@ -57,7 +65,8 @@ class AuthControllerTest {
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
 
-        mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(userService, totpService, cookieManager))
+        mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(
+                        authenticationService, registrationService, mfaVerificationService, totpService, cookieManager))
                 .setControllerAdvice(new ApiExceptionHandler())
                 .setValidator(validator)
                 .build();
@@ -67,7 +76,7 @@ class AuthControllerTest {
     void shouldReturnJwtResponseWhenSignInSucceeds() throws Exception {
         LoginRequest request = new LoginRequest("demo", "secret");
 
-        when(userService.loginUser(eq("demo"), eq("secret"), anyString())).thenReturn(LoginResult.authenticated("jwt-token"));
+        when(authenticationService.login(eq("demo"), eq("secret"), anyString())).thenReturn(LoginResult.authenticated("jwt-token"));
         when(cookieManager.createCookie("jwt-token"))
                 .thenReturn(ResponseCookie.from("AUTH_TOKEN", "jwt-token").httpOnly(true).path("/").build());
 
@@ -84,7 +93,7 @@ class AuthControllerTest {
     void shouldReturnMfaRequiredResponseWhenMfaIsRequired() throws Exception {
         LoginRequest request = new LoginRequest("demo", "secret");
 
-        when(userService.loginUser(eq("demo"), eq("secret"), anyString())).thenReturn(LoginResult.requiresMfa());
+        when(authenticationService.login(eq("demo"), eq("secret"), anyString())).thenReturn(LoginResult.requiresMfa());
 
         mockMvc.perform(post(ApiRoutes.SIGNIN_PATH)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -111,7 +120,7 @@ class AuthControllerTest {
     void shouldReturnJwtResponseWhenVerificationSucceeds() throws Exception {
         VerifyCodeRequest request = new VerifyCodeRequest("demo", "123456");
 
-        when(userService.verify(eq("demo"), eq("123456"), anyString())).thenReturn("jwt-token");
+        when(mfaVerificationService.verify(eq("demo"), eq("123456"), anyString())).thenReturn("jwt-token");
         when(cookieManager.createCookie("jwt-token"))
                 .thenReturn(ResponseCookie.from("AUTH_TOKEN", "jwt-token").httpOnly(true).path("/").build());
 
@@ -140,7 +149,7 @@ class AuthControllerTest {
                 .secret("mfa-secret")
                 .build();
 
-        when(userService.registerUser(any(User.class), eq(Role.USER), anyString())).thenReturn(
+        when(registrationService.register(any(User.class), eq(Role.USER), anyString())).thenReturn(
                 new RegistrationResult(saved, java.util.List.of("ABCD-EFGH")));
         when(totpService.getUriForImage("mfa-secret")).thenReturn("data:image/png;base64,qr");
 

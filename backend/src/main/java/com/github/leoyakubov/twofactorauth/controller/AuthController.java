@@ -12,8 +12,10 @@ import com.github.leoyakubov.twofactorauth.payload.RegistrationResult;
 import com.github.leoyakubov.twofactorauth.payload.SignUpRequest;
 import com.github.leoyakubov.twofactorauth.payload.SignupResponse;
 import com.github.leoyakubov.twofactorauth.payload.VerifyCodeRequest;
+import com.github.leoyakubov.twofactorauth.service.AuthenticationService;
+import com.github.leoyakubov.twofactorauth.service.MfaVerificationService;
+import com.github.leoyakubov.twofactorauth.service.RegistrationService;
 import com.github.leoyakubov.twofactorauth.service.TotpService;
-import com.github.leoyakubov.twofactorauth.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -33,12 +35,20 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class AuthController {
     private static final String USERS_WITH_USERNAME_PATH = "/users/{username}";
 
-    private final UserService userService;
+    private final AuthenticationService authenticationService;
+    private final RegistrationService registrationService;
+    private final MfaVerificationService mfaVerificationService;
     private final TotpService totpService;
     private final JwtCookieManager cookieManager;
 
-    public AuthController(UserService userService, TotpService totpService, JwtCookieManager cookieManager) {
-        this.userService = userService;
+    public AuthController(AuthenticationService authenticationService,
+                          RegistrationService registrationService,
+                          MfaVerificationService mfaVerificationService,
+                          TotpService totpService,
+                          JwtCookieManager cookieManager) {
+        this.authenticationService = authenticationService;
+        this.registrationService = registrationService;
+        this.mfaVerificationService = mfaVerificationService;
         this.totpService = totpService;
         this.cookieManager = cookieManager;
     }
@@ -47,7 +57,7 @@ public class AuthController {
     public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
                                                                        HttpServletRequest request) {
         log.info("sign-in attempt for {} from {}", loginRequest.username(), request.getRemoteAddr());
-        LoginResult result = userService.loginUser(loginRequest.username(), loginRequest.password(),
+        LoginResult result = authenticationService.login(loginRequest.username(), loginRequest.password(),
                 request.getRemoteAddr());
         log.info("sign-in completed for {} from {} (mfa={})", loginRequest.username(), request.getRemoteAddr(), result.mfaRequired());
         if (result.mfaRequired()) {
@@ -63,7 +73,7 @@ public class AuthController {
     public ResponseEntity<JwtAuthenticationResponse> verifyCode(@Valid @RequestBody VerifyCodeRequest verifyCodeRequest,
                                                                  HttpServletRequest request) {
         log.info("mfa verify attempt for {} from {}", verifyCodeRequest.username(), request.getRemoteAddr());
-        String token = userService.verify(verifyCodeRequest.username(), verifyCodeRequest.code(),
+        String token = mfaVerificationService.verify(verifyCodeRequest.username(), verifyCodeRequest.code(),
                 request.getRemoteAddr());
         log.info("mfa verify completed for {} from {}", verifyCodeRequest.username(), request.getRemoteAddr());
         return ResponseEntity.ok()
@@ -75,7 +85,7 @@ public class AuthController {
     public ResponseEntity<SignupResponse> createUser(@Valid @RequestBody SignUpRequest payload,
                                                      HttpServletRequest request) {
         log.info("creating user {} from {}", payload.username(), request.getRemoteAddr());
-        RegistrationResult registrationResult = userService.registerUser(toUser(payload), Role.USER,
+        RegistrationResult registrationResult = registrationService.register(toUser(payload), Role.USER,
                 request.getRemoteAddr());
 
         User saved = registrationResult.user();

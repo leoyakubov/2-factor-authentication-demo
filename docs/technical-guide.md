@@ -106,7 +106,7 @@ What this means:
 Backend:
 
 - Java 21+ target
-- Spring Boot 3.5.14
+- Spring Boot 4.0.6
 - Spring Security
 - Spring Web
 - Spring Data MongoDB
@@ -116,11 +116,11 @@ Backend:
 
 Frontend:
 
-- React 19.1.1
-- Vite
-- Jest
-- React Router v5
-- Ant Design
+- React 19.2.7
+- Vite 8.0.16
+- Jest 30.4.2
+- React Router 7.16.0
+- Ant Design 6.4.3
 - Fetch API
 
 Tooling:
