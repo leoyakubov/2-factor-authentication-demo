@@ -25,6 +25,9 @@ class MfaVerificationServiceTest {
     private TotpService totpService;
 
     @Mock
+    private MfaSecretService mfaSecretService;
+
+    @Mock
     private RecoveryCodeService recoveryCodeService;
 
     @Mock
@@ -37,7 +40,7 @@ class MfaVerificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        mfaVerificationService = new MfaVerificationService(userService, totpService, recoveryCodeService,
+        mfaVerificationService = new MfaVerificationService(userService, totpService, mfaSecretService, recoveryCodeService,
                 jwtTokenService, authAttemptService);
     }
 
@@ -47,7 +50,8 @@ class MfaVerificationServiceTest {
         user.setSecret("mfa-secret");
 
         when(userService.getByUsername("demo")).thenReturn(user);
-        when(totpService.verifyCode("123456", "mfa-secret")).thenReturn(true);
+        when(mfaSecretService.decrypt("mfa-secret")).thenReturn("plain-mfa-secret");
+        when(totpService.verifyCode("123456", "plain-mfa-secret")).thenReturn(true);
         when(jwtTokenService.generateToken(any())).thenReturn("jwt-token");
 
         String token = mfaVerificationService.verify("demo", "123456", "127.0.0.1");
@@ -61,7 +65,8 @@ class MfaVerificationServiceTest {
         user.setSecret("mfa-secret");
 
         when(userService.getByUsername("demo")).thenReturn(user);
-        when(totpService.verifyCode("000000", "mfa-secret")).thenReturn(false);
+        when(mfaSecretService.decrypt("mfa-secret")).thenReturn("plain-mfa-secret");
+        when(totpService.verifyCode("000000", "plain-mfa-secret")).thenReturn(false);
         when(recoveryCodeService.consumeRecoveryCode(user, "000000")).thenReturn(false);
 
         assertThrows(BadRequestException.class,
@@ -74,7 +79,8 @@ class MfaVerificationServiceTest {
         user.setSecret("mfa-secret");
 
         when(userService.getByUsername("demo")).thenReturn(user);
-        when(totpService.verifyCode("ABCD-EFGH", "mfa-secret")).thenReturn(false);
+        when(mfaSecretService.decrypt("mfa-secret")).thenReturn("plain-mfa-secret");
+        when(totpService.verifyCode("ABCD-EFGH", "plain-mfa-secret")).thenReturn(false);
         when(recoveryCodeService.consumeRecoveryCode(user, "ABCD-EFGH")).thenReturn(true);
         when(jwtTokenService.generateToken(any())).thenReturn("jwt-token");
 

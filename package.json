@@ -1,0 +1,13 @@
+{
+  "name": "2-factor-authentication-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Full-stack Spring Boot and React demo with optional TOTP MFA, QR enrollment, recovery codes, JWT cookie sessions, CSRF protection, and rate limiting.",
+  "scripts": {
+    "backend:verify": "sh ./scripts/backend-verify.sh",
+    "backend:run": "sh ./scripts/backend-run.sh",
+    "frontend:verify": "sh ./scripts/frontend-verify.sh",
+    "frontend:run": "sh ./scripts/frontend-run.sh",
+    "verify": "npm run backend:verify && npm run frontend:verify"
+  }
+}

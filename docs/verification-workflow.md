@@ -18,6 +18,14 @@ node -v
 npm -v
 ```
 
+You can also use the root command shortcuts:
+
+```sh
+npm run backend:verify
+npm run frontend:verify
+npm run verify
+```
+
 ## 2. Prepare environment files
 
 The helper scripts create `.env` files from the example files if they are missing, but it is still a good idea to inspect them first.
@@ -85,6 +93,7 @@ On Windows, run it from Git Bash or WSL.
 Expected result:
 
 - Jest runs once and exits
+- ESLint checks frontend source and test support files
 - Vite creates a production `dist` folder
 - The current frontend tests pass
 

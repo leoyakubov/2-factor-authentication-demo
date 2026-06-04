@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Form, Input, Button, Checkbox } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { DingtalkOutlined } from "@ant-design/icons";
@@ -132,7 +132,7 @@ const Signup = () => {
               { max: 40, message: "Your name must be 40 characters or fewer." },
             ]}
           >
-            <Input size="large" placeholder="Name" />
+            <Input size="large" aria-label="Name" placeholder="Name" />
           </Form.Item>
           <Form.Item
             name="username"
@@ -142,7 +142,7 @@ const Signup = () => {
               { max: 15, message: "Your username must be 15 characters or fewer." },
             ]}
           >
-            <Input size="large" placeholder="Username" />
+            <Input size="large" aria-label="Username" placeholder="Username" />
           </Form.Item>
           <Form.Item
             name="email"
@@ -152,7 +152,7 @@ const Signup = () => {
               { max: 40, message: "Your email must be 40 characters or fewer." },
             ]}
           >
-            <Input size="large" placeholder="Email" />
+            <Input size="large" aria-label="Email" placeholder="Email" />
           </Form.Item>
           <Form.Item
             name="password"
@@ -162,7 +162,7 @@ const Signup = () => {
               { max: 20, message: "Your password must be 20 characters or fewer." },
             ]}
           >
-            <Input size="large" type="password" placeholder="Password" />
+            <Input size="large" type="password" aria-label="Password" placeholder="Password" />
           </Form.Item>
           <Form.Item name="mfa" valuePropName="checked">
             <Checkbox>Enable two-factor authentication</Checkbox>

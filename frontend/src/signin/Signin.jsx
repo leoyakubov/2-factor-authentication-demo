@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Form, Input, Button } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -57,6 +57,7 @@ const Signin = () => {
           <Input
             size="large"
             prefix={<UserOutlined className="site-form-item-icon" />}
+            aria-label="Username or email"
             placeholder="Username or email"
           />
         </Form.Item>
@@ -68,6 +69,7 @@ const Signin = () => {
             size="large"
             prefix={<LockOutlined className="site-form-item-icon" />}
             type="password"
+            aria-label="Password"
             placeholder="Password"
           />
         </Form.Item>

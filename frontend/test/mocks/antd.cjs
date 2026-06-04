@@ -48,7 +48,7 @@ function createForm() {
   };
 }
 
-function Form({ children, onFinish, className, initialValues, ...props }) {
+function Form({ children, onFinish, className, ...props }) {
   const [formState] = React.useState(() => props.form || createForm());
   const [fieldErrors, setFieldErrors] = React.useState({});
 
@@ -115,7 +115,6 @@ function FormItem({ name, valuePropName, children, ...props }) {
   }
 
   const child = childArray[0];
-
   const childProps = {};
 
   if (name) {
@@ -150,18 +149,7 @@ function Input(props) {
   return React.createElement("input", props);
 }
 
-function Button({
-  children,
-  htmlType,
-  onClick,
-  loading,
-  disabled,
-  block,
-  shape,
-  size,
-  type,
-  ...props
-}) {
+function Button({ children, htmlType, onClick, loading, disabled, type, ...props }) {
   return React.createElement(
     "button",
     {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Form, Input, Button } from "antd";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { DingtalkOutlined } from "@ant-design/icons";
@@ -70,7 +70,7 @@ const VerifyCode = () => {
           name="code"
           rules={[{ required: true, message: "Code is required" }]}
         >
-          <Input size="large" placeholder="Enter code" />
+          <Input size="large" aria-label="Verification code" placeholder="Enter code" />
         </Form.Item>
         <Form.Item>
           <Button

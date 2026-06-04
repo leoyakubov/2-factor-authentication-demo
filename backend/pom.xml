@@ -29,6 +29,7 @@
 		<lombok.version>1.18.46</lombok.version>
 		<mongo-java-server.version>1.47.0</mongo-java-server.version>
 		<totp.version>1.7.1</totp.version>
+		<mockito.javaagent>${settings.localRepository}/net/bytebuddy/byte-buddy-agent/${byte-buddy.version}/byte-buddy-agent-${byte-buddy.version}.jar</mockito.javaagent>
 	</properties>
 
 	<dependencies>
@@ -128,6 +129,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
+					<argLine>-javaagent:${mockito.javaagent}</argLine>
 					<useModulePath>false</useModulePath>
 				</configuration>
 			</plugin>
@@ -135,6 +137,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
+					<argLine>-javaagent:${mockito.javaagent}</argLine>
 					<useModulePath>false</useModulePath>
 					<includes>
 						<include>**/*IT.java</include>

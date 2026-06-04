@@ -35,6 +35,9 @@ class RegistrationServiceTest {
     private TotpService totpService;
 
     @Mock
+    private MfaSecretService mfaSecretService;
+
+    @Mock
     private RecoveryCodeService recoveryCodeService;
 
     @Mock
@@ -45,7 +48,7 @@ class RegistrationServiceTest {
     @BeforeEach
     void setUp() {
         registrationService = new RegistrationService(passwordEncoder, userService, totpService,
-                recoveryCodeService, authAttemptService);
+                mfaSecretService, recoveryCodeService, authAttemptService);
     }
 
     @Test
@@ -57,6 +60,7 @@ class RegistrationServiceTest {
         when(userService.existsByEmail("demo@example.com")).thenReturn(false);
         when(passwordEncoder.encode("secret")).thenReturn("encoded-secret");
         when(totpService.generateSecret()).thenReturn("mfa-secret");
+        when(mfaSecretService.encrypt("mfa-secret")).thenReturn("encrypted-mfa-secret");
         when(recoveryCodeService.generateRecoveryCodes()).thenReturn(recoveryCodes);
         when(recoveryCodeService.hashCodes(recoveryCodes)).thenReturn(Set.of("hashed-recovery"));
         when(userService.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -64,7 +68,7 @@ class RegistrationServiceTest {
         User saved = registrationService.register(user, Role.USER, "127.0.0.1").user();
 
         assertEquals("encoded-secret", saved.getPassword());
-        assertEquals("mfa-secret", saved.getSecret());
+        assertEquals("encrypted-mfa-secret", saved.getSecret());
         assertTrue(saved.isActive());
         assertEquals(Set.of(Role.USER), saved.getRoles());
         assertEquals(Set.of("hashed-recovery"), saved.getRecoveryCodes());

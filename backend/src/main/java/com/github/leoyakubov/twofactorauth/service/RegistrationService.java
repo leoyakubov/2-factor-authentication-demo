@@ -20,17 +20,20 @@ public class RegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
     private final TotpService totpService;
+    private final MfaSecretService mfaSecretService;
     private final RecoveryCodeService recoveryCodeService;
     private final AuthAttemptService authAttemptService;
 
     public RegistrationService(PasswordEncoder passwordEncoder,
                                UserService userService,
                                TotpService totpService,
+                               MfaSecretService mfaSecretService,
                                RecoveryCodeService recoveryCodeService,
                                AuthAttemptService authAttemptService) {
         this.passwordEncoder = passwordEncoder;
         this.userService = userService;
         this.totpService = totpService;
+        this.mfaSecretService = mfaSecretService;
         this.recoveryCodeService = recoveryCodeService;
         this.authAttemptService = authAttemptService;
     }
@@ -58,17 +61,18 @@ public class RegistrationService {
         user.setRoles(new HashSet<>(Set.of(role)));
 
         if (user.isMfa()) {
-            user.setSecret(totpService.generateSecret());
+            String mfaSecret = totpService.generateSecret();
+            user.setSecret(mfaSecretService.encrypt(mfaSecret));
             List<String> recoveryCodes = recoveryCodeService.generateRecoveryCodes();
             user.setRecoveryCodes(recoveryCodeService.hashCodes(recoveryCodes));
             log.info("generated {} recovery codes for {}", recoveryCodes.size(), user.getUsername());
             authAttemptService.recordSuccess(AuthAttemptService.AuthAttemptAction.SIGN_UP, user.getUsername(), clientIp);
             log.info("saved user {} (mfa={})", user.getUsername(), user.isMfa());
-            return new RegistrationResult(userService.save(user), recoveryCodes);
+            return new RegistrationResult(userService.save(user), mfaSecret, recoveryCodes);
         }
 
         log.info("saved user {} (mfa={})", user.getUsername(), user.isMfa());
         authAttemptService.recordSuccess(AuthAttemptService.AuthAttemptAction.SIGN_UP, user.getUsername(), clientIp);
-        return new RegistrationResult(userService.save(user), List.of());
+        return new RegistrationResult(userService.save(user), null, List.of());
     }
 }

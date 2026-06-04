@@ -5,6 +5,7 @@ module.exports = {
     "^.+\\.[jt]sx?$": "babel-jest",
   },
   moduleNameMapper: {
+    "^antd$": "<rootDir>/test/mocks/antd.cjs",
     "\\.(css|less|sass|scss)$": "<rootDir>/test/styleMock.cjs",
   },
   testPathIgnorePatterns: ["/node_modules/", "/dist/"],

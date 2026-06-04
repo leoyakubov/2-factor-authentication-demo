@@ -8,13 +8,17 @@ import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
+import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.repository.support.MongoRepositoryFactory;
 
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.data.domain.Sort.Direction.ASC;
 
 class UserRepositoryIT {
 
@@ -29,6 +33,8 @@ class UserRepositoryIT {
 
         databaseFactory = new SimpleMongoClientDatabaseFactory(mongoServer.getConnectionString() + "/testdb");
         MongoTemplate mongoTemplate = new MongoTemplate(databaseFactory);
+        mongoTemplate.indexOps(User.class).createIndex(new Index().on("username", ASC).unique());
+        mongoTemplate.indexOps(User.class).createIndex(new Index().on("email", ASC).unique());
         userRepository = new MongoRepositoryFactory(mongoTemplate).getRepository(UserRepository.class);
     }
 
@@ -52,6 +58,22 @@ class UserRepositoryIT {
         assertTrue(userRepository.findByEmail("demo@example.com").isPresent());
         assertTrue(userRepository.existsByUsername("demo"));
         assertTrue(userRepository.existsByEmail("demo@example.com"));
+    }
+
+    @Test
+    void shouldRejectDuplicateUsername() {
+        userRepository.save(buildUser("demo", "first@example.com"));
+
+        assertThrows(DuplicateKeyException.class,
+                () -> userRepository.save(buildUser("demo", "second@example.com")));
+    }
+
+    @Test
+    void shouldRejectDuplicateEmail() {
+        userRepository.save(buildUser("first", "demo@example.com"));
+
+        assertThrows(DuplicateKeyException.class,
+                () -> userRepository.save(buildUser("second", "demo@example.com")));
     }
 
     private static User buildUser(String username, String email) {

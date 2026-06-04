@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, Button, Card, Avatar } from "antd";
 import { useNavigate } from "react-router-dom";
 import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
@@ -75,6 +75,7 @@ const Profile = () => {
             icon={<LogoutOutlined />}
             onClick={logout}
             className="logout-button"
+            aria-label="Logout"
           >
             Logout
           </Button>,
@@ -87,6 +88,7 @@ const Profile = () => {
               src={currentUser.profilePicture}
               className="user-avatar-circle"
               icon={<UserOutlined />}
+              aria-label="User avatar"
             >
               {!currentUser.profilePicture ? getInitials() : null}
             </Avatar>

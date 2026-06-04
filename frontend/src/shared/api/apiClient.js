@@ -51,7 +51,7 @@ const parseBody = async (response) => {
 
   try {
     return JSON.parse(text);
-  } catch (error) {
+  } catch {
     return { message: text };
   }
 };

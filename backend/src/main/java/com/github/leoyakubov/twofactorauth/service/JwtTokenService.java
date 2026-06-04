@@ -4,9 +4,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import com.github.leoyakubov.twofactorauth.config.properties.JwtConfigProperties;
 import org.springframework.security.core.Authentication;
@@ -34,11 +34,11 @@ public class JwtTokenService {
         Long now = System.currentTimeMillis();
         SecretKey key = signingKey();
         return Jwts.builder()
-                .setSubject(authentication.getName())
+                .subject(authentication.getName())
                 .claim("authorities", authentication.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-                .setIssuedAt(new Date(now))
-                .setExpiration(new Date(now + jwtConfig.expiration().toMillis()))
+                .issuedAt(new Date(now))
+                .expiration(new Date(now + jwtConfig.expiration().toMillis()))
                 .signWith(key)
                 .compact();
     }
@@ -48,7 +48,7 @@ public class JwtTokenService {
                 .verifyWith(signingKey())
                 .build()
                 .parseSignedClaims(token)
-                .getBody();
+                .getPayload();
     }
 
     public boolean validateToken(String authToken) {

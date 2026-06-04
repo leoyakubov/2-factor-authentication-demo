@@ -16,17 +16,20 @@ public class MfaVerificationService {
 
     private final UserService userService;
     private final TotpService totpService;
+    private final MfaSecretService mfaSecretService;
     private final RecoveryCodeService recoveryCodeService;
     private final JwtTokenService jwtTokenService;
     private final AuthAttemptService authAttemptService;
 
     public MfaVerificationService(UserService userService,
                                   TotpService totpService,
+                                  MfaSecretService mfaSecretService,
                                   RecoveryCodeService recoveryCodeService,
                                   JwtTokenService jwtTokenService,
                                   AuthAttemptService authAttemptService) {
         this.userService = userService;
         this.totpService = totpService;
+        this.mfaSecretService = mfaSecretService;
         this.recoveryCodeService = recoveryCodeService;
         this.jwtTokenService = jwtTokenService;
         this.authAttemptService = authAttemptService;
@@ -36,8 +39,9 @@ public class MfaVerificationService {
         authAttemptService.assertAllowed(AuthAttemptService.AuthAttemptAction.VERIFY, username, clientIp);
         try {
             User user = userService.getByUsername(username);
+            String mfaSecret = mfaSecretService.decrypt(user.getSecret());
 
-            if (!totpService.verifyCode(code, user.getSecret()) && !recoveryCodeService.consumeRecoveryCode(user, code)) {
+            if (!totpService.verifyCode(code, mfaSecret) && !recoveryCodeService.consumeRecoveryCode(user, code)) {
                 authAttemptService.recordFailure(AuthAttemptService.AuthAttemptAction.VERIFY, username, clientIp);
                 log.warn("MFA verification failed for {}", username);
                 throw new BadRequestException("Code is incorrect");

@@ -18,7 +18,7 @@ A full-stack authentication demo built for portfolio, interview, and learning us
 - Frontend: React 19.2.7, Vite 8.0.16, React Router 7.16.0, Ant Design 6.4.3
 - Authentication: BCrypt password hashing, JWT in `httpOnly` cookies, CSRF token flow
 - MFA: TOTP authenticator codes, QR enrollment, one-time recovery codes
-- Testing: JUnit 5, Mockito, embedded Mongo integration tests, Jest 30.4.2, React Testing Library 16.3.2
+- Testing and quality: JUnit 5, Mockito, embedded Mongo integration tests, Jest 30.4.2, React Testing Library 16.3.2, ESLint
 
 ## What Is Implemented
 
@@ -26,6 +26,7 @@ A full-stack authentication demo built for portfolio, interview, and learning us
 - QR-code enrollment for authenticator apps
 - Login with username or email and password
 - MFA verification with an authenticator code or one-time recovery code
+- Encrypted-at-rest MFA secrets for newly created MFA users
 - JWT-backed browser session stored in an `httpOnly` cookie
 - CSRF bootstrap and protected state-changing requests
 - Protected profile page loaded from the backend
@@ -74,11 +75,17 @@ Run locally:
 
 Docker is not required for the local demo workflow. The backend uses embedded MongoDB for local development and integration tests.
 
+You can also use root npm shortcuts:
+
+- `npm run backend:verify`
+- `npm run frontend:verify`
+- `npm run verify`
+
 ## Limitations
 
 - This is a demo project, not a production-ready identity platform.
 - Local development runs over HTTP; production use should enforce HTTPS and secure deployment defaults.
-- MFA secrets are stored by the backend for the demo flow and should be encrypted at rest in production.
+- MFA secrets are encrypted before storage, but a production system should still use stronger key management and rotation.
 - Rate limiting is in-memory, so it resets when the backend restarts.
 - Password reset, email verification, and account recovery flows are not implemented.
 - Embedded MongoDB is convenient for local demos, but production deployments should use managed or separately operated MongoDB.
@@ -86,6 +93,8 @@ Docker is not required for the local demo workflow. The backend uses embedded Mo
 ## More Details
 
 - [Technical guide](docs/technical-guide.md)
+- [Architecture details](docs/architecture.md)
+- [Demo script](docs/demo-script.md)
 - [Security guide](docs/security-guide.md)
 - [Verification workflow](docs/verification-workflow.md)
 - [Troubleshooting](docs/troubleshooting.md)

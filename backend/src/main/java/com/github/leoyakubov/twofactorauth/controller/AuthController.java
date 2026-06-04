@@ -130,7 +130,7 @@ public class AuthController {
     private SignupResponse toSignupResponse(User saved, RegistrationResult registrationResult) {
         return new SignupResponse(
                 saved.isMfa(),
-                saved.isMfa() ? totpService.getUriForImage(saved.getSecret()) : null,
+                saved.isMfa() ? totpService.getUriForImage(registrationResult.mfaSecret()) : null,
                 registrationResult.recoveryCodes());
     }
 }

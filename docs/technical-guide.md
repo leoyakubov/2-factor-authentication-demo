@@ -23,6 +23,7 @@ It is intentionally demo-focused rather than production hardened, but it is stru
 - Sign up with username, email, password, display name, and optional MFA
 - Generate a QR code when MFA is enabled during signup
 - Store the MFA secret on the backend for the user account
+- Encrypt newly generated MFA secrets before storing them
 - Log in with username or email plus password
 - Require a second step when MFA is enabled
 - Verify the 6-digit authenticator code on the backend
@@ -128,9 +129,17 @@ Tooling:
 - Maven Wrapper
 - npm
 - shell scripts for Unix, macOS, Git Bash, and WSL
+- ESLint for frontend source checks
 
 ## Repository Layout
 
 - `backend`: Spring Boot API
 - `frontend`: React client
 - `scripts`: helper scripts for running and testing
+
+More focused docs:
+
+- [Architecture](architecture.md)
+- [Demo script](demo-script.md)
+- [Security guide](security-guide.md)
+- [Verification workflow](verification-workflow.md)

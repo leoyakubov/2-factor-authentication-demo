@@ -150,7 +150,7 @@ class AuthControllerTest {
                 .build();
 
         when(registrationService.register(any(User.class), eq(Role.USER), anyString())).thenReturn(
-                new RegistrationResult(saved, java.util.List.of("ABCD-EFGH")));
+                new RegistrationResult(saved, "mfa-secret", java.util.List.of("ABCD-EFGH")));
         when(totpService.getUriForImage("mfa-secret")).thenReturn("data:image/png;base64,qr");
 
         mockMvc.perform(post(ApiRoutes.USERS_PATH)

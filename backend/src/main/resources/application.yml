@@ -8,6 +8,7 @@ spring:
       host: ${MONGODB_HOST:localhost}
       database: ${MONGODB_DATABASE:two-factor-authentication-demo}
       port: ${MONGODB_PORT:27018}
+      auto-index-creation: true
 
 server:
   port: ${SERVER_PORT:8081}
@@ -35,6 +36,8 @@ security:
     cookie-path: ${JWT_COOKIE_PATH:/}
     cookie-secure: ${JWT_COOKIE_SECURE:false}
     cookie-same-site: ${JWT_COOKIE_SAME_SITE:Strict}
+  mfa:
+    encryption-key: ${MFA_SECRET_ENCRYPTION_KEY:${JWT_SECRET}}
   auth:
     rate-limit:
       max-attempts: ${AUTH_RATE_LIMIT_MAX_ATTEMPTS:5}

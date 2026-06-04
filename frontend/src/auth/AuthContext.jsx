@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { getCurrentUser, logout as logoutRequest } from "../shared/api/apiClient";
 import { logAuthEvent } from "../shared/logging/logger";
 

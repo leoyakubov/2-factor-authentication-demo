@@ -1,8 +1,6 @@
 require("@testing-library/jest-dom");
 const { TextDecoder, TextEncoder } = require("node:util");
 
-jest.mock("antd");
-
 if (typeof global.TextEncoder === "undefined") {
   global.TextEncoder = TextEncoder;
 }
