@@ -10,18 +10,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class RecoveryCodeManagerTest {
+class RecoveryCodeServiceTest {
 
     @Test
-    void shouldGenerateAndConsumeRecoveryCodes() {
-        RecoveryCodeManager manager = new RecoveryCodeManager(new BCryptPasswordEncoder());
-        List<String> codes = manager.generateRecoveryCodes(2);
+    void shouldGenerateAndConsumeRecoveryCodesWhenRecoveringAccess() {
+        RecoveryCodeService service = new RecoveryCodeService(new BCryptPasswordEncoder());
+        List<String> codes = service.generateRecoveryCodes();
         User user = new User();
         user.setUsername("demo");
-        user.setRecoveryCodes(manager.hashCodes(codes));
+        user.setRecoveryCodes(service.hashCodes(codes));
 
-        assertEquals(2, codes.size());
-        assertTrue(manager.consumeRecoveryCode(user, codes.get(0)));
-        assertFalse(manager.consumeRecoveryCode(user, codes.get(0)));
+        assertEquals(8, codes.size());
+        assertTrue(service.consumeRecoveryCode(user, codes.get(0)));
+        assertFalse(service.consumeRecoveryCode(user, codes.get(0)));
     }
 }

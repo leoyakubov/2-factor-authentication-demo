@@ -1,4 +1,4 @@
-package com.github.leoyakubov.twofactorauth.config;
+package com.github.leoyakubov.twofactorauth.config.properties;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

@@ -8,10 +8,10 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import com.github.leoyakubov.twofactorauth.config.properties.JwtConfigProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
-import com.github.leoyakubov.twofactorauth.config.JwtConfigProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -21,11 +21,11 @@ import javax.crypto.SecretKey;
 
 @Service
 @Slf4j
-public class JwtTokenManager {
+public class JwtTokenService {
 
     private final JwtConfigProperties jwtConfig;
 
-    public JwtTokenManager(JwtConfigProperties jwtConfig) {
+    public JwtTokenService(JwtConfigProperties jwtConfig) {
         this.jwtConfig = jwtConfig;
     }
 

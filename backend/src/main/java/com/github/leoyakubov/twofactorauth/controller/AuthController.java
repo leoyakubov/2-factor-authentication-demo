@@ -1,23 +1,22 @@
 package com.github.leoyakubov.twofactorauth.controller;
 
-import com.github.leoyakubov.twofactorauth.exception.BadRequestException;
-import com.github.leoyakubov.twofactorauth.exception.EmailAlreadyExistsException;
-import com.github.leoyakubov.twofactorauth.exception.UsernameAlreadyExistsException;
 import com.github.leoyakubov.twofactorauth.config.JwtCookieManager;
+import com.github.leoyakubov.twofactorauth.controller.routes.ApiRoutes;
 import com.github.leoyakubov.twofactorauth.model.Profile;
 import com.github.leoyakubov.twofactorauth.model.Role;
 import com.github.leoyakubov.twofactorauth.model.User;
 import com.github.leoyakubov.twofactorauth.payload.JwtAuthenticationResponse;
-import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import com.github.leoyakubov.twofactorauth.payload.LoginRequest;
+import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import com.github.leoyakubov.twofactorauth.payload.RegistrationResult;
 import com.github.leoyakubov.twofactorauth.payload.SignUpRequest;
 import com.github.leoyakubov.twofactorauth.payload.SignupResponse;
 import com.github.leoyakubov.twofactorauth.payload.VerifyCodeRequest;
-import com.github.leoyakubov.twofactorauth.service.TotpManager;
+import com.github.leoyakubov.twofactorauth.service.TotpService;
 import com.github.leoyakubov.twofactorauth.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -28,29 +27,29 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import java.net.URI;
 
 @RestController
 @Slf4j
 public class AuthController {
+    private static final String USERS_WITH_USERNAME_PATH = "/users/{username}";
 
     private final UserService userService;
-    private final TotpManager totpManager;
+    private final TotpService totpService;
     private final JwtCookieManager cookieManager;
 
-    public AuthController(UserService userService, TotpManager totpManager, JwtCookieManager cookieManager) {
+    public AuthController(UserService userService, TotpService totpService, JwtCookieManager cookieManager) {
         this.userService = userService;
-        this.totpManager = totpManager;
+        this.totpService = totpService;
         this.cookieManager = cookieManager;
     }
 
-    @PostMapping("/signin")
+    @PostMapping(ApiRoutes.SIGNIN_PATH)
     public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
                                                                        HttpServletRequest request) {
-        log.info("sign-in attempt for {} from {}", loginRequest.getUsername(), request.getRemoteAddr());
-        LoginResult result = userService.loginUser(loginRequest.getUsername(), loginRequest.getPassword(),
+        log.info("sign-in attempt for {} from {}", loginRequest.username(), request.getRemoteAddr());
+        LoginResult result = userService.loginUser(loginRequest.username(), loginRequest.password(),
                 request.getRemoteAddr());
-        log.info("sign-in completed for {} from {} (mfa={})", loginRequest.getUsername(), request.getRemoteAddr(), result.mfaRequired());
+        log.info("sign-in completed for {} from {} (mfa={})", loginRequest.username(), request.getRemoteAddr(), result.mfaRequired());
         if (result.mfaRequired()) {
             return ResponseEntity.ok(new JwtAuthenticationResponse(true));
         }
@@ -60,59 +59,38 @@ public class AuthController {
                 .body(new JwtAuthenticationResponse(false));
     }
 
-    @PostMapping("/verify")
+    @PostMapping(ApiRoutes.VERIFY_PATH)
     public ResponseEntity<JwtAuthenticationResponse> verifyCode(@Valid @RequestBody VerifyCodeRequest verifyCodeRequest,
                                                                  HttpServletRequest request) {
-        log.info("mfa verify attempt for {} from {}", verifyCodeRequest.getUsername(), request.getRemoteAddr());
-        String token = userService.verify(verifyCodeRequest.getUsername(), verifyCodeRequest.getCode(),
+        log.info("mfa verify attempt for {} from {}", verifyCodeRequest.username(), request.getRemoteAddr());
+        String token = userService.verify(verifyCodeRequest.username(), verifyCodeRequest.code(),
                 request.getRemoteAddr());
-        log.info("mfa verify completed for {} from {}", verifyCodeRequest.getUsername(), request.getRemoteAddr());
+        log.info("mfa verify completed for {} from {}", verifyCodeRequest.username(), request.getRemoteAddr());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookieManager.createCookie(token).toString())
                 .body(new JwtAuthenticationResponse(false));
     }
 
-    @PostMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ApiRoutes.USERS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SignupResponse> createUser(@Valid @RequestBody SignUpRequest payload,
                                                      HttpServletRequest request) {
-        log.info("creating user {} from {}", payload.getUsername(), request.getRemoteAddr());
-
-        User user = User
-                .builder()
-                .username(payload.getUsername())
-                .email(payload.getEmail())
-                .password(payload.getPassword())
-                .userProfile(Profile
-                        .builder()
-                        .displayName(payload.getName())
-                        .build())
-                .mfa(payload.isMfa())
-                .build();
-
-        RegistrationResult registrationResult;
-        try {
-             registrationResult = userService.registerUser(user, Role.USER, request.getRemoteAddr());
-        } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
-            log.warn("signup rejected for {}: {}", payload.getUsername(), e.getMessage());
-            throw new BadRequestException(e.getMessage());
-        }
+        log.info("creating user {} from {}", payload.username(), request.getRemoteAddr());
+        RegistrationResult registrationResult = userService.registerUser(toUser(payload), Role.USER,
+                request.getRemoteAddr());
 
         User saved = registrationResult.user();
         log.info("user created {} from {} (mfa={})", saved.getUsername(), request.getRemoteAddr(), saved.isMfa());
 
         URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath().path("/users/{username}")
-                .buildAndExpand(user.getUsername()).toUri();
+                .fromCurrentContextPath().path(USERS_WITH_USERNAME_PATH)
+                .buildAndExpand(saved.getUsername()).toUri();
 
         return ResponseEntity
                 .created(location)
-                .body(new SignupResponse(
-                        saved.isMfa(),
-                        saved.isMfa() ? totpManager.getUriForImage(saved.getSecret()) : null,
-                        registrationResult.recoveryCodes()));
+                .body(toSignupResponse(saved, registrationResult));
     }
 
-    @PostMapping("/logout")
+    @PostMapping(ApiRoutes.LOGOUT_PATH)
     public ResponseEntity<Void> logout(HttpServletRequest request) {
         log.info("logout requested from {}", request.getRemoteAddr());
         return ResponseEntity.noContent()
@@ -120,8 +98,29 @@ public class AuthController {
                 .build();
     }
 
-    @GetMapping("/csrf")
+    @GetMapping(ApiRoutes.CSRF_PATH)
     public ResponseEntity<Void> csrf(CsrfToken token) {
         return ResponseEntity.noContent().build();
+    }
+
+    private User toUser(SignUpRequest payload) {
+        return User
+                .builder()
+                .username(payload.username())
+                .email(payload.email())
+                .password(payload.password())
+                .userProfile(Profile
+                        .builder()
+                        .displayName(payload.name())
+                        .build())
+                .mfa(payload.mfa())
+                .build();
+    }
+
+    private SignupResponse toSignupResponse(User saved, RegistrationResult registrationResult) {
+        return new SignupResponse(
+                saved.isMfa(),
+                saved.isMfa() ? totpService.getUriForImage(saved.getSecret()) : null,
+                registrationResult.recoveryCodes());
     }
 }

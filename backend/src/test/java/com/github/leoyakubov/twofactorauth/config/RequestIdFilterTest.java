@@ -16,7 +16,7 @@ class RequestIdFilterTest {
     private final RequestIdFilter filter = new RequestIdFilter();
 
     @Test
-    void shouldReuseIncomingRequestIdAndExposeItInResponse() throws ServletException, IOException {
+    void shouldReuseIncomingRequestIdAndExposeItInResponseHeader() throws ServletException, IOException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("X-Request-Id", "request-123");
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -30,7 +30,7 @@ class RequestIdFilterTest {
     }
 
     @Test
-    void shouldGenerateRequestIdWhenMissing() throws ServletException, IOException {
+    void shouldGenerateRequestIdWhenMissingFromRequest() throws ServletException, IOException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
         AtomicReference<String> requestIdSeenInChain = new AtomicReference<>();

@@ -1,12 +1,13 @@
 package com.github.leoyakubov.twofactorauth.controller;
 
-import com.github.leoyakubov.twofactorauth.config.FrontendProperties;
+import com.github.leoyakubov.twofactorauth.config.properties.FrontendProperties;
+import com.github.leoyakubov.twofactorauth.controller.routes.ApiRoutes;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 
@@ -20,7 +21,7 @@ public class SpaRouteController {
         this.frontendProperties = frontendProperties;
     }
 
-    @GetMapping({"/", "/login", "/signup", "/verify", "/qrcode"})
+    @GetMapping({ApiRoutes.ROOT_PATH, ApiRoutes.LOGIN_PATH, ApiRoutes.SIGNUP_PATH, ApiRoutes.VERIFY_PATH, ApiRoutes.QRCODE_PATH})
     public String redirectToFrontend(HttpServletRequest request) {
         LinkedMultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         request.getParameterMap().forEach((key, values) -> queryParams.addAll(key, Arrays.asList(values)));

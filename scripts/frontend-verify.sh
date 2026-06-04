@@ -7,4 +7,4 @@ trap 'cd "$ORIGIN"' EXIT
 
 . "$ROOT/scripts/frontend-prepare.sh"
 prepare_frontend
-npm run verify:ci
+npm run verify

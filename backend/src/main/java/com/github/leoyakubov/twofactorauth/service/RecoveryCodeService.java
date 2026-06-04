@@ -14,8 +14,9 @@ import java.util.Set;
 
 @Service
 @Slf4j
-public class RecoveryCodeManager {
+public class RecoveryCodeService {
 
+    private static final int DEFAULT_CODE_COUNT = 8;
     private static final char[] ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".toCharArray();
     private static final int GROUP_SIZE = 4;
     private static final int GROUP_COUNT = 2;
@@ -23,7 +24,7 @@ public class RecoveryCodeManager {
     private final PasswordEncoder passwordEncoder;
     private final SecureRandom secureRandom = new SecureRandom();
 
-    public RecoveryCodeManager(PasswordEncoder passwordEncoder) {
+    public RecoveryCodeService(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -33,6 +34,10 @@ public class RecoveryCodeManager {
             codes.add(generateCode());
         }
         return codes;
+    }
+
+    public List<String> generateRecoveryCodes() {
+        return generateRecoveryCodes(DEFAULT_CODE_COUNT);
     }
 
     public Set<String> hashCodes(List<String> plainCodes) {

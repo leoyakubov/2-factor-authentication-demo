@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,16 +49,16 @@ class UserServiceTest {
     private AuthenticationManager authenticationManager;
 
     @Mock
-    private JwtTokenManager jwtTokenManager;
+    private JwtTokenService jwtTokenService;
 
     @Mock
-    private TotpManager totpManager;
+    private TotpService totpService;
 
     @Mock
-    private RecoveryCodeManager recoveryCodeManager;
+    private RecoveryCodeService recoveryCodeService;
 
     @Mock
-    private AuthAttemptLimiter authAttemptLimiter;
+    private AuthAttemptService authAttemptService;
 
     @Captor
     private ArgumentCaptor<Authentication> authenticationCaptor;
@@ -66,21 +67,21 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(passwordEncoder, userRepository, authenticationManager, jwtTokenManager,
-                totpManager, recoveryCodeManager, authAttemptLimiter);
+        userService = new UserService(passwordEncoder, userRepository, authenticationManager, jwtTokenService,
+                totpService, recoveryCodeService, authAttemptService);
     }
 
     @Test
-    void registerUserShouldEncodePasswordAndPersistSecretForMfa() {
+    void shouldEncodePasswordAndPersistSecretForMfaWhenRegisteringUser() {
         User user = buildUser("demo", "demo@example.com", "secret", true);
         java.util.List<String> recoveryCodes = java.util.List.of("ABCD-EFGH");
 
         when(userRepository.existsByUsername("demo")).thenReturn(false);
         when(userRepository.existsByEmail("demo@example.com")).thenReturn(false);
         when(passwordEncoder.encode("secret")).thenReturn("encoded-secret");
-        when(totpManager.generateSecret()).thenReturn("mfa-secret");
-        when(recoveryCodeManager.generateRecoveryCodes(8)).thenReturn(recoveryCodes);
-        when(recoveryCodeManager.hashCodes(recoveryCodes)).thenReturn(Set.of("hashed-recovery"));
+        when(totpService.generateSecret()).thenReturn("mfa-secret");
+        when(recoveryCodeService.generateRecoveryCodes()).thenReturn(recoveryCodes);
+        when(recoveryCodeService.hashCodes(recoveryCodes)).thenReturn(Set.of("hashed-recovery"));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         User saved = userService.registerUser(user, Role.USER);
@@ -94,7 +95,7 @@ class UserServiceTest {
     }
 
     @Test
-    void registerUserShouldRejectExistingUsername() {
+    void shouldRejectExistingUsernameWhenRegisteringUser() {
         User user = buildUser("demo", "demo@example.com", "secret", false);
 
         when(userRepository.existsByUsername("demo")).thenReturn(true);
@@ -104,7 +105,7 @@ class UserServiceTest {
     }
 
     @Test
-    void registerUserShouldRejectExistingEmail() {
+    void shouldRejectExistingEmailWhenRegisteringUser() {
         User user = buildUser("demo", "demo@example.com", "secret", false);
 
         when(userRepository.existsByUsername("demo")).thenReturn(false);
@@ -115,37 +116,37 @@ class UserServiceTest {
     }
 
     @Test
-    void loginUserShouldReturnJwtForUsername() {
+    void shouldReturnJwtForUsernameWhenLoginSucceeds() {
         User user = buildUser("demo", "demo@example.com", "encoded-secret", false);
 
         when(authenticationManager.authenticate(any())).thenReturn(
                 new UsernamePasswordAuthenticationToken(new AuthUserDetails(user), null, new AuthUserDetails(user).getAuthorities()));
-        when(jwtTokenManager.generateToken(authenticationCaptor.capture())).thenReturn("jwt-token");
+        when(jwtTokenService.generateToken(authenticationCaptor.capture())).thenReturn("jwt-token");
 
         LoginResult result = userService.loginUser("demo", "secret");
 
         assertEquals("jwt-token", result.accessToken());
         assertEquals("demo", authenticationCaptor.getValue().getName());
-        assertEquals(false, result.mfaRequired());
+        assertFalse(result.mfaRequired());
     }
 
     @Test
-    void loginUserShouldReturnJwtForEmail() {
+    void shouldReturnJwtForEmailWhenLoginSucceeds() {
         User user = buildUser("demo", "demo@example.com", "encoded-secret", false);
 
         when(authenticationManager.authenticate(any())).thenReturn(
                 new UsernamePasswordAuthenticationToken(new AuthUserDetails(user), null, new AuthUserDetails(user).getAuthorities()));
-        when(jwtTokenManager.generateToken(any())).thenReturn("jwt-token");
+        when(jwtTokenService.generateToken(any())).thenReturn("jwt-token");
 
         LoginResult result = userService.loginUser("demo@example.com", "secret");
 
         assertEquals("jwt-token", result.accessToken());
-        assertEquals(false, result.mfaRequired());
-        verify(jwtTokenManager).generateToken(any());
+        assertFalse(result.mfaRequired());
+        verify(jwtTokenService).generateToken(any());
     }
 
     @Test
-    void loginUserShouldRequestMfaForMfaUser() {
+    void shouldRequestMfaWhenMfaUserLogsIn() {
         User user = buildUser("demo", "demo@example.com", "encoded-secret", true);
         user.setSecret("mfa-secret");
 
@@ -156,24 +157,24 @@ class UserServiceTest {
 
         assertEquals(true, result.mfaRequired());
         assertEquals(null, result.accessToken());
-        verify(jwtTokenManager, never()).generateToken(any());
+        verify(jwtTokenService, never()).generateToken(any());
     }
 
     @Test
-    void loginUserShouldPropagateBadCredentials() {
+    void shouldPropagateBadCredentialsWhenLoginFails() {
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("bad credentials"));
 
         assertThrows(BadCredentialsException.class, () -> userService.loginUser("demo", "wrong"));
     }
 
     @Test
-    void verifyShouldReturnJwtWhenCodeIsValid() {
+    void shouldReturnJwtWhenVerificationCodeIsValid() {
         User user = buildUser("demo", "demo@example.com", "encoded-secret", true);
         user.setSecret("mfa-secret");
 
         when(userRepository.findByUsername("demo")).thenReturn(Optional.of(user));
-        when(totpManager.verifyCode("123456", "mfa-secret")).thenReturn(true);
-        when(jwtTokenManager.generateToken(any())).thenReturn("jwt-token");
+        when(totpService.verifyCode("123456", "mfa-secret")).thenReturn(true);
+        when(jwtTokenService.generateToken(any())).thenReturn("jwt-token");
 
         String token = userService.verify("demo", "123456");
 
@@ -181,26 +182,26 @@ class UserServiceTest {
     }
 
     @Test
-    void verifyShouldRejectInvalidCode() {
+    void shouldRejectInvalidCodeWhenVerificationCodeIsWrong() {
         User user = buildUser("demo", "demo@example.com", "encoded-secret", true);
         user.setSecret("mfa-secret");
 
         when(userRepository.findByUsername("demo")).thenReturn(Optional.of(user));
-        when(totpManager.verifyCode("000000", "mfa-secret")).thenReturn(false);
-        when(recoveryCodeManager.consumeRecoveryCode(user, "000000")).thenReturn(false);
+        when(totpService.verifyCode("000000", "mfa-secret")).thenReturn(false);
+        when(recoveryCodeService.consumeRecoveryCode(user, "000000")).thenReturn(false);
 
         assertThrows(BadRequestException.class, () -> userService.verify("demo", "000000"));
     }
 
     @Test
-    void verifyShouldAcceptRecoveryCodeAndConsumeIt() {
+    void shouldAcceptRecoveryCodeAndConsumeItWhenVerificationCodeMatchesRecoveryCode() {
         User user = buildUser("demo", "demo@example.com", "encoded-secret", true);
         user.setSecret("mfa-secret");
 
         when(userRepository.findByUsername("demo")).thenReturn(Optional.of(user));
-        when(totpManager.verifyCode("ABCD-EFGH", "mfa-secret")).thenReturn(false);
-        when(recoveryCodeManager.consumeRecoveryCode(user, "ABCD-EFGH")).thenReturn(true);
-        when(jwtTokenManager.generateToken(any())).thenReturn("jwt-token");
+        when(totpService.verifyCode("ABCD-EFGH", "mfa-secret")).thenReturn(false);
+        when(recoveryCodeService.consumeRecoveryCode(user, "ABCD-EFGH")).thenReturn(true);
+        when(jwtTokenService.generateToken(any())).thenReturn("jwt-token");
 
         String token = userService.verify("demo", "ABCD-EFGH");
 
@@ -209,14 +210,14 @@ class UserServiceTest {
     }
 
     @Test
-    void verifyShouldRejectUnknownUser() {
+    void shouldRejectUnknownUserWhenVerifyingCode() {
         when(userRepository.findByUsername("missing")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> userService.verify("missing", "123456"));
     }
 
     @Test
-    void userCopyConstructorShouldPreserveMfaState() {
+    void shouldPreserveMfaStateWhenCopyingUser() {
         User user = buildUser("demo", "demo@example.com", "secret", true);
         user.setSecret("mfa-secret");
 

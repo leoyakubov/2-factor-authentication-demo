@@ -1,6 +1,6 @@
 package com.github.leoyakubov.twofactorauth.service;
 
-import com.github.leoyakubov.twofactorauth.config.AuthRateLimitProperties;
+import com.github.leoyakubov.twofactorauth.config.properties.AuthRateLimitProperties;
 import com.github.leoyakubov.twofactorauth.exception.TooManyRequestsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,17 +16,23 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
-public class AuthAttemptLimiter {
+public class AuthAttemptService {
+
+    enum AuthAttemptAction {
+        SIGN_IN,
+        VERIFY,
+        SIGN_UP
+    }
 
     private final AuthRateLimitProperties properties;
     private final Clock clock = Clock.systemUTC();
     private final Map<String, AttemptState> states = new ConcurrentHashMap<>();
 
-    public AuthAttemptLimiter(AuthRateLimitProperties properties) {
+    public AuthAttemptService(AuthRateLimitProperties properties) {
         this.properties = properties;
     }
 
-    public void assertAllowed(String action, String identifier, String clientIp) {
+    public void assertAllowed(AuthAttemptAction action, String identifier, String clientIp) {
         String key = key(action, identifier, clientIp);
         AttemptState state = states.get(key);
         if (state == null) {
@@ -46,11 +52,11 @@ public class AuthAttemptLimiter {
         }
     }
 
-    public void recordSuccess(String action, String identifier, String clientIp) {
+    public void recordSuccess(AuthAttemptAction action, String identifier, String clientIp) {
         states.remove(key(action, identifier, clientIp));
     }
 
-    public void recordFailure(String action, String identifier, String clientIp) {
+    public void recordFailure(AuthAttemptAction action, String identifier, String clientIp) {
         String key = key(action, identifier, clientIp);
         AttemptState state = states.computeIfAbsent(key, unused -> new AttemptState());
         synchronized (state) {
@@ -75,9 +81,9 @@ public class AuthAttemptLimiter {
         }
     }
 
-    private String key(String action, String identifier, String clientIp) {
+    private String key(AuthAttemptAction action, String identifier, String clientIp) {
         return String.format("%s:%s:%s",
-                action == null ? "" : action.toLowerCase(Locale.ROOT),
+                action == null ? "" : action.name().toLowerCase(Locale.ROOT),
                 identifier == null ? "" : identifier.toLowerCase(Locale.ROOT),
                 clientIp == null ? "unknown" : clientIp);
     }

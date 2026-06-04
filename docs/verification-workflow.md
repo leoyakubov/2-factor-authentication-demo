@@ -86,7 +86,7 @@ If you prefer a direct command:
 
 ```sh
 cd frontend
-npm run verify:ci
+npm run verify
 ```
 
 ## 6. Start the backend

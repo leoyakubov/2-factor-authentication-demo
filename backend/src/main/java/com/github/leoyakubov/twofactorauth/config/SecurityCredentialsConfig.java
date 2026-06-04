@@ -1,6 +1,10 @@
 package com.github.leoyakubov.twofactorauth.config;
 
-import com.github.leoyakubov.twofactorauth.service.JwtTokenManager;
+import com.github.leoyakubov.twofactorauth.controller.routes.ApiRoutes;
+import com.github.leoyakubov.twofactorauth.config.properties.CorsProperties;
+import com.github.leoyakubov.twofactorauth.config.properties.JwtConfigProperties;
+import com.github.leoyakubov.twofactorauth.config.properties.SecurityHeaderProperties;
+import com.github.leoyakubov.twofactorauth.service.JwtTokenService;
 import com.github.leoyakubov.twofactorauth.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -32,12 +36,12 @@ public class SecurityCredentialsConfig {
     private final CorsProperties corsProperties;
     private final SecurityHeaderProperties securityHeaderProperties;
     private final JwtCookieManager cookieManager;
-    private final JwtTokenManager tokenProvider;
+    private final JwtTokenService tokenProvider;
 
     public SecurityCredentialsConfig(CorsProperties corsProperties,
                                      SecurityHeaderProperties securityHeaderProperties,
                                      JwtCookieManager cookieManager,
-                                     JwtTokenManager tokenProvider) {
+                                     JwtTokenService tokenProvider) {
         this.corsProperties = corsProperties;
         this.securityHeaderProperties = securityHeaderProperties;
         this.cookieManager = cookieManager;
@@ -49,15 +53,19 @@ public class SecurityCredentialsConfig {
                                                    JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter) throws Exception {
         http.authorizeHttpRequests((authz) -> authz
                 .requestMatchers("/error").permitAll()
-                .requestMatchers(HttpMethod.GET, "/", "/login", "/signup", "/verify", "/qrcode", "/csrf").permitAll()
-                .requestMatchers("/signin", "/verify", "/logout", "/users").permitAll()
+                .requestMatchers(HttpMethod.GET, ApiRoutes.ROOT_PATH, ApiRoutes.LOGIN_PATH,
+                        ApiRoutes.SIGNUP_PATH, ApiRoutes.VERIFY_PATH, ApiRoutes.QRCODE_PATH,
+                        ApiRoutes.CSRF_PATH).permitAll()
+                .requestMatchers(ApiRoutes.SIGNIN_PATH, ApiRoutes.VERIFY_PATH,
+                        ApiRoutes.LOGOUT_PATH, ApiRoutes.USERS_PATH).permitAll()
                 .anyRequest().authenticated()
         );
 
         http.cors(Customizer.withDefaults());
         http.csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository())
-                .ignoringRequestMatchers("/signin", "/verify", "/users", "/logout", "/csrf"));
+                .ignoringRequestMatchers(ApiRoutes.SIGNIN_PATH, ApiRoutes.VERIFY_PATH,
+                        ApiRoutes.USERS_PATH, ApiRoutes.LOGOUT_PATH, ApiRoutes.CSRF_PATH));
         http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.exceptionHandling(exConf -> exConf.authenticationEntryPoint((req, resp, ex) ->
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")));

@@ -1,6 +1,7 @@
 package com.github.leoyakubov.twofactorauth.controller;
 
-import com.github.leoyakubov.twofactorauth.config.FrontendProperties;
+import com.github.leoyakubov.twofactorauth.config.properties.FrontendProperties;
+import com.github.leoyakubov.twofactorauth.controller.routes.ApiRoutes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,12 +27,12 @@ class SpaRouteControllerTest {
     @ParameterizedTest
     @CsvSource({
             "'/','http://localhost:3000/'",
-            "'/login','http://localhost:3000/login'",
-            "'/signup','http://localhost:3000/signup'",
-            "'/verify','http://localhost:3000/verify'",
-            "'/qrcode','http://localhost:3000/qrcode'"
+            "'" + ApiRoutes.LOGIN_PATH + "','http://localhost:3000/login'",
+            "'" + ApiRoutes.SIGNUP_PATH + "','http://localhost:3000/signup'",
+            "'" + ApiRoutes.VERIFY_PATH + "','http://localhost:3000/verify'",
+            "'" + ApiRoutes.QRCODE_PATH + "','http://localhost:3000/qrcode'"
     })
-    void spaRoutesShouldRedirectToFrontend(String path, String expectedRedirect) throws Exception {
+    void shouldRedirectSpaRoutesToFrontend(String path, String expectedRedirect) throws Exception {
         mockMvc.perform(get(path))
                 .andExpect(status().isFound())
                 .andExpect(redirectedUrl(expectedRedirect));
@@ -39,12 +40,12 @@ class SpaRouteControllerTest {
 
     @ParameterizedTest
     @CsvSource({
-            "'/login','next=profile','http://localhost:3000/login?next=profile'",
-            "'/verify','foo=bar&baz=qux','http://localhost:3000/verify?foo=bar&baz=qux'"
+            "'" + ApiRoutes.LOGIN_PATH + "','next=profile','http://localhost:3000/login?next=profile'",
+            "'" + ApiRoutes.VERIFY_PATH + "','foo=bar&baz=qux','http://localhost:3000/verify?foo=bar&baz=qux'"
     })
-    void spaRouteRedirectShouldPreserveQueryString(String path,
-                                                   String queryString,
-                                                   String expectedRedirect) throws Exception {
+    void shouldPreserveQueryStringWhenRedirectingSpaRoute(String path,
+                                                          String queryString,
+                                                          String expectedRedirect) throws Exception {
         String[] params = queryString.split("&");
         var requestBuilder = get(path);
         for (String param : params) {

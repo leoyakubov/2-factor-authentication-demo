@@ -20,7 +20,12 @@ import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 
 @Service
 @Slf4j
-public class TotpManager {
+public class TotpService {
+
+    private static final String ISSUER = "2-factor-auth-demo";
+    private static final String LABEL = "Two-factor-auth-test";
+    private static final int DIGITS = 6;
+    private static final int PERIOD_SECONDS = 30;
 
     public String generateSecret() {
         SecretGenerator generator = new DefaultSecretGenerator();
@@ -33,12 +38,12 @@ public class TotpManager {
         }
 
         QrData data = new QrData.Builder()
-                .label("Two-factor-auth-test")
+                .label(LABEL)
                 .secret(secret)
-                .issuer("exampleTwoFactor")
+                .issuer(ISSUER)
                 .algorithm(HashingAlgorithm.SHA1)
-                .digits(6)
-                .period(30)
+                .digits(DIGITS)
+                .period(PERIOD_SECONDS)
                 .build();
 
         QrGenerator generator = new ZxingPngQrGenerator();

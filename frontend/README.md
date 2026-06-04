@@ -25,7 +25,8 @@ The default backend URL is `http://localhost:8081`.
 - `npm run dev`
 - `npm test`
 - `npm run test:ci`
-- `npm run build:ci`
+- `npm run build`
+- `npm run verify`
 - `npm run preview`
 
 ## Notes

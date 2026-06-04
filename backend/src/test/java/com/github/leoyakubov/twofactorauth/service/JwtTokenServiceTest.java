@@ -1,6 +1,6 @@
 package com.github.leoyakubov.twofactorauth.service;
 
-import com.github.leoyakubov.twofactorauth.config.JwtConfigProperties;
+import com.github.leoyakubov.twofactorauth.config.properties.JwtConfigProperties;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -8,36 +8,37 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 
+import java.time.Duration;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.time.Duration;
 
-class JwtTokenManagerTest {
+class JwtTokenServiceTest {
 
     private final JwtConfigProperties jwtConfig = createJwtConfig();
-    private final JwtTokenManager jwtTokenManager = new JwtTokenManager(jwtConfig);
+    private final JwtTokenService jwtTokenService = new JwtTokenService(jwtConfig);
 
     @Test
-    void generateTokenShouldIncludeSubjectAndAuthorities() {
+    void shouldIncludeSubjectAndAuthoritiesWhenGeneratingToken() {
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
                         "demo",
                         "secret",
                         List.of(new SimpleGrantedAuthority("ROLE_USER")));
 
-        String token = jwtTokenManager.generateToken(authentication);
+        String token = jwtTokenService.generateToken(authentication);
 
-        assertTrue(jwtTokenManager.validateToken(token));
+        assertTrue(jwtTokenService.validateToken(token));
 
-        Claims claims = jwtTokenManager.getClaimsFromJWT(token);
+        Claims claims = jwtTokenService.getClaimsFromJWT(token);
         assertEquals("demo", claims.getSubject());
         assertEquals(List.of("ROLE_USER"), claims.get("authorities", List.class));
     }
 
     @Test
-    void validateTokenShouldRejectMalformedTokens() {
-        assertFalse(jwtTokenManager.validateToken("not-a-token"));
+    void shouldRejectMalformedTokensWhenValidatingToken() {
+        assertFalse(jwtTokenService.validateToken("not-a-token"));
     }
 
     private static JwtConfigProperties createJwtConfig() {

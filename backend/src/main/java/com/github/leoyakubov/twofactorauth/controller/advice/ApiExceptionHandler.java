@@ -1,5 +1,11 @@
-package com.github.leoyakubov.twofactorauth.exception;
+package com.github.leoyakubov.twofactorauth.controller.advice;
 
+import com.github.leoyakubov.twofactorauth.exception.BadRequestException;
+import com.github.leoyakubov.twofactorauth.exception.EmailAlreadyExistsException;
+import com.github.leoyakubov.twofactorauth.exception.ResourceNotFoundException;
+import com.github.leoyakubov.twofactorauth.exception.TooManyRequestsException;
+import com.github.leoyakubov.twofactorauth.exception.UsernameAlreadyExistsException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,11 +15,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-import jakarta.servlet.http.HttpServletRequest;
-import com.github.leoyakubov.twofactorauth.exception.TooManyRequestsException;
 
-import java.util.LinkedHashMap;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

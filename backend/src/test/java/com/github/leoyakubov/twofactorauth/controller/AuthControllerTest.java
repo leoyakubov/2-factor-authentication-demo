@@ -1,7 +1,8 @@
 package com.github.leoyakubov.twofactorauth.controller;
 
 import com.github.leoyakubov.twofactorauth.config.JwtCookieManager;
-import com.github.leoyakubov.twofactorauth.exception.ApiExceptionHandler;
+import com.github.leoyakubov.twofactorauth.controller.advice.ApiExceptionHandler;
+import com.github.leoyakubov.twofactorauth.controller.routes.ApiRoutes;
 import com.github.leoyakubov.twofactorauth.model.Profile;
 import com.github.leoyakubov.twofactorauth.model.Role;
 import com.github.leoyakubov.twofactorauth.model.User;
@@ -10,7 +11,7 @@ import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import com.github.leoyakubov.twofactorauth.payload.RegistrationResult;
 import com.github.leoyakubov.twofactorauth.payload.SignUpRequest;
 import com.github.leoyakubov.twofactorauth.payload.VerifyCodeRequest;
-import com.github.leoyakubov.twofactorauth.service.TotpManager;
+import com.github.leoyakubov.twofactorauth.service.TotpService;
 import com.github.leoyakubov.twofactorauth.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +44,7 @@ class AuthControllerTest {
     private UserService userService;
 
     @Mock
-    private TotpManager totpManager;
+    private TotpService totpService;
 
     @Mock
     private JwtCookieManager cookieManager;
@@ -56,23 +57,21 @@ class AuthControllerTest {
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
 
-        mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(userService, totpManager, cookieManager))
+        mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(userService, totpService, cookieManager))
                 .setControllerAdvice(new ApiExceptionHandler())
                 .setValidator(validator)
                 .build();
     }
 
     @Test
-    void signInShouldReturnJwtResponse() throws Exception {
-        LoginRequest request = new LoginRequest();
-        request.setUsername("demo");
-        request.setPassword("secret");
+    void shouldReturnJwtResponseWhenSignInSucceeds() throws Exception {
+        LoginRequest request = new LoginRequest("demo", "secret");
 
         when(userService.loginUser(eq("demo"), eq("secret"), anyString())).thenReturn(LoginResult.authenticated("jwt-token"));
         when(cookieManager.createCookie("jwt-token"))
                 .thenReturn(ResponseCookie.from("AUTH_TOKEN", "jwt-token").httpOnly(true).path("/").build());
 
-        mockMvc.perform(post("/signin")
+        mockMvc.perform(post(ApiRoutes.SIGNIN_PATH)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -82,14 +81,12 @@ class AuthControllerTest {
     }
 
     @Test
-    void signInShouldReturnMfaRequiredResponse() throws Exception {
-        LoginRequest request = new LoginRequest();
-        request.setUsername("demo");
-        request.setPassword("secret");
+    void shouldReturnMfaRequiredResponseWhenMfaIsRequired() throws Exception {
+        LoginRequest request = new LoginRequest("demo", "secret");
 
         when(userService.loginUser(eq("demo"), eq("secret"), anyString())).thenReturn(LoginResult.requiresMfa());
 
-        mockMvc.perform(post("/signin")
+        mockMvc.perform(post(ApiRoutes.SIGNIN_PATH)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -99,11 +96,10 @@ class AuthControllerTest {
     }
 
     @Test
-    void signInShouldReturnFriendlyValidationError() throws Exception {
-        LoginRequest request = new LoginRequest();
-        request.setUsername("demo");
+    void shouldReturnFriendlyValidationErrorWhenSignInPayloadIsInvalid() throws Exception {
+        LoginRequest request = new LoginRequest("demo", null);
 
-        mockMvc.perform(post("/signin")
+        mockMvc.perform(post(ApiRoutes.SIGNIN_PATH)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -112,16 +108,14 @@ class AuthControllerTest {
     }
 
     @Test
-    void verifyShouldReturnJwtResponse() throws Exception {
-        VerifyCodeRequest request = new VerifyCodeRequest();
-        request.setUsername("demo");
-        request.setCode("123456");
+    void shouldReturnJwtResponseWhenVerificationSucceeds() throws Exception {
+        VerifyCodeRequest request = new VerifyCodeRequest("demo", "123456");
 
         when(userService.verify(eq("demo"), eq("123456"), anyString())).thenReturn("jwt-token");
         when(cookieManager.createCookie("jwt-token"))
                 .thenReturn(ResponseCookie.from("AUTH_TOKEN", "jwt-token").httpOnly(true).path("/").build());
 
-        mockMvc.perform(post("/verify")
+        mockMvc.perform(post(ApiRoutes.VERIFY_PATH)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -131,13 +125,8 @@ class AuthControllerTest {
     }
 
     @Test
-    void signupShouldReturnQrCodeWhenMfaEnabled() throws Exception {
-        SignUpRequest request = new SignUpRequest();
-        request.setName("Demo User");
-        request.setUsername("demo");
-        request.setEmail("demo@example.com");
-        request.setPassword("secret123");
-        request.setMfa(true);
+    void shouldReturnQrCodeWhenSignupEnablesMfa() throws Exception {
+        SignUpRequest request = new SignUpRequest("Demo User", "demo", "demo@example.com", "secret123", true);
 
         User saved = User.builder()
                 .id("123")
@@ -153,9 +142,9 @@ class AuthControllerTest {
 
         when(userService.registerUser(any(User.class), eq(Role.USER), anyString())).thenReturn(
                 new RegistrationResult(saved, java.util.List.of("ABCD-EFGH")));
-        when(totpManager.getUriForImage("mfa-secret")).thenReturn("data:image/png;base64,qr");
+        when(totpService.getUriForImage("mfa-secret")).thenReturn("data:image/png;base64,qr");
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post(ApiRoutes.USERS_PATH)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -165,15 +154,10 @@ class AuthControllerTest {
     }
 
     @Test
-    void signupShouldReturnFieldSpecificValidationErrors() throws Exception {
-        SignUpRequest request = new SignUpRequest();
-        request.setName("Demo User");
-        request.setUsername("demo");
-        request.setEmail("demo@example.com");
-        request.setPassword("user2");
-        request.setMfa(false);
+    void shouldReturnFieldSpecificValidationErrorsWhenSignupPayloadIsInvalid() throws Exception {
+        SignUpRequest request = new SignUpRequest("Demo User", "demo", "demo@example.com", "user2", false);
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post(ApiRoutes.USERS_PATH)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -182,11 +166,11 @@ class AuthControllerTest {
     }
 
     @Test
-    void logoutShouldClearTheCookie() throws Exception {
+    void shouldClearTheCookieWhenLoggingOut() throws Exception {
         when(cookieManager.clearCookie())
                 .thenReturn(ResponseCookie.from("AUTH_TOKEN", "").httpOnly(true).path("/").maxAge(0).build());
 
-        mockMvc.perform(post("/logout"))
+        mockMvc.perform(post(ApiRoutes.LOGOUT_PATH))
                 .andExpect(status().isNoContent())
                 .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("AUTH_TOKEN=")));
     }

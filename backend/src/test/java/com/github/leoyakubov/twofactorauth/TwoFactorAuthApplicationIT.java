@@ -15,7 +15,7 @@ class TwoFactorAuthApplicationIT {
 	private UserRepository userRepository;
 
 	@Test
-	void contextLoads() {
+	void shouldLoadApplicationContext() {
 	}
 
 }

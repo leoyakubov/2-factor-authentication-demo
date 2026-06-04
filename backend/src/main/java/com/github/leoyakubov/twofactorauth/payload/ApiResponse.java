@@ -1,12 +1,4 @@
 package com.github.leoyakubov.twofactorauth.payload;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
-@Data
-@AllArgsConstructor
-public class ApiResponse {
-
-    private Boolean success;
-    private String message;
+public record ApiResponse(Boolean success, String message) {
 }

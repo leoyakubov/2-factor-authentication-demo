@@ -1,10 +1,11 @@
 package com.github.leoyakubov.twofactorauth.config;
 
+import com.github.leoyakubov.twofactorauth.config.properties.JwtConfigProperties;
 import com.github.leoyakubov.twofactorauth.model.AuthUserDetails;
 import com.github.leoyakubov.twofactorauth.model.Profile;
 import com.github.leoyakubov.twofactorauth.model.Role;
 import com.github.leoyakubov.twofactorauth.model.User;
-import com.github.leoyakubov.twofactorauth.service.JwtTokenManager;
+import com.github.leoyakubov.twofactorauth.service.JwtTokenService;
 import com.github.leoyakubov.twofactorauth.service.UserService;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
@@ -28,10 +29,10 @@ class JwtTokenAuthenticationFilterTest {
 
     private final JwtConfigProperties jwtConfig = createJwtConfig();
     private final JwtCookieManager cookieManager = new JwtCookieManager(jwtConfig);
-    private final JwtTokenManager jwtTokenManager = Mockito.mock(JwtTokenManager.class);
+    private final JwtTokenService jwtTokenService = Mockito.mock(JwtTokenService.class);
     private final UserService userService = Mockito.mock(UserService.class);
     private final JwtTokenAuthenticationFilter filter =
-            new JwtTokenAuthenticationFilter(cookieManager, jwtTokenManager, userService);
+            new JwtTokenAuthenticationFilter(cookieManager, jwtTokenService, userService);
 
     @AfterEach
     void tearDown() {
@@ -39,12 +40,12 @@ class JwtTokenAuthenticationFilterTest {
     }
 
     @Test
-    void shouldReadTokenFromCookieAndPopulateSecurityContext() throws Exception {
+    void shouldPopulateSecurityContextWhenTokenIsReadFromCookie() throws Exception {
         User user = buildUser("demo");
         String token = "jwt-token";
 
-        when(jwtTokenManager.validateToken(token)).thenReturn(true);
-        when(jwtTokenManager.getClaimsFromJWT(token)).thenReturn(
+        when(jwtTokenService.validateToken(token)).thenReturn(true);
+        when(jwtTokenService.getClaimsFromJWT(token)).thenReturn(
                 Jwts.claims().subject("demo").build());
         when(userService.findByUsername("demo")).thenReturn(Optional.of(user));
 
@@ -61,12 +62,12 @@ class JwtTokenAuthenticationFilterTest {
     }
 
     @Test
-    void shouldTrimBearerTokenAndPopulateSecurityContext() throws Exception {
+    void shouldPopulateSecurityContextWhenBearerTokenIsTrimmed() throws Exception {
         User user = buildUser("demo");
         String token = "jwt-token";
 
-        when(jwtTokenManager.validateToken(token)).thenReturn(true);
-        when(jwtTokenManager.getClaimsFromJWT(token)).thenReturn(
+        when(jwtTokenService.validateToken(token)).thenReturn(true);
+        when(jwtTokenService.getClaimsFromJWT(token)).thenReturn(
                 Jwts.claims().subject("demo").build());
         when(userService.findByUsername("demo")).thenReturn(Optional.of(user));
 
@@ -83,11 +84,11 @@ class JwtTokenAuthenticationFilterTest {
     }
 
     @Test
-    void shouldClearContextForInvalidToken() throws Exception {
+    void shouldClearSecurityContextWhenTokenIsInvalid() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users/me");
         request.setCookies(new Cookie("AUTH_TOKEN", "invalid"));
 
-        when(jwtTokenManager.validateToken("invalid")).thenReturn(false);
+        when(jwtTokenService.validateToken("invalid")).thenReturn(false);
 
         filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
 

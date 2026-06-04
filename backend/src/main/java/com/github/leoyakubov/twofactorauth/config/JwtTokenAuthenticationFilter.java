@@ -1,5 +1,6 @@
 package com.github.leoyakubov.twofactorauth.config;
 
+import com.github.leoyakubov.twofactorauth.config.properties.JwtConfigProperties;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,7 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 import com.github.leoyakubov.twofactorauth.model.AuthUserDetails;
-import com.github.leoyakubov.twofactorauth.service.JwtTokenManager;
+import com.github.leoyakubov.twofactorauth.service.JwtTokenService;
 import com.github.leoyakubov.twofactorauth.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,12 +21,12 @@ import java.io.IOException;
 public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtCookieManager cookieManager;
-    private final JwtTokenManager tokenProvider;
+    private final JwtTokenService tokenProvider;
     private final UserService userService;
 
     public JwtTokenAuthenticationFilter(
             JwtCookieManager cookieManager,
-            JwtTokenManager tokenProvider,
+            JwtTokenService tokenProvider,
             UserService userService) {
         this.cookieManager = cookieManager;
         this.tokenProvider = tokenProvider;

@@ -16,17 +16,17 @@ class UserControllerTest {
     private final UserController userController = new UserController();
 
     @Test
-    void getCurrentUserShouldMapPrincipalToSummary() {
+    void shouldMapPrincipalToSummaryWhenFetchingCurrentUser() {
         User user = buildUser("demo", "Demo User");
         user.setId("user-1");
         AuthUserDetails details = new AuthUserDetails(user);
 
         UserSummary summary = userController.getCurrentUser(details);
 
-        assertEquals("user-1", summary.getId());
-        assertEquals("demo", summary.getUsername());
-        assertEquals("Demo User", summary.getName());
-        assertEquals("https://example.com/demo.png", summary.getProfilePicture());
+        assertEquals("user-1", summary.id());
+        assertEquals("demo", summary.username());
+        assertEquals("Demo User", summary.name());
+        assertEquals("https://example.com/demo.png", summary.profilePicture());
     }
 
     private static User buildUser(String username, String displayName) {
