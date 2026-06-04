@@ -1,4 +1,4 @@
-# two-factor-authentication-demo
+# 2-factor-authentication-demo
 
 A full-stack demo that shows username/password sign-up and login with optional two-factor authentication, QR-code enrollment, TOTP verification, and JWT-backed browser sessions using an `httpOnly` cookie.
 
