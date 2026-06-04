@@ -5,6 +5,6 @@ ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 ORIGIN="$(pwd)"
 trap 'cd "$ORIGIN"' EXIT
 
-cd "$ROOT/backend"
-[ -f .env ] || cp .env.example .env
-./mvnw verify
+. "$ROOT/scripts/frontend-prepare.sh"
+prepare_frontend
+CI=true npm run build:ci

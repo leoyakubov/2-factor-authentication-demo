@@ -1,7 +1,16 @@
 import { API_BASE_URL } from "../config/appConfig";
+import { logApiFailure } from "../logging/logger";
 
 const XSRF_COOKIE_NAME = "XSRF-TOKEN";
 let csrfTokenRequestPromise;
+
+const generateRequestId = () => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `req-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+};
 
 const getCookieValue = (name) => {
   if (typeof document === "undefined") {
@@ -50,7 +59,9 @@ const parseBody = async (response) => {
 const request = async (options) => {
   const headers = new Headers(options.headers || {});
   const method = (options.method || "GET").toUpperCase();
+  const requestId = options.requestId || generateRequestId();
 
+  headers.set("Accept", "application/json");
   if (options.setContentType !== false && options.body) {
     headers.append("Content-Type", "application/json");
   }
@@ -63,6 +74,8 @@ const request = async (options) => {
     }
   }
 
+  headers.set("X-Request-Id", requestId);
+
   const response = await fetch(options.url, {
     ...options,
     method,
@@ -70,11 +83,23 @@ const request = async (options) => {
     credentials: "include",
   });
   const body = await parseBody(response);
+  const responseRequestId = response.headers?.get?.("X-Request-Id") || requestId;
 
   if (!response.ok) {
     const error = new Error(body.message || response.statusText || "Request failed");
     error.status = response.status;
     error.body = body;
+    error.requestId = responseRequestId;
+    error.method = method;
+    error.url = options.url;
+    logApiFailure({
+      method,
+      url: options.url,
+      status: response.status,
+      requestId: responseRequestId,
+      message: error.message,
+      body,
+    });
     throw error;
   }
 

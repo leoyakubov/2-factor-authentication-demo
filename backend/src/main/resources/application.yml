@@ -9,12 +9,6 @@ spring:
       database: ${MONGODB_DATABASE:spring-boot-jwt-auth}
       port: ${MONGODB_PORT:27018}
 
-de:
-  flapdoodle:
-    mongodb:
-      embedded:
-        version: 5.0.5
-
 server:
   port: ${SERVER_PORT:8081}
 
@@ -24,6 +18,12 @@ app:
   cors:
     allowed-origins:
       - ${FRONTEND_ORIGIN:http://localhost:3000}
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: ${EMBEDDED_MONGODB_VERSION:8.0.5}
 
 security:
   jwt:
@@ -40,3 +40,7 @@ security:
       max-attempts: ${AUTH_RATE_LIMIT_MAX_ATTEMPTS:5}
       window: ${AUTH_RATE_LIMIT_WINDOW:PT10M}
       lockout: ${AUTH_RATE_LIMIT_LOCKOUT:PT15M}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] [%X{requestId}] %logger{36} - %msg%n"

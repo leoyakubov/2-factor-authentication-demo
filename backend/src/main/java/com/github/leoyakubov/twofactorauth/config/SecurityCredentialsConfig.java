@@ -52,7 +52,9 @@ public class SecurityCredentialsConfig {
         );
 
         http.cors(Customizer.withDefaults());
-        http.csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository()));
+        http.csrf(csrf -> csrf
+                .csrfTokenRepository(csrfTokenRepository())
+                .ignoringRequestMatchers("/signin", "/verify", "/users", "/logout", "/csrf"));
         http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.exceptionHandling(exConf -> exConf.authenticationEntryPoint((req, resp, ex) ->
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")));
@@ -87,6 +89,7 @@ public class SecurityCredentialsConfig {
         config.setAllowCredentials(true);
         config.setAllowedOrigins(corsProperties.allowedOrigins());
         config.addAllowedHeader("*");
+        config.addExposedHeader("X-Request-Id");
         config.addAllowedMethod("OPTIONS");
         config.addAllowedMethod("HEAD");
         config.addAllowedMethod("GET");

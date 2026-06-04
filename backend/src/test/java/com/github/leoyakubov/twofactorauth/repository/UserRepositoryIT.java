@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class UserRepositoryIT {
 
     private MongoServer mongoServer;
+    private SimpleMongoClientDatabaseFactory databaseFactory;
     private UserRepository userRepository;
 
     @BeforeEach
@@ -26,13 +27,16 @@ class UserRepositoryIT {
         mongoServer = new MongoServer(new MemoryBackend());
         mongoServer.bind();
 
-        MongoTemplate mongoTemplate = new MongoTemplate(
-                new SimpleMongoClientDatabaseFactory(mongoServer.getConnectionString() + "/testdb"));
+        databaseFactory = new SimpleMongoClientDatabaseFactory(mongoServer.getConnectionString() + "/testdb");
+        MongoTemplate mongoTemplate = new MongoTemplate(databaseFactory);
         userRepository = new MongoRepositoryFactory(mongoTemplate).getRepository(UserRepository.class);
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws Exception {
+        if (databaseFactory != null) {
+            databaseFactory.destroy();
+        }
         if (mongoServer != null) {
             mongoServer.shutdown();
         }

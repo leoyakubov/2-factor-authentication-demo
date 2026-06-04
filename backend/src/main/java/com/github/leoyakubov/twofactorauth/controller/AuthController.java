@@ -47,10 +47,10 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
                                                                        HttpServletRequest request) {
-        log.info("sign-in attempt for {}", loginRequest.getUsername());
+        log.info("sign-in attempt for {} from {}", loginRequest.getUsername(), request.getRemoteAddr());
         LoginResult result = userService.loginUser(loginRequest.getUsername(), loginRequest.getPassword(),
                 request.getRemoteAddr());
-        log.info("sign-in completed for {} (mfa={})", loginRequest.getUsername(), result.mfaRequired());
+        log.info("sign-in completed for {} from {} (mfa={})", loginRequest.getUsername(), request.getRemoteAddr(), result.mfaRequired());
         if (result.mfaRequired()) {
             return ResponseEntity.ok(new JwtAuthenticationResponse(true));
         }
@@ -63,10 +63,10 @@ public class AuthController {
     @PostMapping("/verify")
     public ResponseEntity<JwtAuthenticationResponse> verifyCode(@Valid @RequestBody VerifyCodeRequest verifyCodeRequest,
                                                                  HttpServletRequest request) {
-        log.info("mfa verify attempt for {}", verifyCodeRequest.getUsername());
+        log.info("mfa verify attempt for {} from {}", verifyCodeRequest.getUsername(), request.getRemoteAddr());
         String token = userService.verify(verifyCodeRequest.getUsername(), verifyCodeRequest.getCode(),
                 request.getRemoteAddr());
-        log.info("mfa verify completed for {}", verifyCodeRequest.getUsername());
+        log.info("mfa verify completed for {} from {}", verifyCodeRequest.getUsername(), request.getRemoteAddr());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookieManager.createCookie(token).toString())
                 .body(new JwtAuthenticationResponse(false));
@@ -75,7 +75,7 @@ public class AuthController {
     @PostMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SignupResponse> createUser(@Valid @RequestBody SignUpRequest payload,
                                                      HttpServletRequest request) {
-        log.info("creating user {}", payload.getUsername());
+        log.info("creating user {} from {}", payload.getUsername(), request.getRemoteAddr());
 
         User user = User
                 .builder()
@@ -98,7 +98,7 @@ public class AuthController {
         }
 
         User saved = registrationResult.user();
-        log.info("user created {} (mfa={})", saved.getUsername(), saved.isMfa());
+        log.info("user created {} from {} (mfa={})", saved.getUsername(), request.getRemoteAddr(), saved.isMfa());
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/users/{username}")
@@ -113,8 +113,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
-        log.info("logout requested");
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        log.info("logout requested from {}", request.getRemoteAddr());
         return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, cookieManager.clearCookie().toString())
                 .build();

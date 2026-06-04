@@ -22,7 +22,7 @@ export function getSignUpErrorMessage(error) {
   if (error.status === 400) {
     return error.body?.message?.includes("exists")
       ? "That username or email is already in use. Try another one."
-      : "Please check the form fields and try again.";
+      : "Please review the highlighted fields and try again.";
   }
 
   if (error.status === 429) {

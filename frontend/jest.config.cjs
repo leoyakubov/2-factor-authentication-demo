@@ -1,6 +1,6 @@
 module.exports = {
   testEnvironment: "jsdom",
-  setupFilesAfterEnv: ["<rootDir>/src/setupTests.js"],
+  setupFilesAfterEnv: [require.resolve("./test/setupTests.cjs").replace(/\\/g, "/")],
   transform: {
     "^.+\\.[jt]sx?$": "babel-jest",
   },

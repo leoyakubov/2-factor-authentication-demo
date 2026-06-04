@@ -22,8 +22,10 @@ _Signup, MFA enrollment, login, and protected profile access in one short walkth
 - [Demo Media](#demo-media)
 - [Portfolio Summary](#portfolio-summary)
 - [Why This Project](#why-this-project)
+- [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
 - [Testing](#testing)
+- [Test Types](#test-types)
 - [Docs](#docs)
 - [Project Status](#project-status)
 
@@ -103,28 +105,61 @@ This project was built to demonstrate:
 - security tradeoffs and hardening decisions
 - a repo that is easy to run and present in an interview
 
+## Prerequisites
+
+- Backend requires Java 21 JDK.
+- Frontend requires Node.js and npm.
+- On Windows, you can run the `.sh` scripts from Git Bash or WSL.
+- If your shell already provides the right tools, the same `.sh` scripts also work on Linux and macOS.
+
 ## Quick Start
 
 1. Copy `backend/.env.example` to `backend/.env` and set `JWT_SECRET` to a long random string.
 2. Copy `frontend/.env.example` to `frontend/.env` if you want to override the API URL.
-3. Run backend unit and slice tests: `./scripts/test-backend.sh`
-4. Run the full backend verification flow, including integration tests: `./scripts/verify-backend.sh`
-5. Run frontend unit/component tests: `./scripts/test-frontend.sh`
-6. Build the frontend production bundle: `./scripts/build-frontend.sh`
-7. Start the backend: `./scripts/run-backend.sh`
-8. Start the frontend: `./scripts/run-frontend.sh`
-9. Open the app and walk through signup, MFA enrollment, login, and profile access.
+3. Run backend unit and slice tests: `./scripts/backend-test.sh`
+4. Run the full backend verification flow, including integration tests: `./scripts/backend-verify.sh`
+5. Run frontend unit/component tests: `./scripts/frontend-test.sh`
+6. Run the full frontend verification flow: `./scripts/frontend-verify.sh`
+7. Build the frontend production bundle: `./scripts/frontend-build.sh`
+8. Start the backend: `./scripts/backend-run.sh`
+9. Start the frontend: `./scripts/frontend-run.sh`
+10. Open the app and walk through signup, MFA enrollment, login, and profile access.
 
 ## Testing
 
-The test split is intentionally simple:
+The test split is intentionally simple and mirrors the backend/frontend structure:
 
-- Backend unit and slice tests run with `./scripts/test-backend.sh`
-- Backend integration tests run with `./scripts/verify-backend.sh`
-- Frontend component and utility tests run with `./scripts/test-frontend.sh`
-- Frontend production build checks run with `./scripts/build-frontend.sh`
+- `test` = fast feedback for the local code you just changed
+- `verify` = broader confidence check before commit or push
+- `build` = production bundle check for the frontend
+
+Backend:
+
+- `./scripts/backend-test.sh` runs unit and slice tests
+- `./scripts/backend-verify.sh` runs the full backend verification flow, including integration tests
+
+Frontend:
+
+- `./scripts/frontend-test.sh` runs component and utility tests
+- `./scripts/frontend-verify.sh` runs frontend tests and then the production build
+- `./scripts/frontend-build.sh` runs only the production build
 
 Backend integration tests use embedded Mongo, so you do not need Docker for the demo workflow.
+The app also uses embedded Mongo for local development; the default version is set to a recent MongoDB release so it works better on modern WSL/Linux setups.
+
+On Windows, run the same `.sh` scripts from Git Bash or WSL.
+
+## Test Types
+
+- Unit tests check a single class or function in isolation and usually mock everything else.
+- Slice tests check one Spring layer in isolation, such as controller or repository behavior, without starting the whole app.
+- Integration tests check several layers together, usually with the real Spring context and a test database.
+
+For this repo:
+
+- backend unit and slice tests are the fast feedback loop
+- backend integration tests are the higher-confidence workflow
+- frontend tests cover React components, UI behavior, and utility logic
 
 ## Docs
 

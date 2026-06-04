@@ -127,12 +127,10 @@ Tooling:
 
 - Maven Wrapper
 - npm
-- PowerShell scripts for Windows
-- shell scripts for Unix/macOS
+- shell scripts for Unix, macOS, Git Bash, and WSL
 
 ## Repository Layout
 
 - `backend`: Spring Boot API
 - `frontend`: React client
 - `scripts`: helper scripts for running and testing
-

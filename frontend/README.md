@@ -16,14 +16,14 @@ The default backend URL is `http://localhost:8081`.
 
 ## Helper Scripts
 
-- Use `scripts/run-frontend.ps1` or `scripts/run-frontend.sh` to start the app
-- Use `scripts/test-frontend.ps1` or `scripts/test-frontend.sh` to run tests
-- Use `scripts/build-frontend.ps1` or `scripts/build-frontend.sh` to create a production build
+- Use `scripts/frontend-run.sh` to start the app
+- Use `scripts/frontend-test.sh` to run tests
+- Use `scripts/frontend-build.sh` to create a production build
+- On Windows, run the same scripts from Git Bash or WSL
 
 ## Available npm Scripts
 
 - `npm run dev`
-- `npm start`
 - `npm test`
 - `npm run test:ci`
 - `npm run build`

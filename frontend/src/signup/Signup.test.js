@@ -116,6 +116,35 @@ describe("Signup", () => {
     ).toBeInTheDocument();
   });
 
+  test("shows field-specific validation errors from the backend", async () => {
+    const user = userEvent.setup();
+    signup.mockRejectedValueOnce({
+      status: 400,
+      body: {
+        message: "Please review the highlighted fields and try again.",
+        errors: {
+          password: "Your password must be between 6 and 20 characters long.",
+        },
+      },
+    });
+
+    renderComponent();
+    await screen.findByPlaceholderText("Name");
+    await fillForm(user);
+    await user.clear(screen.getByPlaceholderText("Password"));
+    await user.type(screen.getByPlaceholderText("Password"), "user2");
+    await user.click(screen.getByRole("button", { name: /signup/i }));
+
+    expect(
+      await screen.findByText(
+        "Your password must be between 6 and 20 characters long."
+      )
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("Please review the highlighted fields and try again.")
+    ).toBeInTheDocument();
+  });
+
   test("shows a generic backend error for unexpected failures", async () => {
     const user = userEvent.setup();
     signup.mockRejectedValueOnce({ status: 500 });

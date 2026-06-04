@@ -13,6 +13,7 @@ const Signup = () => {
   const [qrImageUrl, setQrImageUrl] = useState();
   const [recoveryCodes, setRecoveryCodes] = useState([]);
   const [errorMessage, setErrorMessage] = useState();
+  const [form] = Form.useForm();
   const auth = useAuth();
   const navigate = useNavigate();
 
@@ -25,6 +26,7 @@ const Signup = () => {
   const onFinish = (values) => {
     setLoading(true);
     setErrorMessage(undefined);
+    form.setFields(["name", "username", "email", "password"].map((name) => ({ name, errors: [] })));
     setRecoveryCodes([]);
     signup(values)
       .then((response) => {
@@ -33,6 +35,15 @@ const Signup = () => {
         setRecoveryCodes(response.recoveryCodes || []);
       })
       .catch((error) => {
+        const validationErrors = error.body?.errors;
+        if (validationErrors && typeof validationErrors === "object") {
+          form.setFields(
+            Object.entries(validationErrors).map(([name, message]) => ({
+              name,
+              errors: [message],
+            }))
+          );
+        }
         setErrorMessage(getSignUpErrorMessage(error));
       })
       .finally(() => setLoading(false));
@@ -98,6 +109,7 @@ const Signup = () => {
         </div>
       ) : (
         <Form
+          form={form}
           name="normal_login"
           className="login-form"
           initialValues={{ remember: true }}
@@ -114,25 +126,41 @@ const Signup = () => {
           ) : null}
           <Form.Item
             name="name"
-            rules={[{ required: true, message: "Please input your name!" }]}
+            rules={[
+              { required: true, message: "Please enter your name." },
+              { min: 3, message: "Your name must be at least 3 characters long." },
+              { max: 40, message: "Your name must be 40 characters or fewer." },
+            ]}
           >
             <Input size="large" placeholder="Name" />
           </Form.Item>
           <Form.Item
             name="username"
-            rules={[{ required: true, message: "Please input your Username!" }]}
+            rules={[
+              { required: true, message: "Please choose a username." },
+              { min: 3, message: "Your username must be at least 3 characters long." },
+              { max: 15, message: "Your username must be 15 characters or fewer." },
+            ]}
           >
             <Input size="large" placeholder="Username" />
           </Form.Item>
           <Form.Item
             name="email"
-            rules={[{ required: true, message: "Please input your email!" }]}
+            rules={[
+              { required: true, message: "Please enter your email address." },
+              { type: "email", message: "Please enter a valid email address." },
+              { max: 40, message: "Your email must be 40 characters or fewer." },
+            ]}
           >
             <Input size="large" placeholder="Email" />
           </Form.Item>
           <Form.Item
             name="password"
-            rules={[{ required: true, message: "Please input your Password!" }]}
+            rules={[
+              { required: true, message: "Please choose a password." },
+              { min: 6, message: "Your password must be at least 6 characters long." },
+              { max: 20, message: "Your password must be 20 characters or fewer." },
+            ]}
           >
             <Input size="large" type="password" placeholder="Password" />
           </Form.Item>

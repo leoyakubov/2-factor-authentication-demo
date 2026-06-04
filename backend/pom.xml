@@ -61,7 +61,7 @@
 
 		<dependency>
 			<groupId>de.flapdoodle.embed</groupId>
-			<artifactId>de.flapdoodle.embed.mongo.spring3x</artifactId>
+			<artifactId>de.flapdoodle.embed.mongo.spring4x</artifactId>
 			<version>${flapdoodle.embed.mongo.version}</version>
 		</dependency>
 		<dependency>

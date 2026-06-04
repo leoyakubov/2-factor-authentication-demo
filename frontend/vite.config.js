@@ -24,11 +24,7 @@ export default defineConfig({
       "antd",
       "@ant-design/icons",
       "@ant-design/cssinjs",
-      "rc-util",
-      "rc-table",
-      "react-is",
       "react-router-dom",
-      "prop-types",
     ],
   },
   build: {

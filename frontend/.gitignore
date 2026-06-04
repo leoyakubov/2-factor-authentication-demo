@@ -10,6 +10,7 @@
 /build
 /dist
 /.vite-cache
+.node_modules-platform
 
 # misc
 .DS_Store

@@ -13,7 +13,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import com.github.leoyakubov.twofactorauth.exception.TooManyRequestsException;
 
 import java.util.LinkedHashMap;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
@@ -54,10 +57,10 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex,
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex,
                                                                HttpServletRequest request) {
         log.warn("validation failed on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
-        return build(HttpStatus.BAD_REQUEST, "Please check the form fields and try again.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildValidationBody(ex));
     }
 
     @ExceptionHandler(TooManyRequestsException.class)
@@ -84,5 +87,64 @@ public class ApiExceptionHandler {
         Map<String, String> body = new LinkedHashMap<>();
         body.put("message", message);
         return ResponseEntity.status(status).body(body);
+    }
+
+    private Map<String, Object> buildValidationBody(MethodArgumentNotValidException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("message", "Please review the highlighted fields and try again.");
+        body.put("errors", ex.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(
+                        error -> error.getField(),
+                        this::toFriendlyFieldMessage,
+                        (first, second) -> first,
+                        LinkedHashMap::new
+                )));
+        return body;
+    }
+
+    private String toFriendlyFieldMessage(org.springframework.validation.FieldError error) {
+        List<String> codes = error.getCodes() == null ? List.of() : Arrays.asList(error.getCodes());
+
+        if (codes.stream().anyMatch(code -> code != null && code.startsWith("NotBlank"))) {
+            return switch (error.getField()) {
+                case "name" -> "Please enter your name.";
+                case "username" -> "Please choose a username.";
+                case "email" -> "Please enter your email address.";
+                case "password" -> "Please choose a password.";
+                default -> "This field is required.";
+            };
+        }
+
+        if (codes.stream().anyMatch(code -> code != null && code.startsWith("Email"))) {
+            return "Please enter a valid email address.";
+        }
+
+        if (codes.stream().anyMatch(code -> code != null && code.startsWith("Size"))) {
+            Integer max = null;
+            Integer min = null;
+            Object[] arguments = error.getArguments();
+            if (arguments != null) {
+                for (Object argument : arguments) {
+                    if (argument instanceof Integer value) {
+                        if (max == null) {
+                            max = value;
+                        } else if (min == null) {
+                            min = value;
+                        }
+                    }
+                }
+            }
+
+            if (min != null && max != null) {
+                return switch (error.getField()) {
+                    case "name" -> "Your name must be between " + min + " and " + max + " characters long.";
+                    case "username" -> "Your username must be between " + min + " and " + max + " characters long.";
+                    case "password" -> "Your password must be between " + min + " and " + max + " characters long.";
+                    default -> "This field must be between " + min + " and " + max + " characters long.";
+                };
+            }
+        }
+
+        return error.getDefaultMessage() == null ? "Please check this field." : error.getDefaultMessage();
     }
 }

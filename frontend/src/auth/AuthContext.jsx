@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { getCurrentUser, logout as logoutRequest } from "../shared/api/apiClient";
+import { logAuthEvent } from "../shared/logging/logger";
 
 const AuthContext = createContext(null);
 
@@ -13,8 +14,13 @@ export function AuthProvider({ children }) {
     try {
       await getCurrentUser();
       setIsAuthenticated(true);
+      logAuthEvent("session check succeeded");
     } catch (error) {
       setIsAuthenticated(false);
+      logAuthEvent("session check failed", {
+        status: error?.status,
+        requestId: error?.requestId,
+      });
       return false;
     } finally {
       setIsChecking(false);
@@ -35,7 +41,12 @@ export function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       await logoutRequest();
+      logAuthEvent("logout request succeeded");
     } catch (error) {
+      logAuthEvent("logout request failed, clearing local session", {
+        status: error?.status,
+        requestId: error?.requestId,
+      });
       // Clear local state even if the backend is unavailable.
     } finally {
       setIsAuthenticated(false);

@@ -107,7 +107,8 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message", is("Please check the form fields and try again.")));
+                .andExpect(jsonPath("$.message", is("Please review the highlighted fields and try again.")))
+                .andExpect(jsonPath("$.errors.password", is("Please choose a password.")));
     }
 
     @Test
@@ -161,6 +162,23 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.mfa", is(true)))
                 .andExpect(jsonPath("$.secretImageUri", is("data:image/png;base64,qr")))
                 .andExpect(jsonPath("$.recoveryCodes[0]", is("ABCD-EFGH")));
+    }
+
+    @Test
+    void signupShouldReturnFieldSpecificValidationErrors() throws Exception {
+        SignUpRequest request = new SignUpRequest();
+        request.setName("Demo User");
+        request.setUsername("demo");
+        request.setEmail("demo@example.com");
+        request.setPassword("user2");
+        request.setMfa(false);
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", is("Please review the highlighted fields and try again.")))
+                .andExpect(jsonPath("$.errors.password", is("Your password must be between 6 and 20 characters long.")));
     }
 
     @Test

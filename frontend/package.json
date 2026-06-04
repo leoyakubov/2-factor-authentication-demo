@@ -20,6 +20,7 @@
     "build:ci": "vite build",
     "test": "jest --watch",
     "test:ci": "jest --runInBand --watch=false",
+    "verify:ci": "npm run test:ci && npm run build:ci",
     "preview": "vite preview --port 3000 --strictPort"
   },
   "devDependencies": {

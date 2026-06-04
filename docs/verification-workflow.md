@@ -12,7 +12,7 @@ Make sure these are installed:
 
 You can verify them with:
 
-```powershell
+```sh
 java -version
 node -v
 npm -v
@@ -34,16 +34,16 @@ Frontend:
 
 If you want to create them manually:
 
-```powershell
-copy backend\.env.example backend\.env
-copy frontend\.env.example frontend\.env
+```sh
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 ```
 
 Set `JWT_SECRET` in `backend/.env` to a long random value if you are not using the default demo value.
 
 ## 3. Install frontend dependencies
 
-```powershell
+```sh
 cd frontend
 npm install
 cd ..
@@ -53,13 +53,9 @@ The helper scripts also install dependencies automatically if `node_modules` is 
 
 ## 4. Run backend tests
 
-Windows:
+- `scripts/backend-test.sh`
 
-- `scripts/test-backend.ps1`
-
-Unix/macOS:
-
-- `scripts/test-backend.sh`
+On Windows, run it from Git Bash or WSL.
 
 Expected result:
 
@@ -68,20 +64,16 @@ Expected result:
 
 If you prefer a direct command:
 
-```powershell
+```sh
 cd backend
-.\mvnw.cmd test
+bash ./mvnw test
 ```
 
 ## 5. Run frontend tests
 
-Windows:
+- `scripts/frontend-test.sh`
 
-- `scripts/test-frontend.ps1`
-
-Unix/macOS:
-
-- `scripts/test-frontend.sh`
+On Windows, run it from Git Bash or WSL.
 
 Expected result:
 
@@ -90,22 +82,18 @@ Expected result:
 
 If you prefer a direct command:
 
-```powershell
+```sh
 cd frontend
-npm test -- --watchAll=false
+npm run test:ci
 ```
 
 ## 6. Build the frontend
 
 This is optional, but it is a good final validation step.
 
-Windows:
+- `scripts/frontend-build.sh`
 
-- `scripts/build-frontend.ps1`
-
-Unix/macOS:
-
-- `scripts/build-frontend.sh`
+On Windows, run it from Git Bash or WSL.
 
 Expected result:
 
@@ -114,7 +102,7 @@ Expected result:
 
 If you prefer a direct command:
 
-```powershell
+```sh
 cd frontend
 npm run build
 ```
@@ -123,13 +111,9 @@ npm run build
 
 Open a new terminal window and run:
 
-Windows:
+- `scripts/backend-run.sh`
 
-- `scripts/run-backend.ps1`
-
-Unix/macOS:
-
-- `scripts/run-backend.sh`
+On Windows, run it from Git Bash or WSL.
 
 Expected result:
 
@@ -139,22 +123,18 @@ Expected result:
 
 If you prefer a direct command:
 
-```powershell
+```sh
 cd backend
-.\mvnw.cmd spring-boot:run
+bash ./mvnw spring-boot:run
 ```
 
 ## 8. Start the frontend
 
 Open another terminal window and run:
 
-Windows:
+- `scripts/frontend-run.sh`
 
-- `scripts/run-frontend.ps1`
-
-Unix/macOS:
-
-- `scripts/run-frontend.sh`
+On Windows, run it from Git Bash or WSL.
 
 Expected result:
 
@@ -163,9 +143,9 @@ Expected result:
 
 If you prefer a direct command:
 
-```powershell
+```sh
 cd frontend
-npm start
+npm run dev
 ```
 
 ## 9. Smoke test the UI flow
@@ -205,4 +185,3 @@ If you want to verify the app starts cleanly from scratch:
 5. Repeat the smoke test
 
 This is a good final check before a demo or commit.
-

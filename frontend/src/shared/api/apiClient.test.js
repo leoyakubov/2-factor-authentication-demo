@@ -3,6 +3,7 @@ import { getCurrentUser, login, logout } from "./apiClient";
 describe("ApiUtil", () => {
   beforeEach(() => {
     global.fetch = jest.fn();
+    jest.spyOn(globalThis.crypto, "randomUUID").mockReturnValue("test-request-id");
     document.cookie = "XSRF-TOKEN=test-xsrf";
   });
 
@@ -31,6 +32,7 @@ describe("ApiUtil", () => {
     );
     expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBeNull();
     expect(fetch.mock.calls[0][1].headers.get("X-XSRF-TOKEN")).toBe("test-xsrf");
+    expect(fetch.mock.calls[0][1].headers.get("X-Request-Id")).toBe("test-request-id");
     expect(response).toEqual({ mfa: false });
   });
 
@@ -53,6 +55,7 @@ describe("ApiUtil", () => {
       })
     );
     expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBeNull();
+    expect(fetch.mock.calls[0][1].headers.get("X-Request-Id")).toBe("test-request-id");
     expect(response).toEqual({ username: "demo", name: "Demo User" });
   });
 
@@ -74,6 +77,7 @@ describe("ApiUtil", () => {
     );
     expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBeNull();
     expect(fetch.mock.calls[0][1].headers.get("X-XSRF-TOKEN")).toBe("test-xsrf");
+    expect(fetch.mock.calls[0][1].headers.get("X-Request-Id")).toBe("test-request-id");
     expect(response).toEqual({});
   });
 });
