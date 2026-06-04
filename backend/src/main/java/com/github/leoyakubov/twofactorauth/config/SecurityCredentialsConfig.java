@@ -30,13 +30,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityCredentialsConfig {
 
     private final CorsProperties corsProperties;
+    private final SecurityHeaderProperties securityHeaderProperties;
     private final JwtCookieManager cookieManager;
     private final JwtTokenManager tokenProvider;
 
     public SecurityCredentialsConfig(CorsProperties corsProperties,
+                                     SecurityHeaderProperties securityHeaderProperties,
                                      JwtCookieManager cookieManager,
                                      JwtTokenManager tokenProvider) {
         this.corsProperties = corsProperties;
+        this.securityHeaderProperties = securityHeaderProperties;
         this.cookieManager = cookieManager;
         this.tokenProvider = tokenProvider;
     }
@@ -59,15 +62,7 @@ public class SecurityCredentialsConfig {
         http.exceptionHandling(exConf -> exConf.authenticationEntryPoint((req, resp, ex) ->
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")));
         http.headers(headers -> headers
-                .contentSecurityPolicy(csp -> csp.policyDirectives(
-                        "default-src 'self'; " +
-                                "base-uri 'self'; " +
-                                "form-action 'self'; " +
-                                "frame-ancestors 'none'; " +
-                                "img-src 'self' data:; " +
-                                "script-src 'self'; " +
-                                "style-src 'self' 'unsafe-inline'; " +
-                                "connect-src 'self' http://localhost:3000 http://localhost:8081"))
+                .contentSecurityPolicy(csp -> csp.policyDirectives(securityHeaderProperties.contentSecurityPolicy()))
                 .referrerPolicy(referrer -> referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
         );
         http.addFilterBefore(jwtTokenAuthenticationFilter,
