@@ -11,6 +11,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.time.Duration;
 
 class JwtTokenManagerTest {
 
@@ -40,11 +41,15 @@ class JwtTokenManagerTest {
     }
 
     private static JwtConfigProperties createJwtConfig() {
-        JwtConfigProperties config = new JwtConfigProperties();
-        config.setHeader("Authorization");
-        config.setPrefix("Bearer");
-        config.setExpiration(3600);
-        config.setSecret("01234567890123456789012345678901");
-        return config;
+        return new JwtConfigProperties(
+                "Authorization",
+                "Bearer",
+                Duration.ofHours(1),
+                "01234567890123456789012345678901",
+                "AUTH_TOKEN",
+                "/",
+                false,
+                "Strict"
+        );
     }
 }

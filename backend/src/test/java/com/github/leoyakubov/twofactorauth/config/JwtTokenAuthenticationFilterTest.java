@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
 import java.util.Set;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -94,16 +95,16 @@ class JwtTokenAuthenticationFilterTest {
     }
 
     private static JwtConfigProperties createJwtConfig() {
-        JwtConfigProperties config = new JwtConfigProperties();
-        config.setHeader("Authorization");
-        config.setPrefix("Bearer");
-        config.setExpiration(3600);
-        config.setSecret("01234567890123456789012345678901");
-        config.setCookieName("AUTH_TOKEN");
-        config.setCookiePath("/");
-        config.setCookieSecure(false);
-        config.setCookieSameSite("Strict");
-        return config;
+        return new JwtConfigProperties(
+                "Authorization",
+                "Bearer",
+                Duration.ofHours(1),
+                "01234567890123456789012345678901",
+                "AUTH_TOKEN",
+                "/",
+                false,
+                "Strict"
+        );
     }
 
     private static User buildUser(String username) {

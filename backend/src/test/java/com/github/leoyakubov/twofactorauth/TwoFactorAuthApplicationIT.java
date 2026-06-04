@@ -1,15 +1,15 @@
 package com.github.leoyakubov.twofactorauth;
 
+import com.github.leoyakubov.twofactorauth.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import com.github.leoyakubov.twofactorauth.repository.UserRepository;
 
 @SpringBootTest(properties = {
 		"spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration,org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration,de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration",
 		"security.jwt.secret=01234567890123456789012345678901"
 })
-class TwoFactorAuthApplicationTests {
+class TwoFactorAuthApplicationIT {
 
 	@MockitoBean
 	private UserRepository userRepository;

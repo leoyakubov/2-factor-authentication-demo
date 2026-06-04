@@ -26,7 +26,7 @@ public class SpaRouteController {
         request.getParameterMap().forEach((key, values) -> queryParams.addAll(key, Arrays.asList(values)));
 
         String redirectUrl = UriComponentsBuilder
-                .fromHttpUrl(frontendProperties.getBaseUrl())
+                .fromUriString(frontendProperties.baseUrl())
                 .path(request.getRequestURI())
                 .queryParams(queryParams)
                 .build(true)

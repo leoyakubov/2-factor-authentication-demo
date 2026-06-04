@@ -18,29 +18,29 @@ public class JwtCookieManager {
     }
 
     public ResponseCookie createCookie(String token) {
-        return ResponseCookie.from(jwtConfig.getCookieName(), token)
+        return ResponseCookie.from(jwtConfig.cookieName(), token)
                 .httpOnly(true)
-                .secure(jwtConfig.isCookieSecure())
-                .path(jwtConfig.getCookiePath())
-                .sameSite(jwtConfig.getCookieSameSite())
-                .maxAge(Duration.ofSeconds(jwtConfig.getExpiration()))
+                .secure(jwtConfig.cookieSecure())
+                .path(jwtConfig.cookiePath())
+                .sameSite(jwtConfig.cookieSameSite())
+                .maxAge(jwtConfig.expiration())
                 .build();
     }
 
     public ResponseCookie clearCookie() {
-        return ResponseCookie.from(jwtConfig.getCookieName(), "")
+        return ResponseCookie.from(jwtConfig.cookieName(), "")
                 .httpOnly(true)
-                .secure(jwtConfig.isCookieSecure())
-                .path(jwtConfig.getCookiePath())
-                .sameSite(jwtConfig.getCookieSameSite())
+                .secure(jwtConfig.cookieSecure())
+                .path(jwtConfig.cookiePath())
+                .sameSite(jwtConfig.cookieSameSite())
                 .maxAge(Duration.ZERO)
                 .build();
     }
 
     public String resolveToken(HttpServletRequest request) {
-        String header = request.getHeader(jwtConfig.getHeader());
-        if (header != null && header.startsWith(jwtConfig.getPrefix())) {
-            return header.substring(jwtConfig.getPrefix().length()).trim();
+        String header = request.getHeader(jwtConfig.header());
+        if (header != null && header.startsWith(jwtConfig.prefix())) {
+            return header.substring(jwtConfig.prefix().length()).trim();
         }
 
         Cookie[] cookies = request.getCookies();
@@ -49,7 +49,7 @@ public class JwtCookieManager {
         }
 
         return Arrays.stream(cookies)
-                .filter(cookie -> jwtConfig.getCookieName().equals(cookie.getName()))
+                .filter(cookie -> jwtConfig.cookieName().equals(cookie.getName()))
                 .map(Cookie::getValue)
                 .findFirst()
                 .orElse(null);

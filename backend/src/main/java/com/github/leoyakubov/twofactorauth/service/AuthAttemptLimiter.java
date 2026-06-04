@@ -56,8 +56,8 @@ public class AuthAttemptLimiter {
         synchronized (state) {
             purgeExpiredAttempts(state);
             state.failures.addLast(Instant.now(clock));
-            if (state.failures.size() >= properties.getMaxAttempts()) {
-                state.lockedUntil = Instant.now(clock).plus(properties.getLockout());
+            if (state.failures.size() >= properties.maxAttempts()) {
+                state.lockedUntil = Instant.now(clock).plus(properties.lockout());
                 state.failures.clear();
                 log.warn("rate limit triggered for {}", key);
             }
@@ -65,7 +65,7 @@ public class AuthAttemptLimiter {
     }
 
     private void purgeExpiredAttempts(AttemptState state) {
-        Instant threshold = Instant.now(clock).minus(properties.getWindow());
+        Instant threshold = Instant.now(clock).minus(properties.window());
         while (!state.failures.isEmpty() && state.failures.peekFirst().isBefore(threshold)) {
             state.failures.removeFirst();
         }

@@ -1,38 +1,22 @@
 package com.github.leoyakubov.twofactorauth.config;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-@Getter
-@Setter
+import java.time.Duration;
+
 @Validated
 @ConfigurationProperties(prefix = "security.jwt")
-public class JwtConfigProperties {
-
-    @NotBlank
-    private String header;
-
-    @NotBlank
-    private String prefix;
-
-    @Min(1)
-    private int expiration;
-
-    @NotBlank
-    private String secret;
-
-    @NotBlank
-    private String cookieName;
-
-    @NotBlank
-    private String cookiePath;
-
-    private boolean cookieSecure;
-
-    @NotBlank
-    private String cookieSameSite;
+public record JwtConfigProperties(
+        @NotBlank String header,
+        @NotBlank String prefix,
+        @NotNull Duration expiration,
+        @NotBlank String secret,
+        @NotBlank String cookieName,
+        @NotBlank String cookiePath,
+        boolean cookieSecure,
+        @NotBlank String cookieSameSite
+) {
 }

@@ -9,10 +9,6 @@ spring:
       database: ${MONGODB_DATABASE:spring-boot-jwt-auth}
       port: ${MONGODB_PORT:27018}
 
-  mongodb:
-    embedded:
-      version: 5.0.5
-
 de:
   flapdoodle:
     mongodb:
@@ -26,13 +22,14 @@ app:
   frontend:
     base-url: ${FRONTEND_ORIGIN:http://localhost:3000}
   cors:
-    allowed-origins: ${FRONTEND_ORIGIN:http://localhost:3000}
+    allowed-origins:
+      - ${FRONTEND_ORIGIN:http://localhost:3000}
 
 security:
   jwt:
     header: ${JWT_HEADER:Authorization}
     prefix: ${JWT_PREFIX:Bearer}
-    expiration: ${JWT_EXPIRATION:86400}
+    expiration: ${JWT_EXPIRATION:PT24H}
     secret: ${JWT_SECRET}
     cookie-name: ${JWT_COOKIE_NAME:AUTH_TOKEN}
     cookie-path: ${JWT_COOKIE_PATH:/}

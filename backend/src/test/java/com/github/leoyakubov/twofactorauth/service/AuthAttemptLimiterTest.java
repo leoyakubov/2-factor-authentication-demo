@@ -13,10 +13,11 @@ class AuthAttemptLimiterTest {
 
     @Test
     void shouldAllowRequestsUntilLimitIsReached() {
-        AuthRateLimitProperties properties = new AuthRateLimitProperties();
-        properties.setMaxAttempts(2);
-        properties.setWindow(Duration.ofMinutes(10));
-        properties.setLockout(Duration.ofMinutes(15));
+        AuthRateLimitProperties properties = new AuthRateLimitProperties(
+                2,
+                Duration.ofMinutes(10),
+                Duration.ofMinutes(15)
+        );
 
         AuthAttemptLimiter limiter = new AuthAttemptLimiter(properties);
 
@@ -30,10 +31,11 @@ class AuthAttemptLimiterTest {
 
     @Test
     void successShouldClearFailureState() {
-        AuthRateLimitProperties properties = new AuthRateLimitProperties();
-        properties.setMaxAttempts(2);
-        properties.setWindow(Duration.ofMinutes(10));
-        properties.setLockout(Duration.ofMinutes(15));
+        AuthRateLimitProperties properties = new AuthRateLimitProperties(
+                2,
+                Duration.ofMinutes(10),
+                Duration.ofMinutes(15)
+        );
 
         AuthAttemptLimiter limiter = new AuthAttemptLimiter(properties);
         limiter.recordFailure("verify", "demo", "127.0.0.1");

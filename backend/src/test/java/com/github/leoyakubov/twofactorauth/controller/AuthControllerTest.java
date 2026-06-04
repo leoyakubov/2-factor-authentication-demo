@@ -1,26 +1,28 @@
 package com.github.leoyakubov.twofactorauth.controller;
 
+import com.github.leoyakubov.twofactorauth.config.JwtCookieManager;
+import com.github.leoyakubov.twofactorauth.exception.ApiExceptionHandler;
 import com.github.leoyakubov.twofactorauth.model.Profile;
 import com.github.leoyakubov.twofactorauth.model.Role;
 import com.github.leoyakubov.twofactorauth.model.User;
-import com.github.leoyakubov.twofactorauth.config.JwtCookieManager;
-import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import com.github.leoyakubov.twofactorauth.payload.LoginRequest;
+import com.github.leoyakubov.twofactorauth.payload.LoginResult;
 import com.github.leoyakubov.twofactorauth.payload.RegistrationResult;
 import com.github.leoyakubov.twofactorauth.payload.SignUpRequest;
 import com.github.leoyakubov.twofactorauth.payload.VerifyCodeRequest;
 import com.github.leoyakubov.twofactorauth.service.TotpManager;
 import com.github.leoyakubov.twofactorauth.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.util.Set;
 
@@ -30,29 +32,35 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AuthController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@Import(com.github.leoyakubov.twofactorauth.exception.ApiExceptionHandler.class)
+@ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockitoBean
+    @Mock
     private UserService userService;
 
-    @MockitoBean
+    @Mock
     private TotpManager totpManager;
 
-    @MockitoBean
+    @Mock
     private JwtCookieManager cookieManager;
+
+    private MockMvc mockMvc;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+        validator.afterPropertiesSet();
+
+        mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(userService, totpManager, cookieManager))
+                .setControllerAdvice(new ApiExceptionHandler())
+                .setValidator(validator)
+                .build();
+    }
 
     @Test
     void signInShouldReturnJwtResponse() throws Exception {
@@ -65,7 +73,7 @@ class AuthControllerTest {
                 .thenReturn(ResponseCookie.from("AUTH_TOKEN", "jwt-token").httpOnly(true).path("/").build());
 
         mockMvc.perform(post("/signin")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("AUTH_TOKEN=jwt-token")))
@@ -82,7 +90,7 @@ class AuthControllerTest {
         when(userService.loginUser(eq("demo"), eq("secret"), anyString())).thenReturn(LoginResult.requiresMfa());
 
         mockMvc.perform(post("/signin")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(header().doesNotExist("Set-Cookie"))
@@ -96,7 +104,7 @@ class AuthControllerTest {
         request.setUsername("demo");
 
         mockMvc.perform(post("/signin")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", is("Please check the form fields and try again.")));
@@ -113,7 +121,7 @@ class AuthControllerTest {
                 .thenReturn(ResponseCookie.from("AUTH_TOKEN", "jwt-token").httpOnly(true).path("/").build());
 
         mockMvc.perform(post("/verify")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("AUTH_TOKEN=jwt-token")))
@@ -147,7 +155,7 @@ class AuthControllerTest {
         when(totpManager.getUriForImage("mfa-secret")).thenReturn("data:image/png;base64,qr");
 
         mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.mfa", is(true)))

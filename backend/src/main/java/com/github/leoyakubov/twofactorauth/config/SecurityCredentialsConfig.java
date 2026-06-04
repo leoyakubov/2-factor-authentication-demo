@@ -32,23 +32,18 @@ public class SecurityCredentialsConfig {
     private final CorsProperties corsProperties;
     private final JwtCookieManager cookieManager;
     private final JwtTokenManager tokenProvider;
-    private final UserService userService;
-    private final UserDetailsService userDetailsService;
 
     public SecurityCredentialsConfig(CorsProperties corsProperties,
                                      JwtCookieManager cookieManager,
-                                     JwtTokenManager tokenProvider,
-                                     UserService userService,
-                                     UserDetailsService userDetailsService) {
+                                     JwtTokenManager tokenProvider) {
         this.corsProperties = corsProperties;
         this.cookieManager = cookieManager;
         this.tokenProvider = tokenProvider;
-        this.userService = userService;
-        this.userDetailsService = userDetailsService;
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter) throws Exception {
         http.authorizeHttpRequests((authz) -> authz
                 .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.GET, "/", "/login", "/signup", "/verify", "/qrcode", "/csrf").permitAll()
@@ -73,7 +68,7 @@ public class SecurityCredentialsConfig {
                                 "connect-src 'self' http://localhost:3000 http://localhost:8081"))
                 .referrerPolicy(referrer -> referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
         );
-        http.addFilterBefore(new JwtTokenAuthenticationFilter(cookieManager, tokenProvider, userService),
+        http.addFilterBefore(jwtTokenAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -90,7 +85,7 @@ public class SecurityCredentialsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(corsProperties.getAllowedOrigins());
+        config.setAllowedOrigins(corsProperties.allowedOrigins());
         config.addAllowedHeader("*");
         config.addAllowedMethod("OPTIONS");
         config.addAllowedMethod("HEAD");
@@ -104,9 +99,13 @@ public class SecurityCredentialsConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+    public JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter(UserService userService) {
+        return new JwtTokenAuthenticationFilter(cookieManager, tokenProvider, userService);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return new ProviderManager(authProvider);
     }

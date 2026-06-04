@@ -1,28 +1,27 @@
 package com.github.leoyakubov.twofactorauth.controller;
 
 import com.github.leoyakubov.twofactorauth.config.FrontendProperties;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(SpaRouteController.class)
-@AutoConfigureMockMvc(addFilters = false)
 class SpaRouteControllerTest {
 
-    @Autowired
+    private final FrontendProperties frontendProperties = new FrontendProperties("http://localhost:3000");
+
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private FrontendProperties frontendProperties;
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(new SpaRouteController(frontendProperties)).build();
+    }
 
     @ParameterizedTest
     @CsvSource({
@@ -33,8 +32,6 @@ class SpaRouteControllerTest {
             "'/qrcode','http://localhost:3000/qrcode'"
     })
     void spaRoutesShouldRedirectToFrontend(String path, String expectedRedirect) throws Exception {
-        when(frontendProperties.getBaseUrl()).thenReturn("http://localhost:3000");
-
         mockMvc.perform(get(path))
                 .andExpect(status().isFound())
                 .andExpect(redirectedUrl(expectedRedirect));
@@ -48,8 +45,6 @@ class SpaRouteControllerTest {
     void spaRouteRedirectShouldPreserveQueryString(String path,
                                                    String queryString,
                                                    String expectedRedirect) throws Exception {
-        when(frontendProperties.getBaseUrl()).thenReturn("http://localhost:3000");
-
         String[] params = queryString.split("&");
         var requestBuilder = get(path);
         for (String param : params) {

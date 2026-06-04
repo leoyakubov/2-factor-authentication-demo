@@ -23,13 +23,15 @@ _Signup, MFA enrollment, login, and protected profile access in one short walkth
 - [Portfolio Summary](#portfolio-summary)
 - [Why This Project](#why-this-project)
 - [Quick Start](#quick-start)
+- [Testing](#testing)
 - [Docs](#docs)
 - [Project Status](#project-status)
 
 ## Project Snapshot
 
-- Backend: Spring Boot 3.5.14
-- Frontend: React 19.1.1 with Vite
+- Backend: Java 21, Spring Boot 4.0.6, Spring Security, MongoDB
+- Frontend: React 19.2.7, Vite 8.0.16, React Router 7.16.0, Ant Design 6.4.3
+- Testing: JUnit 5, Mockito, Jest 30.4.2, React Testing Library 16.3.2
 - Auth: JWT in `httpOnly` cookies with CSRF protection
 - MFA: TOTP with QR-code enrollment and recovery codes
 - Data: MongoDB for local development
@@ -105,12 +107,24 @@ This project was built to demonstrate:
 
 1. Copy `backend/.env.example` to `backend/.env` and set `JWT_SECRET` to a long random string.
 2. Copy `frontend/.env.example` to `frontend/.env` if you want to override the API URL.
-3. Run backend tests: `./scripts/test-backend.sh`
-4. Run frontend tests: `./scripts/test-frontend.sh`
-5. Build the frontend: `./scripts/build-frontend.sh`
-6. Start the backend: `./scripts/run-backend.sh`
-7. Start the frontend: `./scripts/run-frontend.sh`
-8. Open the app and walk through signup, MFA enrollment, login, and profile access.
+3. Run backend unit and slice tests: `./scripts/test-backend.sh`
+4. Run the full backend verification flow, including integration tests: `./scripts/verify-backend.sh`
+5. Run frontend unit/component tests: `./scripts/test-frontend.sh`
+6. Build the frontend production bundle: `./scripts/build-frontend.sh`
+7. Start the backend: `./scripts/run-backend.sh`
+8. Start the frontend: `./scripts/run-frontend.sh`
+9. Open the app and walk through signup, MFA enrollment, login, and profile access.
+
+## Testing
+
+The test split is intentionally simple:
+
+- Backend unit and slice tests run with `./scripts/test-backend.sh`
+- Backend integration tests run with `./scripts/verify-backend.sh`
+- Frontend component and utility tests run with `./scripts/test-frontend.sh`
+- Frontend production build checks run with `./scripts/build-frontend.sh`
+
+Backend integration tests use embedded Mongo, so you do not need Docker for the demo workflow.
 
 ## Docs
 

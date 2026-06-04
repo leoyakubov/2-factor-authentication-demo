@@ -38,7 +38,7 @@ public class JwtTokenManager {
                 .claim("authorities", authentication.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .setIssuedAt(new Date(now))
-                .setExpiration(new Date(now + jwtConfig.getExpiration() * 1000))  // in milliseconds
+                .setExpiration(new Date(now + jwtConfig.expiration().toMillis()))
                 .signWith(key)
                 .compact();
     }
@@ -74,6 +74,6 @@ public class JwtTokenManager {
     }
 
     private SecretKey signingKey() {
-        return Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(jwtConfig.secret().getBytes(StandardCharsets.UTF_8));
     }
 }
