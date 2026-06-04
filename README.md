@@ -116,33 +116,21 @@ This project was built to demonstrate:
 
 1. Copy `backend/.env.example` to `backend/.env` and set `JWT_SECRET` to a long random string.
 2. Copy `frontend/.env.example` to `frontend/.env` if you want to override the API URL.
-3. Run backend unit and slice tests: `./scripts/backend-test.sh`
-4. Run the full backend verification flow, including integration tests: `./scripts/backend-verify.sh`
-5. Run frontend unit/component tests: `./scripts/frontend-test.sh`
-6. Run the full frontend verification flow: `./scripts/frontend-verify.sh`
-7. Build the frontend production bundle: `./scripts/frontend-build.sh`
-8. Start the backend: `./scripts/backend-run.sh`
-9. Start the frontend: `./scripts/frontend-run.sh`
-10. Open the app and walk through signup, MFA enrollment, login, and profile access.
+3. Run the full backend verification flow, including unit, slice, and integration tests: `./scripts/backend-verify.sh`
+4. Run the full frontend verification flow: `./scripts/frontend-verify.sh`
+5. Start the backend: `./scripts/backend-run.sh`
+6. Start the frontend: `./scripts/frontend-run.sh`
+7. Open the app and walk through signup, MFA enrollment, login, and profile access.
 
 ## Testing
 
-The test split is intentionally simple and mirrors the backend/frontend structure:
-
-- `test` = fast feedback for the local code you just changed
-- `verify` = broader confidence check before commit or push
-- `build` = production bundle check for the frontend
-
 Backend:
 
-- `./scripts/backend-test.sh` runs unit and slice tests
-- `./scripts/backend-verify.sh` runs the full backend verification flow, including integration tests
+- `./scripts/backend-verify.sh` runs the full backend verification flow, including unit, slice, and integration tests
 
 Frontend:
 
-- `./scripts/frontend-test.sh` runs component and utility tests
 - `./scripts/frontend-verify.sh` runs frontend tests and then the production build
-- `./scripts/frontend-build.sh` runs only the production build
 
 Backend integration tests use embedded Mongo, so you do not need Docker for the demo workflow.
 The app also uses embedded Mongo for local development; the default version is set to a recent MongoDB release so it works better on modern WSL/Linux setups.

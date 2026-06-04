@@ -1,6 +1,61 @@
 const React = require("react");
+const FormErrorsContext = React.createContext({});
+
+function createForm() {
+  let fieldErrors = {};
+  const listeners = new Set();
+
+  const notify = () => {
+    listeners.forEach((listener) => listener({ ...fieldErrors }));
+  };
+
+  return {
+    setFields(fields = []) {
+      if (!Array.isArray(fields)) {
+        return;
+      }
+
+      if (fields.length === 0) {
+        fieldErrors = {};
+        notify();
+        return;
+      }
+
+      fields.forEach(({ name, errors }) => {
+        if (!name) {
+          return;
+        }
+
+        const nextErrors = Array.isArray(errors) ? errors.filter(Boolean) : [];
+        if (nextErrors.length > 0) {
+          fieldErrors[name] = nextErrors;
+        } else {
+          delete fieldErrors[name];
+        }
+      });
+
+      notify();
+    },
+    resetFields() {
+      fieldErrors = {};
+      notify();
+    },
+    __subscribe(listener) {
+      listeners.add(listener);
+      listener({ ...fieldErrors });
+      return () => listeners.delete(listener);
+    },
+  };
+}
 
 function Form({ children, onFinish, className, initialValues, ...props }) {
+  const [formState] = React.useState(() => props.form || createForm());
+  const [fieldErrors, setFieldErrors] = React.useState({});
+
+  React.useEffect(() => {
+    return formState.__subscribe(setFieldErrors);
+  }, [formState]);
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -32,17 +87,27 @@ function Form({ children, onFinish, className, initialValues, ...props }) {
   };
 
   return React.createElement(
-    "form",
-    {
-      className,
-      onSubmit: handleSubmit,
-      ...props,
-    },
-    children
+    FormErrorsContext.Provider,
+    { value: fieldErrors },
+    React.createElement(
+      "form",
+      {
+        className,
+        onSubmit: handleSubmit,
+        ...props,
+      },
+      children
+    )
   );
 }
 
+Form.useForm = function useForm() {
+  const form = React.useMemo(() => createForm(), []);
+  return [form];
+};
+
 function FormItem({ name, valuePropName, children, ...props }) {
+  const fieldErrors = React.useContext(FormErrorsContext);
   const childArray = React.Children.toArray(children);
 
   if (childArray.length !== 1 || !React.isValidElement(childArray[0])) {
@@ -61,7 +126,22 @@ function FormItem({ name, valuePropName, children, ...props }) {
     childProps.type = "checkbox";
   }
 
-  return React.createElement("div", props, React.cloneElement(child, childProps));
+  const errorMessages = name ? fieldErrors[name] || [] : [];
+
+  return React.createElement(
+    "div",
+    props,
+    React.cloneElement(child, childProps),
+    errorMessages.length > 0
+      ? React.createElement(
+          "div",
+          { role: "alert", "data-type": "error" },
+          errorMessages.map((message) =>
+            React.createElement("div", { key: message }, message)
+          )
+        )
+      : null
+  );
 }
 
 Form.Item = FormItem;

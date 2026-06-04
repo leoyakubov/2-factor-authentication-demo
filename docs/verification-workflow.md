@@ -51,9 +51,9 @@ cd ..
 
 The helper scripts also install dependencies automatically if `node_modules` is missing.
 
-## 4. Run backend tests
+## 4. Run backend verification
 
-- `scripts/backend-test.sh`
+- `scripts/backend-verify.sh`
 
 On Windows, run it from Git Bash or WSL.
 
@@ -61,53 +61,35 @@ Expected result:
 
 - Maven finishes with `BUILD SUCCESS`
 - The Spring context test passes
+- Failsafe runs the integration tests as part of the verify phase
 
 If you prefer a direct command:
 
 ```sh
 cd backend
-bash ./mvnw test
+bash ./mvnw verify
 ```
 
-## 5. Run frontend tests
+## 5. Run frontend verification
 
-- `scripts/frontend-test.sh`
+- `scripts/frontend-verify.sh`
 
 On Windows, run it from Git Bash or WSL.
 
 Expected result:
 
 - Jest runs once and exits
+- Vite creates a production `dist` folder
 - The current frontend tests pass
 
 If you prefer a direct command:
 
 ```sh
 cd frontend
-npm run test:ci
+npm run verify:ci
 ```
 
-## 6. Build the frontend
-
-This is optional, but it is a good final validation step.
-
-- `scripts/frontend-build.sh`
-
-On Windows, run it from Git Bash or WSL.
-
-Expected result:
-
-- Vite creates a production `dist` folder
-- The build completes without lint or compilation errors
-
-If you prefer a direct command:
-
-```sh
-cd frontend
-npm run build
-```
-
-## 7. Start the backend
+## 6. Start the backend
 
 Open a new terminal window and run:
 
@@ -128,7 +110,7 @@ cd backend
 bash ./mvnw spring-boot:run
 ```
 
-## 8. Start the frontend
+## 7. Start the frontend
 
 Open another terminal window and run:
 
@@ -148,7 +130,7 @@ cd frontend
 npm run dev
 ```
 
-## 9. Smoke test the UI flow
+## 8. Smoke test the UI flow
 
 1. Open the app in the browser.
 2. Go to the signup screen.
@@ -160,7 +142,7 @@ npm run dev
 8. Confirm the profile page loads and shows the avatar and logout button.
 9. Click `Logout` and confirm you are returned to the login screen.
 
-## 10. Verify error handling
+## 9. Verify error handling
 
 Try a few failure cases on purpose:
 
@@ -174,7 +156,7 @@ Expected result:
 - The UI shows a user-friendly error message
 - The backend logs include a helpful message for the failure
 
-## 11. Optional clean restart check
+## 10. Optional clean restart check
 
 If you want to verify the app starts cleanly from scratch:
 

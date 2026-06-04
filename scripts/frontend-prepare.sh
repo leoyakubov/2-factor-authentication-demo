@@ -9,9 +9,6 @@ prepare_frontend() {
   . ./.env
   set +a
 
-  platform_key="$(uname -s 2>/dev/null || echo unknown)-$(uname -m 2>/dev/null || echo unknown)"
-  platform_stamp=".node_modules-platform"
-
   if [ ! -f test/setupTests.cjs ]; then
     mkdir -p test
     cat > test/setupTests.cjs <<'EOF'
@@ -57,8 +54,6 @@ Object.defineProperty(window, "ResizeObserver", {
 EOF
   fi
 
-  needs_install=0
-
   case "$(uname -s):$(uname -m)" in
     Linux:x86_64)
       rolldown_binding_ok() {
@@ -82,49 +77,13 @@ EOF
       ;;
   esac
 
-  if [ ! -d node_modules ] || [ ! -d node_modules/vite ] || [ ! -d node_modules/jest ]; then
-    needs_install=1
-  fi
-
-  if ! rolldown_binding_ok; then
-    needs_install=1
-  fi
-
-  if [ -f "$platform_stamp" ]; then
-    installed_platform="$(cat "$platform_stamp")"
-    if [ "$installed_platform" != "$platform_key" ]; then
-      needs_install=1
-    fi
-  else
-    needs_install=1
-  fi
-
-  if [ "$needs_install" -eq 1 ]; then
-    if [ -d node_modules ]; then
-      remove_node_modules_tree
-    fi
+  if [ ! -d node_modules ]; then
     npm ci --no-audit --no-fund
-    printf '%s\n' "$platform_key" > "$platform_stamp"
   fi
 
   if [ ! -d node_modules/vite ] || [ ! -d node_modules/jest ] || ! rolldown_binding_ok; then
-    echo "Frontend dependencies are incomplete after npm ci. Run 'cd frontend && npm install' and try again." >&2
+    shell_name="$(uname -s 2>/dev/null || echo unknown)"
+    echo "Frontend dependencies are missing, incomplete, or were installed for a different shell/platform ($shell_name). Run 'cd frontend && npm ci' in the same environment you plan to use for the app (Git Bash, WSL, Linux, or macOS) and try again." >&2
     exit 1
   fi
-}
-
-remove_node_modules_tree() {
-  if command -v wslpath >/dev/null 2>&1 && command -v powershell.exe >/dev/null 2>&1; then
-    windows_frontend_dir="$(wslpath -w "$PWD")"
-    powershell.exe -NoProfile -NonInteractive -Command "Set-Location -LiteralPath '$windows_frontend_dir'; Remove-Item -LiteralPath 'node_modules' -Recurse -Force -ErrorAction Stop" >/dev/null 2>&1 || rm -rf node_modules
-    return 0
-  fi
-
-  if command -v cygpath >/dev/null 2>&1 && command -v cmd.exe >/dev/null 2>&1; then
-    windows_frontend_dir="$(cygpath -w "$PWD")"
-    cmd.exe /c "cd /d \"$windows_frontend_dir\" && rmdir /s /q node_modules" >/dev/null 2>&1 || rm -rf node_modules
-    return 0
-  fi
-
-  rm -rf node_modules
 }
