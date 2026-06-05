@@ -66,13 +66,13 @@ Basic flow:
 - **Security**: BCrypt, JWT via `jjwt` 0.13.0, `httpOnly` cookies, CSRF tokens, security headers, in-memory auth rate limiting.
 - **MFA**: TOTP and QR generation via `dev.samstevens.totp` 1.7.1, encrypted MFA secret storage, hashed recovery codes.
 - **Local persistence**: embedded MongoDB via Flapdoodle 4.33.0 for local app runs, `mongo-java-server` 1.47.0 for tests.
-- **Frontend**: React 19.2.7, Vite 8.0.16, React Router 7.16.0, Ant Design 6.4.3, Fetch API.
 - **Backend quality**: JUnit 5, Mockito, embedded Mongo integration tests, Maven Surefire, Maven Failsafe.
+- **Frontend**: React 19.2.7, Vite 8.0.16, React Router 7.16.0, Ant Design 6.4.3, Fetch API.
 - **Frontend quality**: Jest 30.4.2, React Testing Library 16.3.2, ESLint 9.39.4.
 
 ## Run Locally
 
-This is the setup path for someone who has just cloned the project and wants to run it on their machine.
+This is the setup path after cloning the project.
 
 Prerequisites:
 
@@ -90,20 +90,14 @@ npm -v
 
 Start from the project root:
 
-1. Copy `backend/.env.example` to `backend/.env`.
-2. Or create it from the command line:
-
-```sh
-cp backend/.env.example backend/.env
-```
-
-3. Set `JWT_SECRET` in `backend/.env` to a long random value with at least 32 characters.
-4. Optional: copy `frontend/.env.example` to `frontend/.env` if you want to change the backend URL.
-5. Run backend verification: `./scripts/backend-verify.sh`
-6. Run frontend verification: `./scripts/frontend-verify.sh`
-7. Start the backend in one terminal: `./scripts/backend-run.sh`
-8. Start the frontend in another terminal: `./scripts/frontend-run.sh`
-9. Open `http://localhost:3000`.
+1. Copy `backend/.env.example` to `backend/.env`: `cp backend/.env.example backend/.env`
+2. (Optional) Set new `JWT_SECRET` in `backend/.env` to a long random value with at least 32 characters.
+3. Copy `frontend/.env.example` to `frontend/.env` if you want to change the backend URL: `cp frontend/.env.example frontend/.env`
+4. Run backend verification: `./scripts/backend-verify.sh`
+5. Run frontend verification: `./scripts/frontend-verify.sh`
+6. Start the backend in one terminal: `./scripts/backend-run.sh`
+7. Start the frontend in another terminal: `./scripts/frontend-run.sh`
+8. Open `http://localhost:3000`.
 
 Expected verification results:
 
@@ -150,41 +144,43 @@ Before the walkthrough:
 4. Start the frontend with `./scripts/frontend-run.sh`.
 5. Open `http://localhost:3000`.
 
-Signup without MFA:
+Scenario 1: signup without MFA:
 
 1. Open the signup page.
 2. Create a user without MFA.
 3. Confirm the success message appears.
-4. Click `Login`.
-5. Sign in with the new account.
-6. Confirm the protected profile page loads.
-7. Click `Logout`.
 
-Signup with MFA:
+Scenario 2: login without MFA:
+
+1. Click `Login` from the signup success screen.
+2. Sign in with the account created in scenario 1.
+3. Confirm the protected profile page loads.
+4. Click `Logout`.
+
+Scenario 3: signup with MFA:
 
 1. Open the signup page.
 2. Create a different user with MFA enabled.
 3. Confirm the QR code and recovery codes are shown.
 4. Scan the QR code with an authenticator app.
-5. Click `Login`.
-6. Sign in with username/email and password.
-7. Enter the current authenticator code.
-8. Confirm the protected profile page loads.
-9. Click `Logout`.
+5. Save one recovery code for scenario 5.
 
-Recovery code:
+Scenario 4: login with MFA app code:
+
+1. Click `Login` from the MFA signup success screen.
+2. Sign in with the MFA-enabled account.
+3. Open your authenticator app and read the current 6-digit code.
+4. Enter that code on the verification screen.
+5. Confirm the protected profile page loads.
+6. Click `Logout`.
+
+Scenario 5: login with a one-time recovery code:
 
 1. Sign in with the MFA-enabled account.
 2. On the verification screen, enter one unused recovery code instead of an authenticator code.
-3. Confirm the profile page loads.
-4. Try the same recovery code again later and confirm it no longer works.
-
-MFA app login:
-
-1. Sign in with the MFA-enabled account.
-2. Open your authenticator app and read the current 6-digit code.
-3. Enter that code on the verification screen.
-4. Confirm the profile page loads.
+3. Confirm the protected profile page loads.
+4. Click `Logout`.
+5. Try the same recovery code again later and confirm it no longer works.
 
 Error handling:
 
@@ -226,6 +222,8 @@ Security boundaries:
 
 ### Flows
 
+The diagrams below match the main demo scenarios: signup without MFA, login without MFA, signup with MFA, login with an authenticator app code, login with a one-time recovery code, and logout.
+
 Cookie-backed JWT flow:
 
 ```mermaid
@@ -246,6 +244,39 @@ sequenceDiagram
     Note over Br,B: Browser sends AUTH_TOKEN automatically
     B->>B: Validate JWT signature and expiry
     B-->>F: User profile
+```
+
+Signup without MFA:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant Mongo
+
+    User->>Frontend: Submit signup form without MFA
+    Frontend->>Backend: POST /users
+    Backend->>Backend: Validate input and hash password
+    Backend->>Mongo: Store user record
+    Backend-->>Frontend: 201 Created without QR or recovery codes
+```
+
+Login without MFA:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant Browser
+
+    User->>Frontend: Submit username/email and password
+    Frontend->>Backend: POST /signin
+    Backend->>Backend: Verify credentials and rate limit
+    Backend-->>Browser: Set-Cookie: AUTH_TOKEN=httpOnly JWT
+    Frontend->>Backend: GET /users/me
+    Backend-->>Frontend: Protected profile
 ```
 
 Signup with MFA:
@@ -329,11 +360,13 @@ sequenceDiagram
 | Method | Path | Purpose | Auth |
 | --- | --- | --- | --- |
 | `GET` | `/csrf` | Creates and returns the CSRF token used by frontend POST requests. | Public |
-| `POST` | `/users` | Creates a user and returns MFA enrollment data when MFA is enabled. | Public + CSRF |
+| `POST` | `/users` | Creates a user, returns `201 Created`, and returns MFA enrollment data when MFA is enabled. | Public + CSRF |
 | `POST` | `/signin` | Verifies username/email and password. Returns MFA-required response or sets the auth cookie. | Public + CSRF |
 | `POST` | `/verify` | Verifies an authenticator code or recovery code and sets the auth cookie. | Public + CSRF |
 | `POST` | `/logout` | Clears the auth cookie and returns `204 No Content`. | Public + CSRF |
 | `GET` | `/users/me` | Returns the current authenticated profile. | Cookie JWT |
+
+The backend also accepts browser navigation to `/`, `/login`, `/signup`, `/verify`, and `/qrcode` and redirects those routes to the frontend app.
 
 ### Test Structure
 
@@ -374,11 +407,11 @@ sequenceDiagram
 
 - This is a demo project, not a production-ready identity platform.
 - Local development runs over HTTP; production use should enforce HTTPS and secure cookie settings.
-- MFA secrets are encrypted before storage, but production systems should use managed key storage and rotation.
+- MFA secrets are encrypted before storage, but the local default can derive the encryption key from `JWT_SECRET`; production systems should use managed key storage and rotation.
 - Rate limiting is in-memory, so counters reset when the backend restarts.
 - Password reset, email verification, and self-service account recovery are not implemented.
 - Embedded MongoDB is convenient locally, but production deployments should use a managed or separately operated MongoDB instance.
-- Access and refresh token rotation is not implemented.
+- Refresh token rotation is not implemented; the demo uses a single cookie-backed JWT access token.
 - Recovery codes are shown once during signup; there is no UI for regenerating them.
 
 ## Security
@@ -389,7 +422,7 @@ Current security posture:
 
 - Passwords are hashed with BCrypt before storage.
 - JWTs are stored in `httpOnly` cookies instead of `localStorage`.
-- State-changing browser requests use CSRF tokens.
+- State-changing browser requests use CSRF tokens with a frontend-readable `XSRF-TOKEN` cookie and `X-XSRF-TOKEN` request header.
 - MFA secrets generated for new MFA users are encrypted before storage.
 - Recovery codes are stored as hashes and are consumed after use.
 - Repeated signup, signin, and MFA verification attempts are rate limited in memory.
@@ -403,7 +436,7 @@ Security concerns and possible solutions:
 - CSRF protection is required because cookies are sent automatically by the browser.
   Possible solution: keep the `/csrf` bootstrap flow, require the `X-XSRF-TOKEN` header for state-changing requests, and review any future public POST endpoints carefully.
 - Local HTTP is acceptable for development, but credentials and cookies must be protected in deployed environments.
-  Possible solution: enforce HTTPS outside local development and enable secure cookie settings in deployment profiles.
+  Possible solution: enforce HTTPS outside local development, set `JWT_COOKIE_SECURE=true`, and use production-specific CORS origins.
 - MFA secrets are encrypted before storage, but the encryption key still needs production-grade management.
   Possible solution: store keys in a secret manager or vault, restrict access, rotate keys carefully, and expose QR enrollment data only during setup.
 - The JWT secret must remain private and rotated over time.
