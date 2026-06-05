@@ -33,7 +33,7 @@ public class SpaRouteController {
                 .build(true)
                 .toUriString();
 
-        log.info("redirecting {} {} to frontend {}", request.getMethod(), request.getRequestURI(), redirectUrl);
+        log.debug("redirecting {} {} to frontend {}", request.getMethod(), request.getRequestURI(), redirectUrl);
         return "redirect:" + redirectUrl;
     }
 }

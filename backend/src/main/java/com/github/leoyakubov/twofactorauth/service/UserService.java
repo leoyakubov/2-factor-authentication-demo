@@ -19,12 +19,12 @@ public class UserService {
     }
 
     public Optional<User> findByUsername(String username) {
-        log.info("retrieving user {}", username);
+        log.debug("retrieving user by username {}", username);
         return userRepository.findByUsername(username);
     }
 
     public Optional<User> findByUsernameOrEmail(String identifier) {
-        log.info("retrieving user {}", identifier);
+        log.debug("retrieving user by username or email {}", identifier);
         return userRepository.findByUsername(identifier).or(() -> userRepository.findByEmail(identifier));
     }
 

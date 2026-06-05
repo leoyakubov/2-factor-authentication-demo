@@ -65,7 +65,7 @@ public class AuthAttemptService {
             if (state.failures.size() >= properties.maxAttempts()) {
                 state.lockedUntil = Instant.now(clock).plus(properties.lockout());
                 state.failures.clear();
-                log.warn("rate limit triggered for {}", key);
+                log.warn("rate limit triggered");
             }
         }
     }

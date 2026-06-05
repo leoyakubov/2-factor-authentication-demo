@@ -40,14 +40,17 @@ public class MfaVerificationService {
         try {
             User user = userService.getByUsername(username);
             String mfaSecret = mfaSecretService.decrypt(user.getSecret());
+            boolean totpCodeAccepted = totpService.verifyCode(code, mfaSecret);
+            boolean recoveryCodeAccepted = !totpCodeAccepted && recoveryCodeService.consumeRecoveryCode(user, code);
 
-            if (!totpService.verifyCode(code, mfaSecret) && !recoveryCodeService.consumeRecoveryCode(user, code)) {
+            if (!totpCodeAccepted && !recoveryCodeAccepted) {
                 authAttemptService.recordFailure(AuthAttemptService.AuthAttemptAction.VERIFY, username, clientIp);
-                log.warn("MFA verification failed for {}", username);
+                log.warn("MFA verification failed");
                 throw new BadRequestException("Code is incorrect");
             }
 
-            log.info("MFA verification succeeded for {}", username);
+            log.debug("MFA verification succeeded for {} using {}", username,
+                    recoveryCodeAccepted ? "recovery code" : "authenticator app code");
             authAttemptService.recordSuccess(AuthAttemptService.AuthAttemptAction.VERIFY, username, clientIp);
             userService.save(user);
             return Optional.of(user)

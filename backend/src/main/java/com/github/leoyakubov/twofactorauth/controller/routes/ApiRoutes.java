@@ -11,6 +11,10 @@ public final class ApiRoutes {
     public static final String USERS_PATH = "/users";
     public static final String LOGOUT_PATH = "/logout";
     public static final String CSRF_PATH = "/csrf";
+    public static final String OPENAPI_PATH = "/v3/api-docs";
+    public static final String OPENAPI_PATH_PATTERN = "/v3/api-docs/**";
+    public static final String SWAGGER_UI_PATH = "/swagger-ui/**";
+    public static final String SWAGGER_UI_HTML_PATH = "/swagger-ui.html";
 
     private ApiRoutes() {
     }

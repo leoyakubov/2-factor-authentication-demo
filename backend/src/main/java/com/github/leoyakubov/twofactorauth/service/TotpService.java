@@ -13,6 +13,7 @@ import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
 import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
+import com.github.leoyakubov.twofactorauth.exception.InternalServerException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +53,8 @@ public class TotpService {
         try {
             imageData = generator.generate(data);
         } catch (QrGenerationException e) {
-           log.error("unable to generate QrCode");
+            log.error("unable to generate QR code", e);
+            throw new InternalServerException("unable to generate QR code");
         }
 
         String mimeType = generator.getImageMimeType();

@@ -32,14 +32,14 @@ public class AuthenticationService {
 
             AuthUserDetails userDetails = (AuthUserDetails) authentication.getPrincipal();
             if (userDetails.isMfa()) {
-                log.info("login accepted for {} and MFA verification is required", userDetails.getUsername());
+                log.debug("login accepted for {} and MFA verification is required", userDetails.getUsername());
                 authAttemptService.recordSuccess(AuthAttemptService.AuthAttemptAction.SIGN_IN, username, clientIp);
                 return LoginResult.requiresMfa();
             }
 
             Authentication canonicalAuthentication = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
-            log.info("login accepted for {} and issuing access token", userDetails.getUsername());
+            log.debug("login accepted for {} and issuing access token", userDetails.getUsername());
             authAttemptService.recordSuccess(AuthAttemptService.AuthAttemptAction.SIGN_IN, username, clientIp);
             return LoginResult.authenticated(jwtTokenService.generateToken(canonicalAuthentication));
         } catch (RuntimeException ex) {

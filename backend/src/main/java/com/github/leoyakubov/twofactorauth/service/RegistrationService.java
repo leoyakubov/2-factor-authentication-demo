@@ -39,18 +39,18 @@ public class RegistrationService {
     }
 
     public RegistrationResult register(User user, Role role, String clientIp) {
-        log.info("registering user {}", user.getUsername());
+        log.debug("registering user {}", user.getUsername());
         authAttemptService.assertAllowed(AuthAttemptService.AuthAttemptAction.SIGN_UP, user.getUsername(), clientIp);
 
         if (userService.existsByUsername(user.getUsername())) {
-            log.warn("username {} already exists.", user.getUsername());
+            log.warn("signup rejected because the username is already in use");
             authAttemptService.recordFailure(AuthAttemptService.AuthAttemptAction.SIGN_UP, user.getUsername(), clientIp);
             throw new UsernameAlreadyExistsException(
                     String.format("username %s already exists", user.getUsername()));
         }
 
         if (userService.existsByEmail(user.getEmail())) {
-            log.warn("email {} already exists.", user.getEmail());
+            log.warn("signup rejected because the email address is already in use");
             authAttemptService.recordFailure(AuthAttemptService.AuthAttemptAction.SIGN_UP, user.getUsername(), clientIp);
             throw new EmailAlreadyExistsException(
                     String.format("email %s already exists", user.getEmail()));
@@ -65,13 +65,13 @@ public class RegistrationService {
             user.setSecret(mfaSecretService.encrypt(mfaSecret));
             List<String> recoveryCodes = recoveryCodeService.generateRecoveryCodes();
             user.setRecoveryCodes(recoveryCodeService.hashCodes(recoveryCodes));
-            log.info("generated {} recovery codes for {}", recoveryCodes.size(), user.getUsername());
+            log.debug("generated {} recovery codes for MFA-enabled user", recoveryCodes.size());
             authAttemptService.recordSuccess(AuthAttemptService.AuthAttemptAction.SIGN_UP, user.getUsername(), clientIp);
-            log.info("saved user {} (mfa={})", user.getUsername(), user.isMfa());
+            log.debug("saved user {} (mfa={})", user.getUsername(), user.isMfa());
             return new RegistrationResult(userService.save(user), mfaSecret, recoveryCodes);
         }
 
-        log.info("saved user {} (mfa={})", user.getUsername(), user.isMfa());
+        log.debug("saved user {} (mfa={})", user.getUsername(), user.isMfa());
         authAttemptService.recordSuccess(AuthAttemptService.AuthAttemptAction.SIGN_UP, user.getUsername(), clientIp);
         return new RegistrationResult(userService.save(user), null, List.of());
     }

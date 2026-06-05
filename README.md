@@ -1,5 +1,7 @@
 # 2-Factor Authentication Demo
 
+[![Verify](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/verify.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/verify.yml)
+
 A full-stack authentication demo for learning modern web authentication patterns. It demonstrates a browser-friendly signup and login flow with optional TOTP-based two-factor authentication, QR-code enrollment, recovery codes, CSRF protection, and JWT sessions stored in an `httpOnly` cookie.
 
 ## Preview
@@ -63,6 +65,7 @@ Basic flow:
 ## Tech Stack
 
 - **Backend**: Java 21+, Spring Boot 4.0.6, Spring Security, Spring Web, Spring Data MongoDB, Spring Validation, Spring Actuator, Maven.
+- **API documentation**: OpenAPI 3 and Swagger UI via `springdoc-openapi` 3.0.3.
 - **Security**: BCrypt, JWT via `jjwt` 0.13.0, `httpOnly` cookies, CSRF tokens, security headers, in-memory auth rate limiting.
 - **MFA**: TOTP and QR generation via `dev.samstevens.totp` 1.7.1, encrypted MFA secret storage, hashed recovery codes.
 - **Local persistence**: embedded MongoDB via Flapdoodle 4.33.0 for local app runs, `mongo-java-server` 1.47.0 for tests.
@@ -98,6 +101,7 @@ Start from the project root:
 6. Start the backend in one terminal: `./scripts/backend-run.sh`
 7. Start the frontend in another terminal: `./scripts/frontend-run.sh`
 8. Open `http://localhost:3000`.
+9. Optional: open Swagger UI at `http://localhost:8081/swagger-ui.html`.
 
 Expected verification results:
 
@@ -368,6 +372,11 @@ sequenceDiagram
 
 The backend also accepts browser navigation to `/`, `/login`, `/signup`, `/verify`, and `/qrcode` and redirects those routes to the frontend app.
 
+OpenAPI documentation is available locally after starting the backend:
+
+- Swagger UI: `http://localhost:8081/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8081/v3/api-docs`
+
 ### Test Structure
 
 - Backend unit tests use `*Test`.
@@ -405,13 +414,15 @@ The backend also accepts browser navigation to `/`, `/login`, `/signup`, `/verif
 
 ## Limitations
 
+Demo limitations:
+
 - This is a demo project, not a production-ready identity platform.
-- Local development runs over HTTP; production use should enforce HTTPS and secure cookie settings.
-- MFA secrets are encrypted before storage, but the local default can derive the encryption key from `JWT_SECRET`; production systems should use managed key storage and rotation.
-- Rate limiting is in-memory, so counters reset when the backend restarts.
-- Password reset, email verification, and self-service account recovery are not implemented.
 - Embedded MongoDB is convenient locally, but production deployments should use a managed or separately operated MongoDB instance.
+- Rate limiting is in-memory and resets on backend restart.
+- Email verification, password reset, and full lost-MFA recovery flows are not implemented.
+- Local development runs over HTTP; production use should enforce HTTPS and secure cookie settings.
 - Refresh token rotation is not implemented; the demo uses a single cookie-backed JWT access token.
+- MFA secrets are encrypted before storage, but the local default can derive the encryption key from `JWT_SECRET`; production systems should use managed key storage and rotation.
 - Recovery codes are shown once during signup; there is no UI for regenerating them.
 
 ## Security

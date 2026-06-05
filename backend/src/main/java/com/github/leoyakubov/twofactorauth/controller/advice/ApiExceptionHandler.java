@@ -29,56 +29,56 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiErrorResponse> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
-        log.warn("bad request on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        log.warn("bad request on {} {}", request.getMethod(), request.getRequestURI());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(UsernameAlreadyExistsException.class)
     public ResponseEntity<ApiErrorResponse> handleUsernameExists(UsernameAlreadyExistsException ex,
                                                                     HttpServletRequest request) {
-        log.warn("signup rejected on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        log.warn("signup rejected because the username is already in use on {} {}", request.getMethod(), request.getRequestURI());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ApiErrorResponse> handleEmailExists(EmailAlreadyExistsException ex,
                                                                  HttpServletRequest request) {
-        log.warn("signup rejected on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        log.warn("signup rejected because the email address is already in use on {} {}", request.getMethod(), request.getRequestURI());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFound(ResourceNotFoundException ex,
                                                               HttpServletRequest request) {
-        log.warn("resource not found on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        log.warn("resource not found on {} {}", request.getMethod(), request.getRequestURI());
         return build(HttpStatus.NOT_FOUND, "We couldn't find an account with that username or email.");
     }
 
     @ExceptionHandler({BadCredentialsException.class, AuthenticationException.class})
     public ResponseEntity<ApiErrorResponse> handleAuthentication(AuthenticationException ex,
                                                                     HttpServletRequest request) {
-        log.warn("authentication failed on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        log.warn("authentication failed on {} {}", request.getMethod(), request.getRequestURI());
         return build(HttpStatus.UNAUTHORIZED, "We couldn't sign you in. Check your credentials and try again.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorResponse> handleValidation(MethodArgumentNotValidException ex,
                                                                HttpServletRequest request) {
-        log.warn("validation failed on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        log.warn("validation failed on {} {}", request.getMethod(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildValidationBody(ex));
     }
 
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<ApiErrorResponse> handleTooManyRequests(TooManyRequestsException ex,
                                                                       HttpServletRequest request) {
-        log.warn("rate limit exceeded on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        log.warn("rate limit exceeded on {} {}", request.getMethod(), request.getRequestURI());
         return build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNoResourceFound(NoResourceFoundException ex,
                                                                      HttpServletRequest request) {
-        log.warn("resource not found on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        log.warn("resource not found on {} {}", request.getMethod(), request.getRequestURI());
         return build(HttpStatus.NOT_FOUND, "We couldn't find that page or resource.");
     }
 

@@ -59,7 +59,7 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
                 log.debug("authenticated {} on {} {}", username, request.getMethod(), request.getRequestURI());
             } catch (UsernameNotFoundException ex) {
                 SecurityContextHolder.clearContext();
-                log.warn("rejected JWT for missing user {} on {} {}", username, request.getMethod(), request.getRequestURI());
+                log.warn("rejected JWT for missing user on {} {}", request.getMethod(), request.getRequestURI());
             }
         } else {
             SecurityContextHolder.clearContext();

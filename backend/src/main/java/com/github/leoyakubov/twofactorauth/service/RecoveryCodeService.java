@@ -57,7 +57,7 @@ public class RecoveryCodeService {
         for (String hashedCode : new HashSet<>(user.getRecoveryCodes())) {
             if (passwordEncoder.matches(normalized, hashedCode)) {
                 user.getRecoveryCodes().remove(hashedCode);
-                log.info("consumed recovery code for {}", user.getUsername());
+                log.debug("consumed a recovery code for an authenticated user");
                 return true;
             }
         }
