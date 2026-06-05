@@ -412,7 +412,11 @@ OpenAPI documentation is available locally after starting the backend:
 +-- scripts
 ```
 
-## Limitations
+## Limitations and security notes
+
+This project implements a realistic local authentication flow, but it is still a demo. The notes below separate what is already handled from what would need hardening before a real deployment.
+
+### Limitations
 
 Demo limitations:
 
@@ -424,10 +428,6 @@ Demo limitations:
 - Refresh token rotation is not implemented; the demo uses a single cookie-backed JWT access token.
 - MFA secrets are encrypted before storage, but the local default can derive the encryption key from `JWT_SECRET`; production systems should use managed key storage and rotation.
 - Recovery codes are shown once during signup; there is no UI for regenerating them.
-
-## Security
-
-This project implements a realistic local authentication flow, but it is still a demo. The notes below separate what is already handled from what would need hardening before a real deployment.
 
 ### Current security posture:
 
