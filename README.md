@@ -418,7 +418,7 @@ The backend also accepts browser navigation to `/`, `/login`, `/signup`, `/verif
 
 This project implements a realistic local authentication flow, but it is still a demo. The notes below separate what is already handled from what would need hardening before a real deployment.
 
-Current security posture:
+### Current security posture:
 
 - Passwords are hashed with BCrypt before storage.
 - JWTs are stored in `httpOnly` cookies instead of `localStorage`.
@@ -429,7 +429,7 @@ Current security posture:
 - Backend routes remain the authorization boundary; frontend routing is only a user experience layer.
 - Security headers are configured through Spring properties, including Content Security Policy.
 
-Security concerns and possible solutions:
+### Security concerns and possible solutions:
 
 - Cookie-backed JWTs reduce token exposure to JavaScript, but injected scripts could still make authenticated requests from the page.
   Possible solution: keep React output escaping, avoid unsafe HTML, keep dependencies updated, and keep the Content Security Policy strict.
@@ -448,7 +448,7 @@ Security concerns and possible solutions:
 - Embedded MongoDB makes the demo easy to run, but it is not a production database setup.
   Possible solution: use a managed or separately operated MongoDB deployment with backups, monitoring, access controls, and network restrictions.
 
-Hardening roadmap:
+### Hardening roadmap:
 
 1. Add deployment profiles for HTTPS, secure cookies, production CORS origins, and external MongoDB.
 2. Move secrets and encryption keys to a managed secret store.
