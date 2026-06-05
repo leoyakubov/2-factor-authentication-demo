@@ -403,7 +403,11 @@ The backend also accepts browser navigation to `/`, `/login`, `/signup`, `/verif
 +-- scripts
 ```
 
-## Limitations
+## Limitations and security notes
+
+This project implements a realistic local authentication flow, but it is still a demo. The notes below separate what is already handled from what would need hardening before a real deployment.
+
+### Limitations
 
 - This is a demo project, not a production-ready identity platform.
 - Local development runs over HTTP; production use should enforce HTTPS and secure cookie settings.
@@ -413,10 +417,6 @@ The backend also accepts browser navigation to `/`, `/login`, `/signup`, `/verif
 - Embedded MongoDB is convenient locally, but production deployments should use a managed or separately operated MongoDB instance.
 - Refresh token rotation is not implemented; the demo uses a single cookie-backed JWT access token.
 - Recovery codes are shown once during signup; there is no UI for regenerating them.
-
-## Security
-
-This project implements a realistic local authentication flow, but it is still a demo. The notes below separate what is already handled from what would need hardening before a real deployment.
 
 ### Current security posture:
 
