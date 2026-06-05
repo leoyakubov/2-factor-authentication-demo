@@ -1,6 +1,6 @@
 # 2-Factor Authentication Demo
 
-A full-stack authentication demo for learning use. It demonstrates a browser-friendly signup and login flow with optional TOTP-based two-factor authentication, QR-code enrollment, recovery codes, CSRF protection, and JWT sessions stored in an `httpOnly` cookie.
+A full-stack authentication demo for learning modern web authentication patterns. It demonstrates a browser-friendly signup and login flow with optional TOTP-based two-factor authentication, QR-code enrollment, recovery codes, CSRF protection, and JWT sessions stored in an `httpOnly` cookie.
 
 ## Preview
 
@@ -91,7 +91,7 @@ npm -v
 Start from the project root:
 
 1. Copy `backend/.env.example` to `backend/.env`: `cp backend/.env.example backend/.env`
-2. (Optional) Set new `JWT_SECRET` in `backend/.env` to a long random value with at least 32 characters.
+2. (Optional) Set `JWT_SECRET` in `backend/.env` to a long random value with at least 32 characters.
 3. Copy `frontend/.env.example` to `frontend/.env` if you want to change the backend URL: `cp frontend/.env.example frontend/.env`
 4. Run backend verification: `./scripts/backend-verify.sh`
 5. Run frontend verification: `./scripts/frontend-verify.sh`
@@ -295,7 +295,7 @@ sequenceDiagram
     Backend->>Backend: Generate TOTP secret and recovery codes
     Backend->>Backend: Encrypt MFA secret and hash recovery codes
     Backend->>Mongo: Store user record
-    Backend-->>Frontend: QR image and one-time recovery codes
+    Backend-->>Frontend: QR code image and one-time recovery codes
     User->>Authenticator: Scan QR code
 ```
 
