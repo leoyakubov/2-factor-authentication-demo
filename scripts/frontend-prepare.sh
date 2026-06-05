@@ -9,8 +9,8 @@ prepare_frontend() {
   . ./.env
   set +a
 
-  if [ ! -f test/setupTests.cjs ]; then
-    echo "Missing frontend/test/setupTests.cjs. Restore the committed test setup file and try again." >&2
+  if [ ! -f src/testSetup.js ] || [ ! -f scripts/test-ci.cjs ]; then
+    echo "Missing frontend test setup files. Restore src/testSetup.js and scripts/test-ci.cjs, then try again." >&2
     exit 1
   fi
 

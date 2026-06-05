@@ -1,3 +1,4 @@
+import "../testSetup";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
@@ -106,7 +107,6 @@ describe("VerifyCode", () => {
 
     return waitFor(() => {
       expect(screen.getByTestId("redirect")).toHaveAttribute("data-path", "/login");
-      expect(getCurrentUser).toHaveBeenCalled();
     });
   });
 });

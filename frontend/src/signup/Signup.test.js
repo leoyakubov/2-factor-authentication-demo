@@ -1,3 +1,4 @@
+import "../testSetup";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
@@ -131,7 +132,7 @@ describe("Signup", () => {
     await screen.findByPlaceholderText("Name");
     await fillForm(user);
     await user.clear(screen.getByPlaceholderText("Password"));
-    await user.type(screen.getByPlaceholderText("Password"), "user2");
+    await user.type(screen.getByPlaceholderText("Password"), "secret2");
     await user.click(screen.getByRole("button", { name: /signup/i }));
 
     expect(

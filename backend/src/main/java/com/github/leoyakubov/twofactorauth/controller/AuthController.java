@@ -8,6 +8,7 @@ import com.github.leoyakubov.twofactorauth.model.User;
 import com.github.leoyakubov.twofactorauth.payload.JwtAuthenticationResponse;
 import com.github.leoyakubov.twofactorauth.payload.LoginRequest;
 import com.github.leoyakubov.twofactorauth.payload.LoginResult;
+import com.github.leoyakubov.twofactorauth.payload.CsrfTokenResponse;
 import com.github.leoyakubov.twofactorauth.payload.RegistrationResult;
 import com.github.leoyakubov.twofactorauth.payload.SignUpRequest;
 import com.github.leoyakubov.twofactorauth.payload.SignupResponse;
@@ -100,17 +101,9 @@ public class AuthController {
                 .body(toSignupResponse(saved, registrationResult));
     }
 
-    @PostMapping(ApiRoutes.LOGOUT_PATH)
-    public ResponseEntity<Void> logout(HttpServletRequest request) {
-        log.info("logout requested from {}", request.getRemoteAddr());
-        return ResponseEntity.noContent()
-                .header(HttpHeaders.SET_COOKIE, cookieManager.clearCookie().toString())
-                .build();
-    }
-
     @GetMapping(ApiRoutes.CSRF_PATH)
-    public ResponseEntity<Void> csrf(CsrfToken token) {
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<CsrfTokenResponse> csrf(CsrfToken token) {
+        return ResponseEntity.ok(new CsrfTokenResponse(token.getToken()));
     }
 
     private User toUser(SignUpRequest payload) {
@@ -123,7 +116,7 @@ public class AuthController {
                         .builder()
                         .displayName(payload.name())
                         .build())
-                .mfa(payload.mfa())
+                .mfa(Boolean.TRUE.equals(payload.mfa()))
                 .build();
     }
 

@@ -87,7 +87,7 @@ const Profile = () => {
               size={96}
               src={currentUser.profilePicture}
               className="user-avatar-circle"
-              icon={<UserOutlined />}
+              icon={currentUser.profilePicture ? <UserOutlined /> : undefined}
               aria-label="User avatar"
             >
               {!currentUser.profilePicture ? getInitials() : null}

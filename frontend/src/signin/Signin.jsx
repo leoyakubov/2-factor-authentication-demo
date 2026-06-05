@@ -23,22 +23,22 @@ const Signin = () => {
     }
   }, [auth.isAuthenticated, auth.isChecking, navigate]);
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     setLoading(true);
     setErrorMessage(undefined);
-    login(values)
-      .then((response) => {
-        if (response.mfa) {
-          navigate("/verify", { state: { username: values.username } });
-        } else {
-          auth.login();
-          navigate("/", { replace: true });
-        }
-      })
-      .catch((error) => {
-        setErrorMessage(getSignInErrorMessage(error));
-      })
-      .finally(() => setLoading(false));
+    try {
+      const response = (await login(values)) || {};
+      if (response.mfa) {
+        navigate("/verify", { state: { username: values.username } });
+      } else {
+        auth.login();
+        navigate("/", { replace: true });
+      }
+    } catch (error) {
+      setErrorMessage(getSignInErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

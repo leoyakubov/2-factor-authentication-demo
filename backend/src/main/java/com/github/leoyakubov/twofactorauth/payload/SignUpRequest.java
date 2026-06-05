@@ -9,6 +9,6 @@ public record SignUpRequest(
         @NotBlank @Size(min = 3, max = 15) String username,
         @NotBlank @Size(max = 40) @Email String email,
         @NotBlank @Size(min = 6, max = 20) String password,
-        boolean mfa
+        Boolean mfa
 ) {
 }

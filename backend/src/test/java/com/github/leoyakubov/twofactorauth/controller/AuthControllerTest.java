@@ -173,14 +173,4 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.message", is("Please review the highlighted fields and try again.")))
                 .andExpect(jsonPath("$.errors.password", is("Your password must be between 6 and 20 characters long.")));
     }
-
-    @Test
-    void shouldClearTheCookieWhenLoggingOut() throws Exception {
-        when(cookieManager.clearCookie())
-                .thenReturn(ResponseCookie.from("AUTH_TOKEN", "").httpOnly(true).path("/").maxAge(0).build());
-
-        mockMvc.perform(post(ApiRoutes.LOGOUT_PATH))
-                .andExpect(status().isNoContent())
-                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("AUTH_TOKEN=")));
-    }
 }

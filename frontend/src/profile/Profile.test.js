@@ -1,3 +1,4 @@
+import "../testSetup";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
@@ -48,7 +49,11 @@ describe("Profile", () => {
   test("renders the current user and logs out cleanly", async () => {
     const user = userEvent.setup();
     getCurrentUser
-      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({
+        name: "Galileo Fin",
+        username: "galileo",
+        profilePicture: undefined,
+      })
       .mockResolvedValueOnce({
         name: "Galileo Fin",
         username: "galileo",
@@ -69,9 +74,7 @@ describe("Profile", () => {
   });
 
   test("shows an error message when the profile request fails", async () => {
-    getCurrentUser
-      .mockResolvedValueOnce({})
-      .mockRejectedValueOnce({ status: 500 });
+    getCurrentUser.mockResolvedValueOnce({}).mockRejectedValueOnce({ status: 500 });
 
     renderComponent();
 

@@ -9,7 +9,7 @@ module.exports = [
   },
   js.configs.recommended,
   {
-    files: ["src/**/*.{js,jsx}", "test/**/*.cjs", "*.config.{js,cjs}"],
+    files: ["src/**/*.{js,jsx}", "test/**/*.cjs", "scripts/**/*.cjs", "*.config.{js,cjs}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",

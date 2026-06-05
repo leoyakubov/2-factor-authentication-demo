@@ -3,6 +3,12 @@ export function getSignInErrorMessage(error) {
     return "We couldn't log you in. Check your username or email and password.";
   }
 
+  if (error.status === 403) {
+    return error.body?.message && error.body.message !== "Forbidden"
+      ? error.body.message
+      : "Your sign-in request was blocked by browser security checks. Please refresh the page and try again.";
+  }
+
   if (error.status === 404) {
     return "We couldn't find an account with that username or email.";
   }
@@ -19,6 +25,12 @@ export function getSignInErrorMessage(error) {
 }
 
 export function getSignUpErrorMessage(error) {
+  if (error.status === 403) {
+    return error.body?.message && error.body.message !== "Forbidden"
+      ? error.body.message
+      : "Your sign-up request was blocked by browser security checks. Please refresh the page and try again.";
+  }
+
   if (error.status === 400) {
     return error.body?.message?.includes("exists")
       ? "That username or email is already in use. Try another one."
@@ -33,6 +45,12 @@ export function getSignUpErrorMessage(error) {
 }
 
 export function getVerifyErrorMessage(error) {
+  if (error.status === 403) {
+    return error.body?.message && error.body.message !== "Forbidden"
+      ? error.body.message
+      : "Your verification request was blocked by browser security checks. Please refresh the page and try again.";
+  }
+
   if (error.status === 400) {
     return "The verification code is incorrect. Please try again.";
   }

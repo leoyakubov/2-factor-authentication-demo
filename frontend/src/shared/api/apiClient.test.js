@@ -1,18 +1,26 @@
-import { getCurrentUser, login, logout } from "./apiClient";
+import "../../testSetup";
+import { getCurrentUser, login, logout, __resetCsrfTokenCacheForTests } from "./apiClient";
 
 describe("ApiUtil", () => {
   beforeEach(() => {
     global.fetch = jest.fn();
     jest.spyOn(globalThis.crypto, "randomUUID").mockReturnValue("test-request-id");
     document.cookie = "XSRF-TOKEN=test-xsrf";
+    __resetCsrfTokenCacheForTests();
   });
 
   afterEach(() => {
     document.cookie = "XSRF-TOKEN=; Max-Age=0";
+    __resetCsrfTokenCacheForTests();
     jest.restoreAllMocks();
   });
 
   test("login posts credentials to the signin endpoint with cookies enabled", async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ token: "test-xsrf" }),
+    });
     fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -30,9 +38,9 @@ describe("ApiUtil", () => {
         credentials: "include",
       })
     );
-    expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBeNull();
-    expect(fetch.mock.calls[0][1].headers.get("X-XSRF-TOKEN")).toBe("test-xsrf");
-    expect(fetch.mock.calls[0][1].headers.get("X-Request-Id")).toBe("test-request-id");
+    expect(fetch.mock.calls[1][1].headers.get("Authorization")).toBeNull();
+    expect(fetch.mock.calls[1][1].headers.get("X-XSRF-TOKEN")).toBe("test-xsrf");
+    expect(fetch.mock.calls[1][1].headers.get("X-Request-Id")).toBe("test-request-id");
     expect(response).toEqual({ mfa: false });
   });
 
@@ -62,6 +70,11 @@ describe("ApiUtil", () => {
   test("logout posts to the logout endpoint with cookies enabled", async () => {
     fetch.mockResolvedValueOnce({
       ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ token: "test-xsrf" }),
+    });
+    fetch.mockResolvedValueOnce({
+      ok: true,
       status: 204,
       text: async () => "",
     });
@@ -75,9 +88,9 @@ describe("ApiUtil", () => {
         credentials: "include",
       })
     );
-    expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBeNull();
-    expect(fetch.mock.calls[0][1].headers.get("X-XSRF-TOKEN")).toBe("test-xsrf");
-    expect(fetch.mock.calls[0][1].headers.get("X-Request-Id")).toBe("test-request-id");
+    expect(fetch.mock.calls[1][1].headers.get("Authorization")).toBeNull();
+    expect(fetch.mock.calls[1][1].headers.get("X-XSRF-TOKEN")).toBe("test-xsrf");
+    expect(fetch.mock.calls[1][1].headers.get("X-Request-Id")).toBe("test-request-id");
     expect(response).toEqual({});
   });
 });

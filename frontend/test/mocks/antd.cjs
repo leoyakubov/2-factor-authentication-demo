@@ -49,6 +49,7 @@ function createForm() {
 }
 
 function Form({ children, onFinish, className, ...props }) {
+  delete props.initialValues;
   const [formState] = React.useState(() => props.form || createForm());
   const [fieldErrors, setFieldErrors] = React.useState({});
 
@@ -150,6 +151,7 @@ function Input(props) {
 }
 
 function Button({ children, htmlType, onClick, loading, disabled, type, ...props }) {
+  delete props.block;
   return React.createElement(
     "button",
     {

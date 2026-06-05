@@ -21,7 +21,7 @@ const VerifyCode = () => {
     }
   }, [navigate, username]);
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     setLoading(true);
     setErrorMessage(undefined);
 
@@ -30,15 +30,15 @@ const VerifyCode = () => {
       username: username,
     };
 
-    verify(verifyRequest)
-      .then(() => {
-        auth.login();
-        navigate("/", { replace: true });
-      })
-      .catch((error) => {
-        setErrorMessage(getVerifyErrorMessage(error));
-      })
-      .finally(() => setLoading(false));
+    try {
+      await verify(verifyRequest);
+      auth.login();
+      navigate("/", { replace: true });
+    } catch (error) {
+      setErrorMessage(getVerifyErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!username) {

@@ -3,6 +3,7 @@ import { logApiFailure } from "../logging/logger";
 
 const XSRF_COOKIE_NAME = "XSRF-TOKEN";
 let csrfTokenRequestPromise;
+let cachedCsrfToken;
 
 const generateRequestId = () => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -25,21 +26,32 @@ const getCookieValue = (name) => {
     .join("=") || null;
 };
 
-const ensureCsrfToken = async () => {
-  if (getCookieValue(XSRF_COOKIE_NAME)) {
-    return;
+const ensureCsrfToken = async ({ forceRefresh = false } = {}) => {
+  if (!forceRefresh) {
+    const cachedToken = cachedCsrfToken || getCookieValue(XSRF_COOKIE_NAME);
+    if (cachedToken) {
+      cachedCsrfToken = cachedToken;
+      return cachedToken;
+    }
   }
 
   if (!csrfTokenRequestPromise) {
     csrfTokenRequestPromise = fetch(`${API_BASE_URL}/csrf`, {
       method: "GET",
       credentials: "include",
-    }).finally(() => {
-      csrfTokenRequestPromise = undefined;
-    });
+    })
+      .then(parseBody)
+      .then((body) => {
+        cachedCsrfToken = body.token || getCookieValue(XSRF_COOKIE_NAME);
+        return cachedCsrfToken;
+      })
+      .finally(() => {
+        csrfTokenRequestPromise = undefined;
+      });
   }
 
   await csrfTokenRequestPromise;
+  return cachedCsrfToken;
 };
 
 const parseBody = async (response) => {
@@ -67,8 +79,7 @@ const request = async (options) => {
   }
 
   if (!["GET", "HEAD", "OPTIONS"].includes(method) && !options.skipCsrf) {
-    await ensureCsrfToken();
-    const csrfToken = getCookieValue(XSRF_COOKIE_NAME);
+    const csrfToken = await ensureCsrfToken({ forceRefresh: true });
     if (csrfToken) {
       headers.set("X-XSRF-TOKEN", csrfToken);
     }
@@ -142,4 +153,9 @@ export function logout() {
     url: `${API_BASE_URL}/logout`,
     method: "POST",
   });
+}
+
+export function __resetCsrfTokenCacheForTests() {
+  csrfTokenRequestPromise = undefined;
+  cachedCsrfToken = undefined;
 }

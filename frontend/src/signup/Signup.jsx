@@ -23,30 +23,30 @@ const Signup = () => {
     }
   }, [auth.isAuthenticated, auth.isChecking, navigate]);
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     setLoading(true);
     setErrorMessage(undefined);
     form.setFields(["name", "username", "email", "password"].map((name) => ({ name, errors: [] })));
     setRecoveryCodes([]);
-    signup(values)
-      .then((response) => {
-        setCreated(true);
-        setQrImageUrl(response.mfa ? response.secretImageUri : undefined);
-        setRecoveryCodes(response.recoveryCodes || []);
-      })
-      .catch((error) => {
-        const validationErrors = error.body?.errors;
-        if (validationErrors && typeof validationErrors === "object") {
-          form.setFields(
-            Object.entries(validationErrors).map(([name, message]) => ({
-              name,
-              errors: [message],
-            }))
-          );
-        }
-        setErrorMessage(getSignUpErrorMessage(error));
-      })
-      .finally(() => setLoading(false));
+    try {
+      const response = (await signup(values)) || {};
+      setCreated(true);
+      setQrImageUrl(response.mfa ? response.secretImageUri : undefined);
+      setRecoveryCodes(response.recoveryCodes || []);
+    } catch (error) {
+      const validationErrors = error.body?.errors;
+      if (validationErrors && typeof validationErrors === "object") {
+        form.setFields(
+          Object.entries(validationErrors).map(([name, message]) => ({
+            name,
+            errors: [message],
+          }))
+        );
+      }
+      setErrorMessage(getSignUpErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -112,7 +112,7 @@ const Signup = () => {
           form={form}
           name="normal_login"
           className="login-form"
-          initialValues={{ remember: true }}
+          initialValues={{ remember: true, mfa: false }}
           onFinish={onFinish}
         >
           {errorMessage ? (
