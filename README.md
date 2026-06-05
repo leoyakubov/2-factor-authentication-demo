@@ -14,13 +14,13 @@ A full-stack authentication demo for learning use. It demonstrates a browser-fri
 
 ## Key Terms
 
-- Two-factor authentication (2FA): a login flow that requires two proofs, usually a password plus a one-time code.
-- MFA: multi-factor authentication. In this project it means password login plus an optional TOTP verification step.
-- TOTP: time-based one-time password, usually a 6-digit code that changes every few seconds.
-- QR-code enrollment: the step where the app shows a QR code that links a user account to an authenticator app.
-- Recovery code: a one-time backup code that can be used if the user loses access to the authenticator app.
-- JWT-backed session: a signed token issued by the backend after login and stored in an `httpOnly` browser cookie.
-- CSRF token: a browser security token required for state-changing requests when authentication uses cookies.
+- **Two-factor authentication (2FA)**: a login flow that requires two proofs, usually a password plus a one-time code.
+- **MFA**: multi-factor authentication. In this project it means password login plus an optional TOTP verification step.
+- **TOTP**: time-based one-time password, usually a 6-digit code that changes every few seconds.
+- **QR-code enrollment**: the step where the app shows a QR code that links a user account to an authenticator app.
+- **Recovery code**: a one-time backup code that can be used if the user loses access to the authenticator app.
+- **JWT-backed session**: a signed token issued by the backend after login and stored in an `httpOnly` browser cookie.
+- **CSRF token**: a browser security token required for state-changing requests when authentication uses cookies.
 
 ## What Is Implemented
 
@@ -62,17 +62,17 @@ Basic flow:
 
 ## Tech Stack
 
-- Backend: Java 21+, Spring Boot 4.0.6, Spring Security, Spring Web, Spring Data MongoDB, Spring Validation, Spring Actuator, Maven.
-- Security: BCrypt, JWT via `jjwt` 0.13.0, `httpOnly` cookies, CSRF tokens, security headers, in-memory auth rate limiting.
-- MFA: TOTP and QR generation via `dev.samstevens.totp` 1.7.1, encrypted MFA secret storage, hashed recovery codes.
-- Local persistence: embedded MongoDB via Flapdoodle 4.33.0 for local app runs, `mongo-java-server` 1.47.0 for tests.
-- Frontend: React 19.2.7, Vite 8.0.16, React Router 7.16.0, Ant Design 6.4.3, Fetch API.
-- Frontend quality: Jest 30.4.2, React Testing Library 16.3.2, ESLint 9.39.4.
-- Scripts: Unix shell scripts for Linux, macOS, WSL, and Git Bash.
+- **Backend**: Java 21+, Spring Boot 4.0.6, Spring Security, Spring Web, Spring Data MongoDB, Spring Validation, Spring Actuator, Maven.
+- **Security**: BCrypt, JWT via `jjwt` 0.13.0, `httpOnly` cookies, CSRF tokens, security headers, in-memory auth rate limiting.
+- **MFA**: TOTP and QR generation via `dev.samstevens.totp` 1.7.1, encrypted MFA secret storage, hashed recovery codes.
+- **Local persistence**: embedded MongoDB via Flapdoodle 4.33.0 for local app runs, `mongo-java-server` 1.47.0 for tests.
+- **Frontend**: React 19.2.7, Vite 8.0.16, React Router 7.16.0, Ant Design 6.4.3, Fetch API.
+- **Backend quality**: JUnit 5, Mockito, embedded Mongo integration tests, Maven Surefire, Maven Failsafe.
+- **Frontend quality**: Jest 30.4.2, React Testing Library 16.3.2, ESLint 9.39.4.
 
 ## Run Locally
 
-This section is the path for a new user who has just cloned the project and wants to verify that everything works on their machine.
+This is the setup path for someone who has just cloned the project and wants to run it on their machine.
 
 Prerequisites:
 
@@ -91,13 +91,19 @@ npm -v
 Start from the project root:
 
 1. Copy `backend/.env.example` to `backend/.env`.
-2. Set `JWT_SECRET` in `backend/.env` to a long random value with at least 32 characters.
-3. Optional: copy `frontend/.env.example` to `frontend/.env` if you want to change the backend URL.
-4. Run backend verification: `./scripts/backend-verify.sh`
-5. Run frontend verification: `./scripts/frontend-verify.sh`
-6. Start the backend in one terminal: `./scripts/backend-run.sh`
-7. Start the frontend in another terminal: `./scripts/frontend-run.sh`
-8. Open `http://localhost:3000`.
+2. Or create it from the command line:
+
+```sh
+cp backend/.env.example backend/.env
+```
+
+3. Set `JWT_SECRET` in `backend/.env` to a long random value with at least 32 characters.
+4. Optional: copy `frontend/.env.example` to `frontend/.env` if you want to change the backend URL.
+5. Run backend verification: `./scripts/backend-verify.sh`
+6. Run frontend verification: `./scripts/frontend-verify.sh`
+7. Start the backend in one terminal: `./scripts/backend-run.sh`
+8. Start the frontend in another terminal: `./scripts/frontend-run.sh`
+9. Open `http://localhost:3000`.
 
 Expected verification results:
 
@@ -118,7 +124,7 @@ Docker is not required for the local demo workflow. The backend uses embedded Mo
 
 Important for Windows and WSL:
 
-- Run scripts from Git Bash, WSL, Linux, or macOS.
+- Run scripts from Git Bash or WSL on Windows.
 - `frontend/node_modules` contains native packages and should not be shared between Windows/Git Bash and WSL.
 - If dependencies were installed in a different shell or platform, delete `frontend/node_modules`, then run `npm ci` from the same environment you plan to use.
 - For WSL, the most reliable setup is keeping the repo inside the WSL filesystem, for example `~/projects/2-factor-authentication-demo`.
@@ -172,6 +178,13 @@ Recovery code:
 2. On the verification screen, enter one unused recovery code instead of an authenticator code.
 3. Confirm the profile page loads.
 4. Try the same recovery code again later and confirm it no longer works.
+
+MFA app login:
+
+1. Sign in with the MFA-enabled account.
+2. Open your authenticator app and read the current 6-digit code.
+3. Enter that code on the verification screen.
+4. Confirm the profile page loads.
 
 Error handling:
 
@@ -271,6 +284,26 @@ sequenceDiagram
     User->>Frontend: Submit authenticator or recovery code
     Frontend->>Backend: POST /verify
     Backend->>Backend: Verify TOTP or consume recovery code
+    Backend-->>Browser: Set-Cookie: AUTH_TOKEN=httpOnly JWT
+    Frontend->>Backend: GET /users/me
+    Backend-->>Frontend: Protected profile
+```
+
+Recovery code variant:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant Browser
+
+    User->>Frontend: Enter username/email and password
+    Frontend->>Backend: POST /signin
+    Backend-->>Frontend: MFA required
+    User->>Frontend: Enter a one-time recovery code
+    Frontend->>Backend: POST /verify
+    Backend->>Backend: Hash lookup and one-time code consumption
     Backend-->>Browser: Set-Cookie: AUTH_TOKEN=httpOnly JWT
     Frontend->>Backend: GET /users/me
     Backend-->>Frontend: Protected profile
