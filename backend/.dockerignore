@@ -1,8 +1,0 @@
-target
-.git
-.idea
-.mvn/wrapper/maven-wrapper.jar
-*.log
-*.out
-*.err
-.env

@@ -1,18 +1,18 @@
 FROM maven:3.9.11-eclipse-temurin-21 AS build
 
-WORKDIR /workspace
+WORKDIR /workspace/backend
 
-COPY pom.xml .
+COPY backend/pom.xml .
 RUN mvn -q -DskipTests dependency:go-offline
 
-COPY src src
+COPY backend/src src
 RUN mvn -q -DskipTests package
 
 FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
-COPY --from=build /workspace/target/*.jar /app/app.jar
+COPY --from=build /workspace/backend/target/*.jar /app/app.jar
 
 EXPOSE 8081
 

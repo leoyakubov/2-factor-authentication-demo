@@ -9,7 +9,7 @@
     "frontend:verify": "sh ./scripts/frontend-verify.sh",
     "frontend:run": "sh ./scripts/frontend-run.sh",
     "verify": "npm run backend:verify && npm run frontend:verify",
-    "docker:up": "docker compose up --build",
-    "docker:down": "docker compose down"
+    "docker:local": "sh ./scripts/docker-local.sh",
+    "docker:live": "sh ./scripts/docker-live.sh"
   }
 }

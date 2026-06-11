@@ -10,13 +10,14 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: ..
+      dockerfile: infra/backend.Dockerfile
     container_name: two-factor-authentication-demo-backend
     restart: unless-stopped
     depends_on:
       - mongo
     env_file:
-      - ./backend/.env
+      - ../backend/.env
     environment:
       SERVER_PORT: "8081"
       MONGODB_HOST: mongo
@@ -28,7 +29,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ..
+      dockerfile: infra/frontend.Dockerfile
       args:
         VITE_API_BASE_URL: /api
     container_name: two-factor-authentication-demo-frontend

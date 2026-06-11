@@ -117,8 +117,8 @@ Root npm shortcuts:
 - `npm run verify`
 - `npm run backend:run`
 - `npm run frontend:run`
-- `npm run docker:up`
-- `npm run docker:down`
+- `npm run docker:local`
+- `npm run docker:live`
 
 Docker is not required for the local demo workflow. The backend uses embedded MongoDB locally.
 
@@ -155,12 +155,12 @@ Before you start:
 
 1. Copy `backend/.env.example` to `backend/.env`: `cp backend/.env.example backend/.env`
 2. Set `JWT_SECRET` and `MFA_SECRET_ENCRYPTION_KEY` to long random values.
-3. If you want to change the frontend API URL, update the `VITE_API_BASE_URL` build arg in `docker-compose.yml`.
+3. If you want to change the frontend API URL, update the `VITE_API_BASE_URL` build arg in `infra/docker-compose.yml`.
 
 Start the full stack:
 
 ```sh
-docker compose up --build
+sh scripts/docker-local.sh
 ```
 
 Open:
@@ -171,7 +171,7 @@ Open:
 Stop the stack:
 
 ```sh
-docker compose down
+docker compose -f infra/docker-compose.yml down
 ```
 
 Docker notes:
@@ -179,6 +179,14 @@ Docker notes:
 - This is the best path for a live demo because one command brings up the full stack.
 - The frontend uses `/api` inside Docker, so the browser stays on one origin and does not need CORS between the frontend and backend.
 - The backend still keeps the same API routes and security model; only the deployment wrapper changes.
+
+Live mode:
+
+```sh
+sh scripts/docker-live.sh
+```
+
+That starts the same stack in detached mode, which is handy when you want it to keep running on a VM.
 
 ## Demo Walkthrough
 
