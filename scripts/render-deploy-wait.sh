@@ -1,6 +1,24 @@
 #!/bin/sh
 set -eu
 
+if [ -f "$(dirname "$0")/.env" ]; then
+  load_local_env() {
+    while IFS='=' read -r key value; do
+      case "$key" in
+        ''|\#*) continue ;;
+      esac
+
+      eval "current=\${$key-}"
+      if [ -z "$current" ]; then
+        eval "$key=$value"
+        export "$key"
+      fi
+    done < "$(dirname "$0")/.env"
+  }
+
+  load_local_env
+fi
+
 wait_for_backend() {
   api_base="${RENDER_API_BASE_URL:-https://api.render.com/v1}"
   api_key="${RENDER_API_KEY:?RENDER_API_KEY is required}"
@@ -27,8 +45,10 @@ wait_for_backend() {
 
       deploy_list
       | map(select(type == "object"))
-      | map(select((has("id") or has("deployId")) and (has("status") or has("statusText"))))
-      | .[0].id // .[0].deployId // empty
+      | map(if has("deploy") and (.deploy | type == "object") then .deploy else . end)
+      | map(.id // .deployId // empty)
+      | map(select(length > 0))
+      | .[0] // empty
     '
   }
 
@@ -42,8 +62,10 @@ wait_for_backend() {
 
       deploy_list
       | map(select(type == "object"))
-      | map(select((has("id") or has("deployId")) and (has("status") or has("statusText"))))
-      | .[0].status // .[0].statusText // empty
+      | map(if has("deploy") and (.deploy | type == "object") then .deploy else . end)
+      | map(.status // .statusText // empty)
+      | map(select(length > 0))
+      | .[0] // empty
     '
   }
 
@@ -112,8 +134,10 @@ wait_for_frontend() {
 
       deploy_list
       | map(select(type == "object"))
-      | map(select((has("id") or has("deployId")) and (has("status") or has("statusText"))))
-      | .[0].id // .[0].deployId // empty
+      | map(if has("deploy") and (.deploy | type == "object") then .deploy else . end)
+      | map(.id // .deployId // empty)
+      | map(select(length > 0))
+      | .[0] // empty
     '
   }
 
@@ -127,8 +151,10 @@ wait_for_frontend() {
 
       deploy_list
       | map(select(type == "object"))
-      | map(select((has("id") or has("deployId")) and (has("status") or has("statusText"))))
-      | .[0].status // .[0].statusText // empty
+      | map(if has("deploy") and (.deploy | type == "object") then .deploy else . end)
+      | map(.status // .statusText // empty)
+      | map(select(length > 0))
+      | .[0] // empty
     '
   }
 

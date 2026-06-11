@@ -28,6 +28,7 @@ replay_pid*
 .env
 .env.*
 !.env.example
+!scripts/.env.example
 
 # Java / Maven
 target/

@@ -45,7 +45,7 @@ jobs:
 
             deploy_list
             | map(select(type == "object"))
-            | map(select((has("id") or has("deployId")) and (has("status") or has("statusText"))))
+            | map(if has("deploy") and (.deploy | type == "object") then .deploy else . end)
             | .[0].id // .[0].deployId // empty
           ')"
           printf 'baseline_deploy_id=%s\n' "$deploy_id" >> "$GITHUB_OUTPUT"
