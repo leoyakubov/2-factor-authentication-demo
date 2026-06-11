@@ -19,8 +19,7 @@ This guide sets up the public demo on Render while keeping embedded MongoDB in t
 1. Open Render.
 2. Create a new Blueprint / deploy from GitHub repo.
 3. Select this repository.
-4. Render will read [`infra/render.yaml`](../infra/render.yaml) and create the backend web service.
-5. Create the frontend manually as a Render Static Site.
+4. Render will read [`infra/render.yaml`](../infra/render.yaml) and create both services.
 
 ## Step 2: Configure the backend service
 
@@ -40,15 +39,13 @@ Notes:
 
 ## Step 3: Configure the frontend service
 
-Set these frontend environment variables:
+Set this frontend environment variable:
 
 - `VITE_API_BASE_URL`
-- `VITE_BUILD_OUT_DIR`
 
-Suggested values:
+Suggested value:
 
 - `VITE_API_BASE_URL` = backend Render URL
-- `VITE_BUILD_OUT_DIR` = `dist`
 
 ## Step 4: Verify the deployment
 
