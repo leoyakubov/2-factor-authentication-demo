@@ -47,6 +47,10 @@ Suggested value:
 
 - `VITE_API_BASE_URL` = backend Render URL
 
+Important:
+
+- The frontend CSP is built from `VITE_API_BASE_URL`, so set it before redeploying the static site.
+
 ## Step 4: Verify the deployment
 
 1. Wait for the backend service to finish building.
@@ -66,6 +70,24 @@ Recommended checks:
 
 - backend verify
 - frontend verify
+
+## Step 6: Enable GitHub Actions deploy and smoke checks
+
+Add these repository secrets or variables:
+
+- `RENDER_BACKEND_DEPLOY_HOOK_URL`
+- `RENDER_FRONTEND_DEPLOY_HOOK_URL`
+- `RENDER_BACKEND_URL`
+- `RENDER_FRONTEND_URL`
+
+What the workflows do:
+
+- `verify.yml` runs tests and build checks
+- `deploy-backend.yml` triggers the backend Render deploy hook
+- `deploy-frontend.yml` triggers the frontend Render deploy hook
+- `smoke-backend.yml` checks the backend `/csrf` endpoint
+- `smoke-frontend.yml` checks the frontend page loads
+- `ping-render.yml` pings the backend `/csrf` endpoint every 5 minutes
 
 ## Troubleshooting
 

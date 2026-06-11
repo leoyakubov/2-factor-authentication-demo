@@ -1,0 +1,35 @@
+name: Ping Render
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    environment: demo
+    env:
+      RENDER_BACKEND_URL: ${{ vars.RENDER_BACKEND_URL || secrets.RENDER_BACKEND_URL }}
+
+    steps:
+      - name: Ping backend csrf endpoint
+        run: |
+          set -eu
+          if [ -z "${RENDER_BACKEND_URL:-}" ]; then
+            echo "RENDER_BACKEND_URL is not set."
+            exit 1
+          fi
+
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --connect-timeout 10 \
+            --max-time 60 \
+            --retry 3 \
+            --retry-delay 5 \
+            --retry-all-errors \
+            "$RENDER_BACKEND_URL/csrf" \
+            >/dev/null
+          echo "Pinged $RENDER_BACKEND_URL/csrf"

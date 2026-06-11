@@ -1,0 +1,27 @@
+name: Deploy Frontend
+
+on:
+  workflow_run:
+    workflows: [Verify]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    environment: demo
+    env:
+      RENDER_FRONTEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
+
+    steps:
+      - name: Trigger Render frontend deploy
+        run: |
+          set -eu
+          if [ -z "${RENDER_FRONTEND_DEPLOY_HOOK_URL:-}" ]; then
+            echo "RENDER_FRONTEND_DEPLOY_HOOK_URL is not set."
+            exit 1
+          fi
+
+          curl --fail --silent --show-error --request POST "$RENDER_FRONTEND_DEPLOY_HOOK_URL" >/dev/null
+          echo "Triggered Render frontend deploy"
