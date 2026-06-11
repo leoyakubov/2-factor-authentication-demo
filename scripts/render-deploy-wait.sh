@@ -18,11 +18,33 @@ wait_for_backend() {
   esac
 
   latest_deploy_id_from_response() {
-    printf '%s' "$1" | jq -r 'if type == "array" then .[0].id elif type == "object" and has("deploys") then .deploys[0].id else empty end // empty'
+    printf '%s' "$1" | jq -r '
+      def deploy_list:
+        if type == "array" then .
+        elif type == "object" then
+          (.deploys // .items // .data // .result // .deployments // .service.deploys // .service.items // [])
+        else [] end;
+
+      deploy_list
+      | map(select(type == "object"))
+      | map(select((has("id") or has("deployId")) and (has("status") or has("statusText"))))
+      | .[0].id // .[0].deployId // empty
+    '
   }
 
   latest_deploy_status_from_response() {
-    printf '%s' "$1" | jq -r 'if type == "array" then .[0].status elif type == "object" and has("deploys") then .deploys[0].status else empty end // empty'
+    printf '%s' "$1" | jq -r '
+      def deploy_list:
+        if type == "array" then .
+        elif type == "object" then
+          (.deploys // .items // .data // .result // .deployments // .service.deploys // .service.items // [])
+        else [] end;
+
+      deploy_list
+      | map(select(type == "object"))
+      | map(select((has("id") or has("deployId")) and (has("status") or has("statusText"))))
+      | .[0].status // .[0].statusText // empty
+    '
   }
 
   while [ "$attempt" -le "$max_attempts" ]; do
@@ -81,11 +103,33 @@ wait_for_frontend() {
   esac
  
   latest_deploy_id_from_response() {
-    printf '%s' "$1" | jq -r 'if type == "array" then .[0].id elif type == "object" and has("deploys") then .deploys[0].id else empty end // empty'
+    printf '%s' "$1" | jq -r '
+      def deploy_list:
+        if type == "array" then .
+        elif type == "object" then
+          (.deploys // .items // .data // .result // .deployments // .service.deploys // .service.items // [])
+        else [] end;
+
+      deploy_list
+      | map(select(type == "object"))
+      | map(select((has("id") or has("deployId")) and (has("status") or has("statusText"))))
+      | .[0].id // .[0].deployId // empty
+    '
   }
 
   latest_deploy_status_from_response() {
-    printf '%s' "$1" | jq -r 'if type == "array" then .[0].status elif type == "object" and has("deploys") then .deploys[0].status else empty end // empty'
+    printf '%s' "$1" | jq -r '
+      def deploy_list:
+        if type == "array" then .
+        elif type == "object" then
+          (.deploys // .items // .data // .result // .deployments // .service.deploys // .service.items // [])
+        else [] end;
+
+      deploy_list
+      | map(select(type == "object"))
+      | map(select((has("id") or has("deployId")) and (has("status") or has("statusText"))))
+      | .[0].status // .[0].statusText // empty
+    '
   }
 
   while [ "$attempt" -le "$max_attempts" ]; do
