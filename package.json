@@ -8,6 +8,8 @@
     "backend:run": "sh ./scripts/backend-run.sh",
     "frontend:verify": "sh ./scripts/frontend-verify.sh",
     "frontend:run": "sh ./scripts/frontend-run.sh",
-    "verify": "npm run backend:verify && npm run frontend:verify"
+    "verify": "npm run backend:verify && npm run frontend:verify",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
   }
 }

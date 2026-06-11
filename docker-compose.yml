@@ -1,0 +1,42 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: two-factor-authentication-demo-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+    container_name: two-factor-authentication-demo-backend
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    env_file:
+      - ./backend/.env
+    environment:
+      SERVER_PORT: "8081"
+      MONGODB_HOST: mongo
+      MONGODB_PORT: "27017"
+      FRONTEND_ORIGIN: http://localhost:3000
+      BACKEND_ORIGIN: http://localhost:8081
+    ports:
+      - "8081:8081"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api
+    container_name: two-factor-authentication-demo-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  mongo-data:
