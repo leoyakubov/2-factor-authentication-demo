@@ -1,6 +1,7 @@
 package com.github.leoyakubov.twofactorauth.config;
 
 import com.github.leoyakubov.twofactorauth.config.properties.CorsProperties;
+import com.github.leoyakubov.twofactorauth.config.properties.FrontendProperties;
 import com.github.leoyakubov.twofactorauth.config.properties.SecurityHeaderProperties;
 import com.github.leoyakubov.twofactorauth.config.JwtCookieManager;
 import com.github.leoyakubov.twofactorauth.controller.routes.ApiRoutes;
@@ -84,9 +85,15 @@ public class SecurityCredentialsConfig {
     }
 
     @Bean
-    public CookieCsrfTokenRepository csrfTokenRepository() {
+    public CookieCsrfTokenRepository csrfTokenRepository(FrontendProperties frontendProperties) {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         repository.setCookiePath("/");
+        boolean secureDeployment = frontendProperties.baseUrl().startsWith("https://");
+        repository.setCookieCustomizer(cookie -> {
+            cookie.path("/");
+            cookie.secure(secureDeployment);
+            cookie.sameSite(secureDeployment ? "None" : "Lax");
+        });
         return repository;
     }
 
