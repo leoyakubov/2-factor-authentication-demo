@@ -16,6 +16,9 @@ jobs:
       RENDER_FRONTEND_URL: ${{ vars.RENDER_FRONTEND_URL || secrets.RENDER_FRONTEND_URL }}
 
     steps:
+      - name: Wait for Render deploy
+        run: sleep 60
+
       - name: Checkout
         uses: actions/checkout@v4
         with:

@@ -16,6 +16,9 @@ jobs:
       RENDER_BACKEND_URL: ${{ vars.RENDER_BACKEND_URL || secrets.RENDER_BACKEND_URL }}
 
     steps:
+      - name: Wait for Render deploy
+        run: sleep 60
+
       - name: Checkout
         uses: actions/checkout@v4
         with:

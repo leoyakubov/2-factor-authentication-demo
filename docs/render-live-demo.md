@@ -32,6 +32,11 @@ Set these environment variables on the backend service:
 
 Use the Render URLs for the frontend and backend services.
 
+Example values:
+
+- `FRONTEND_ORIGIN=https://two-factor-authentication-demo-frontend.onrender.com`
+- `BACKEND_ORIGIN=https://two-factor-authentication-demo-backend.onrender.com`
+
 Notes:
 
 - The backend reads `PORT` automatically on Render.
@@ -46,6 +51,10 @@ Set this frontend environment variable:
 Suggested value:
 
 - `VITE_API_BASE_URL` = backend Render URL
+
+Example value:
+
+- `VITE_API_BASE_URL=https://two-factor-authentication-demo-backend.onrender.com`
 
 Important:
 
