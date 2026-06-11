@@ -19,12 +19,8 @@ This guide sets up the public demo on Render while keeping embedded MongoDB in t
 1. Open Render.
 2. Create a new Blueprint / deploy from GitHub repo.
 3. Select this repository.
-4. Render should read [`infra/render.yaml`](../infra/render.yaml) and create both services.
-
-If you prefer manual setup, create the services yourself:
-
-- Backend: Render Web Service
-- Frontend: Render Static Site
+4. Render will read [`infra/render.yaml`](../infra/render.yaml) and create the backend web service.
+5. Create the frontend manually as a Render Static Site.
 
 ## Step 2: Configure the backend service
 
