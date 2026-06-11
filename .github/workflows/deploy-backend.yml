@@ -59,4 +59,5 @@ jobs:
       - name: Wait for backend to become ready
         run: sh ./scripts/render-deploy-wait.sh
         env:
+          DEPLOY_CHECK: backend
           BASELINE_DEPLOY_ID: ${{ steps.baseline.outputs.baseline_deploy_id }}
