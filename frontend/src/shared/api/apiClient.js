@@ -68,7 +68,13 @@ const parseBody = async (response) => {
   }
 };
 
-const request = async (options) => {
+const isCsrfFailure = (error) =>
+  error.status === 403 &&
+  typeof error.body?.message === "string" &&
+  (error.body.message.includes("security token") ||
+    error.body.message.includes("browser security checks"));
+
+const request = async (options, attempt = 0) => {
   const headers = new Headers(options.headers || {});
   const method = (options.method || "GET").toUpperCase();
   const requestId = options.requestId || generateRequestId();
@@ -111,6 +117,19 @@ const request = async (options) => {
       message: error.message,
       body,
     });
+
+    if (
+      attempt === 0 &&
+      !["GET", "HEAD", "OPTIONS"].includes(method) &&
+      !options.skipCsrf &&
+      isCsrfFailure(error)
+    ) {
+      csrfTokenRequestPromise = undefined;
+      cachedCsrfToken = undefined;
+      await ensureCsrfToken({ forceRefresh: true });
+      return request(options, attempt + 1);
+    }
+
     throw error;
   }
 
