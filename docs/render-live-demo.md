@@ -12,14 +12,14 @@ This guide sets up the public demo on Render while keeping embedded MongoDB in t
 
 1. Push the repository to GitHub.
 2. Make sure the backend verify workflow exists at [`.github/workflows/verify.yml`](../.github/workflows/verify.yml).
-3. Make sure `render.yaml` is present at the repo root.
+3. Make sure `infra/render.yaml` is present in the repo.
 
 ## Step 1: Create the Render services
 
 1. Open Render.
 2. Create a new Blueprint / deploy from GitHub repo.
 3. Select this repository.
-4. Render should read [`render.yaml`](../render.yaml) and create both services.
+4. Render should read [`infra/render.yaml`](../infra/render.yaml) and create both services.
 
 If you prefer manual setup, create the services yourself:
 
