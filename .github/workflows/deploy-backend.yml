@@ -18,6 +18,16 @@ jobs:
       RENDER_API_BASE_URL: https://api.render.com/v1
 
     steps:
+      - name: Validate backend service configuration
+        run: |
+          set -eu
+          case "$RENDER_BACKEND_SERVICE_ID" in
+            http://*|https://*)
+              echo "RENDER_BACKEND_SERVICE_ID must be the Render service ID (for example srv-...), not the public URL."
+              exit 1
+              ;;
+          esac
+
       - name: Capture current backend deploy id
         id: baseline
         run: |
@@ -26,7 +36,7 @@ jobs:
             --header "Authorization: Bearer $RENDER_API_KEY" \
             --header "Accept: application/json" \
             "$RENDER_API_BASE_URL/services/$RENDER_BACKEND_SERVICE_ID/deploys")"
-          deploy_id="$(printf '%s' "$response" | jq -r '.[0].id // .deploys[0].id // empty')"
+          deploy_id="$(printf '%s' "$response" | jq -r 'if type == "array" then .[0].id elif type == "object" and has("deploys") then .deploys[0].id else empty end // empty')"
           printf 'baseline_deploy_id=%s\n' "$deploy_id" >> "$GITHUB_OUTPUT"
 
       - name: Trigger Render backend deploy

@@ -92,6 +92,11 @@ Add these repository secrets or variables:
 - `RENDER_BACKEND_URL`
 - `RENDER_FRONTEND_URL`
 
+Important:
+
+- `RENDER_BACKEND_SERVICE_ID` and `RENDER_FRONTEND_SERVICE_ID` must be the Render service IDs, not the public Render URLs.
+- Render service IDs usually look like `srv-...` and can be found in the Render dashboard for each service.
+
 What the workflows do:
 
 - `verify.yml` runs tests and build checks

@@ -10,13 +10,28 @@ wait_for_backend() {
   max_attempts="${RENDER_DEPLOY_WAIT_ATTEMPTS:-60}"
   delay_seconds="${RENDER_DEPLOY_WAIT_DELAY_SECONDS:-10}"
 
+  case "$service_id" in
+    http://*|https://*)
+      echo "RENDER_BACKEND_SERVICE_ID must be the Render service ID (for example srv-...), not the public URL." >&2
+      exit 1
+      ;;
+  esac
+
+  latest_deploy_id_from_response() {
+    printf '%s' "$1" | jq -r 'if type == "array" then .[0].id elif type == "object" and has("deploys") then .deploys[0].id else empty end // empty'
+  }
+
+  latest_deploy_status_from_response() {
+    printf '%s' "$1" | jq -r 'if type == "array" then .[0].status elif type == "object" and has("deploys") then .deploys[0].status else empty end // empty'
+  }
+
   while [ "$attempt" -le "$max_attempts" ]; do
     if response="$(curl --silent --show-error --fail \
       --header "Authorization: Bearer $api_key" \
       --header "Accept: application/json" \
       "$api_base/services/$service_id/deploys")"; then
-      latest_deploy_id="$(printf '%s' "$response" | jq -r '.[0].id // .deploys[0].id // empty')"
-      status="$(printf '%s' "$response" | jq -r '.[0].status // .deploys[0].status // empty')"
+      latest_deploy_id="$(latest_deploy_id_from_response "$response")"
+      status="$(latest_deploy_status_from_response "$response")"
 
       if [ -z "$latest_deploy_id" ]; then
         echo "Backend Render deploy response did not include a deploy id"
@@ -58,13 +73,28 @@ wait_for_frontend() {
   max_attempts="${RENDER_DEPLOY_WAIT_ATTEMPTS:-60}"
   delay_seconds="${RENDER_DEPLOY_WAIT_DELAY_SECONDS:-10}"
 
+  case "$service_id" in
+    http://*|https://*)
+      echo "RENDER_FRONTEND_SERVICE_ID must be the Render service ID (for example srv-...), not the public URL." >&2
+      exit 1
+      ;;
+  esac
+ 
+  latest_deploy_id_from_response() {
+    printf '%s' "$1" | jq -r 'if type == "array" then .[0].id elif type == "object" and has("deploys") then .deploys[0].id else empty end // empty'
+  }
+
+  latest_deploy_status_from_response() {
+    printf '%s' "$1" | jq -r 'if type == "array" then .[0].status elif type == "object" and has("deploys") then .deploys[0].status else empty end // empty'
+  }
+
   while [ "$attempt" -le "$max_attempts" ]; do
     if response="$(curl --silent --show-error --fail \
       --header "Authorization: Bearer $api_key" \
       --header "Accept: application/json" \
       "$api_base/services/$service_id/deploys")"; then
-      latest_deploy_id="$(printf '%s' "$response" | jq -r '.[0].id // .deploys[0].id // empty')"
-      status="$(printf '%s' "$response" | jq -r '.[0].status // .deploys[0].status // empty')"
+      latest_deploy_id="$(latest_deploy_id_from_response "$response")"
+      status="$(latest_deploy_status_from_response "$response")"
 
       if [ -z "$latest_deploy_id" ]; then
         echo "Frontend Render deploy response did not include a deploy id"
