@@ -21,7 +21,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.InvalidCsrfTokenException;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.MissingCsrfTokenException;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -68,9 +70,10 @@ public class SecurityCredentialsConfig {
                 .authenticationEntryPoint((req, resp, ex) ->
                         writeApiError(resp, HttpServletResponse.SC_UNAUTHORIZED,
                                 "We couldn't sign you in. Please check your details and try again."))
-                .accessDeniedHandler((req, resp, ex) ->
-                        writeApiError(resp, HttpServletResponse.SC_FORBIDDEN,
-                                "Your request was blocked by browser security checks. Please refresh the page and try again.")));
+                .accessDeniedHandler((req, resp, ex) -> {
+                    String message = getAccessDeniedMessage(ex);
+                    writeApiError(resp, HttpServletResponse.SC_FORBIDDEN, message);
+                }));
         http.headers(headers -> headers
                 .contentSecurityPolicy(csp -> csp.policyDirectives(securityHeaderProperties.contentSecurityPolicyHeaderValue()))
                 .referrerPolicy(referrer -> referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
@@ -139,5 +142,13 @@ public class SecurityCredentialsConfig {
         return value
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"");
+    }
+
+    private static String getAccessDeniedMessage(Exception ex) {
+        if (ex instanceof MissingCsrfTokenException || ex instanceof InvalidCsrfTokenException) {
+            return "Your security token expired or is missing. Please refresh the page and try again.";
+        }
+
+        return "Your request was blocked by browser security checks. Please refresh the page and try again.";
     }
 }
