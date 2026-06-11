@@ -6,9 +6,9 @@ backend_smoke() {
   attempt=1
 
   while [ "$attempt" -le 10 ]; do
-    if response="$(curl --silent --show-error --fail "$url/csrf")"; then
+    if response="$(curl --silent --show-error --fail "$url/actuator/health")"; then
       case "$response" in
-        *'"token"'*) echo "Backend smoke passed for $url"; return 0 ;;
+        *'"status":"UP"'*) echo "Backend smoke passed for $url"; return 0 ;;
       esac
     fi
 

@@ -94,9 +94,9 @@ What the workflows do:
 - `verify.yml` runs tests and build checks
 - `deploy-backend.yml` triggers the backend Render deploy hook
 - `deploy-frontend.yml` triggers the frontend Render deploy hook
-- `smoke-backend.yml` checks the backend `/csrf` endpoint
+- `smoke-backend.yml` checks the backend `/actuator/health` endpoint
 - `smoke-frontend.yml` checks the frontend page loads
-- `ping-render.yml` pings the backend `/csrf` endpoint every 5 minutes
+- `ping-render.yml` pings the backend `/actuator/health` endpoint every 5 minutes
 
 ## Troubleshooting
 

@@ -13,7 +13,7 @@ jobs:
       RENDER_BACKEND_URL: ${{ vars.RENDER_BACKEND_URL || secrets.RENDER_BACKEND_URL }}
 
     steps:
-      - name: Ping backend csrf endpoint
+      - name: Ping backend actuator health endpoint
         run: |
           set -eu
           if [ -z "${RENDER_BACKEND_URL:-}" ]; then
@@ -30,6 +30,6 @@ jobs:
             --retry 3 \
             --retry-delay 5 \
             --retry-all-errors \
-            "$RENDER_BACKEND_URL/csrf" \
+            "$RENDER_BACKEND_URL/actuator/health" \
             >/dev/null
-          echo "Pinged $RENDER_BACKEND_URL/csrf"
+          echo "Pinged $RENDER_BACKEND_URL/actuator/health"

@@ -44,7 +44,7 @@ public class SecurityCredentialsConfig {
                 .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.GET, ApiRoutes.ROOT_PATH, ApiRoutes.LOGIN_PATH,
                         ApiRoutes.SIGNUP_PATH, ApiRoutes.VERIFY_PATH, ApiRoutes.QRCODE_PATH,
-                        ApiRoutes.CSRF_PATH).permitAll()
+                        ApiRoutes.CSRF_PATH, ApiRoutes.ACTUATOR_HEALTH_PATH).permitAll()
                 .requestMatchers(HttpMethod.GET, ApiRoutes.OPENAPI_PATH, ApiRoutes.OPENAPI_PATH_PATTERN,
                         ApiRoutes.SWAGGER_UI_PATH, ApiRoutes.SWAGGER_UI_HTML_PATH).permitAll()
                 .requestMatchers(ApiRoutes.SIGNIN_PATH, ApiRoutes.VERIFY_PATH,

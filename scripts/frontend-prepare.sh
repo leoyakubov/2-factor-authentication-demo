@@ -43,7 +43,6 @@ prepare_frontend() {
 
   if [ ! -d node_modules ]; then
     npm ci --no-audit --no-fund
-    printf '%s\n' "$platform_key" > node_modules/.frontend-platform
   fi
 
   if [ ! -d node_modules/vite ] || [ ! -d node_modules/jest ] || ! rolldown_binding_ok; then
@@ -65,6 +64,4 @@ prepare_frontend() {
     esac
     exit 1
   fi
-
-  printf '%s\n' "$platform_key" > node_modules/.frontend-platform
 }

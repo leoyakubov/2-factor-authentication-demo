@@ -24,6 +24,14 @@ app:
     version: ${OPENAPI_VERSION:0.1.0}
     description: ${OPENAPI_DESCRIPTION:Signup, login, MFA verification, CSRF bootstrap, logout, and profile endpoints.}
     license: ${OPENAPI_LICENSE:MIT}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE:health,info}
+  endpoint:
+    health:
+      show-details: ${MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS:never}
 
 de:
   flapdoodle:

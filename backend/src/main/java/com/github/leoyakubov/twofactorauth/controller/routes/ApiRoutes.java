@@ -15,6 +15,7 @@ public final class ApiRoutes {
     public static final String OPENAPI_PATH_PATTERN = "/v3/api-docs/**";
     public static final String SWAGGER_UI_PATH = "/swagger-ui/**";
     public static final String SWAGGER_UI_HTML_PATH = "/swagger-ui.html";
+    public static final String ACTUATOR_HEALTH_PATH = "/actuator/health";
 
     private ApiRoutes() {
     }
