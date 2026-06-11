@@ -118,7 +118,7 @@ Root npm shortcuts:
 - `npm run backend:run`
 - `npm run frontend:run`
 - `npm run docker:local`
-- `npm run docker:live`
+- `npm run docker:demo`
 
 Docker is not required for the local demo workflow. The backend uses embedded MongoDB locally.
 
@@ -140,53 +140,21 @@ Important for Windows and WSL:
 - If the authenticator code fails, make sure the QR code was scanned into the authenticator app for the same user account.
 - If embedded MongoDB fails to start in WSL, make sure your WSL distro is up to date and that the repo is not fighting Windows-native dependencies under `/mnt/c`.
 
-## Docker Demo
+## Demo Setup
 
-Use Docker if you want the easiest reproducible live-demo setup on a fresh machine or cloud VM.
+Use the local setup first. For the Render live demo, follow [docs/render-live-demo.md](docs/render-live-demo.md).
 
-What this stack runs:
+### Local setup
 
-- MongoDB in a container
-- Backend in a Java 21 container
-- Frontend in an Nginx container
-- Frontend requests proxied to the backend through `/api`
-
-Before you start:
-
-1. Copy `backend/.env.example` to `backend/.env`: `cp backend/.env.example backend/.env`
-2. Set `JWT_SECRET` and `MFA_SECRET_ENCRYPTION_KEY` to long random values.
-3. If you want to change the frontend API URL, update the `VITE_API_BASE_URL` build arg in `infra/docker-compose.yml`.
-
-Start the full stack:
-
-```sh
-sh scripts/docker-local.sh
-```
-
-Open:
-
-- Frontend: `http://localhost:3000`
-- Backend Swagger UI: `http://localhost:8081/swagger-ui.html`
-
-Stop the stack:
-
-```sh
-docker compose -f infra/docker-compose.yml down
-```
-
-Docker notes:
-
-- This is the best path for a live demo because one command brings up the full stack.
-- The frontend uses `/api` inside Docker, so the browser stays on one origin and does not need CORS between the frontend and backend.
-- The backend still keeps the same API routes and security model; only the deployment wrapper changes.
-
-Live mode:
-
-```sh
-sh scripts/docker-live.sh
-```
-
-That starts the same stack in detached mode, which is handy when you want it to keep running on a VM.
+1. Make sure Java 21+ and Node.js 20.19+ or 22.12+ are installed.
+2. Copy `backend/.env.example` to `backend/.env`: `cp backend/.env.example backend/.env`
+3. Set `JWT_SECRET` and `MFA_SECRET_ENCRYPTION_KEY` in `backend/.env`.
+4. Copy `frontend/.env.example` to `frontend/.env` if you want to change the backend URL.
+5. Run backend verification: `./scripts/backend-verify.sh`
+6. Run frontend verification: `./scripts/frontend-verify.sh`
+7. Start the backend: `./scripts/backend-run.sh`
+8. Start the frontend: `./scripts/frontend-run.sh`
+9. Open `http://localhost:3000`
 
 ## Demo Walkthrough
 

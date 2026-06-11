@@ -10,6 +10,6 @@
     "frontend:run": "sh ./scripts/frontend-run.sh",
     "verify": "npm run backend:verify && npm run frontend:verify",
     "docker:local": "sh ./scripts/docker-local.sh",
-    "docker:live": "sh ./scripts/docker-live.sh"
+    "docker:demo": "sh ./scripts/docker-demo.sh"
   }
 }

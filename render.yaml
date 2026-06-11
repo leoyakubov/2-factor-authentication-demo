@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: two-factor-authentication-demo-backend
+    env: java
+    rootDir: backend
+    plan: free
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/backend-0.0.1-SNAPSHOT.jar
+
+  - type: static
+    name: two-factor-authentication-demo-frontend
+    rootDir: frontend
+    plan: free
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist

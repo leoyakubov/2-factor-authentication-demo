@@ -1,0 +1,81 @@
+# Render Live Demo Setup
+
+This guide sets up the public demo on Render while keeping embedded MongoDB in the backend.
+
+## What you will create
+
+- A Render web service for the backend
+- A Render static site for the frontend
+- GitHub Actions verification on every push and pull request
+
+## Before you start
+
+1. Push the repository to GitHub.
+2. Make sure the backend verify workflow exists at [`.github/workflows/verify.yml`](../.github/workflows/verify.yml).
+3. Make sure `render.yaml` is present at the repo root.
+
+## Step 1: Create the Render services
+
+1. Open Render.
+2. Create a new Blueprint / deploy from GitHub repo.
+3. Select this repository.
+4. Render should read [`render.yaml`](../render.yaml) and create both services.
+
+If you prefer manual setup, create the services yourself:
+
+- Backend: Render Web Service
+- Frontend: Render Static Site
+
+## Step 2: Configure the backend service
+
+Set these environment variables on the backend service:
+
+- `JWT_SECRET`
+- `MFA_SECRET_ENCRYPTION_KEY`
+- `FRONTEND_ORIGIN`
+- `BACKEND_ORIGIN`
+
+Use the Render URLs for the frontend and backend services.
+
+Notes:
+
+- The backend reads `PORT` automatically on Render.
+- The backend still uses embedded MongoDB, so demo data can reset after restarts. That is fine for this demo.
+
+## Step 3: Configure the frontend service
+
+Set these frontend environment variables:
+
+- `VITE_API_BASE_URL`
+- `VITE_BUILD_OUT_DIR`
+
+Suggested values:
+
+- `VITE_API_BASE_URL` = backend Render URL
+- `VITE_BUILD_OUT_DIR` = `dist`
+
+## Step 4: Verify the deployment
+
+1. Wait for the backend service to finish building.
+2. Wait for the frontend static site to finish building.
+3. Open the frontend Render URL.
+4. Create a user.
+5. Log in.
+6. Try MFA if enabled.
+7. Open the profile page.
+8. Log out.
+
+## Step 5: Keep CI in place
+
+GitHub Actions should keep running on every push and pull request so the repo stays healthy.
+
+Recommended checks:
+
+- backend verify
+- frontend verify
+
+## Troubleshooting
+
+- If the frontend cannot reach the backend, confirm `VITE_API_BASE_URL` points to the backend Render URL.
+- If the backend returns CORS errors, confirm `FRONTEND_ORIGIN` matches the frontend Render URL exactly.
+- If Render redeploys reset the data, that is expected with embedded MongoDB.
