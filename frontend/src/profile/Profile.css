@@ -1,16 +1,111 @@
 .profile-container {
-  max-width: 420px;
+  max-width: 520px;
   margin: 40px auto 0;
+  padding: 0 16px;
+}
+
+.profile-card {
+  width: 100%;
+  border: 1px solid #e7e7ee;
+  box-shadow: 0 24px 80px rgba(23, 35, 61, 0.12);
+  background:
+    linear-gradient(180deg, rgba(22, 119, 255, 0.08), rgba(255, 255, 255, 0) 42%),
+    #fff;
+}
+
+.profile-card-hero {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 8px 0 6px;
+}
+
+.profile-card-copy {
+  min-width: 0;
+}
+
+.profile-eyebrow {
+  display: inline-block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1677ff;
+}
+
+.profile-name {
+  margin: 0 !important;
+}
+
+.profile-summary {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-security-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.profile-handle,
+.profile-email {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #5c6470;
+}
+
+.profile-details {
+  display: grid;
+  gap: 12px;
+  padding: 4px 0 10px;
+}
+
+.profile-detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f8faff;
+}
+
+.profile-detail-label {
+  color: #6a7180;
+  font-size: 13px;
+}
+
+.profile-detail-value {
+  color: #172033;
+  font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+}
+
+.mfa-status-tag {
+  margin-inline-end: 0;
+  font-weight: 700;
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
 }
 
 .logout-button {
-  font-weight: 600;
-  color: #1f1f1f;
+  font-weight: 700;
 }
 
 .logout-button:hover,
 .logout-button:focus {
-  color: #000;
+  filter: brightness(1.02);
 }
 
 .user-avatar-circle {
@@ -18,12 +113,26 @@
   font-weight: 700;
 }
 
-.ant-card-meta-title {
-  font-size: 28px !important;
-  margin-bottom: 8px !important;
-}
+@media (max-width: 640px) {
+  .profile-card-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-.ant-card-meta-description {
-  font-size: 14px;
-  color: #666;
+  .profile-detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-detail-value {
+    text-align: left;
+  }
+
+  .profile-actions {
+    justify-content: stretch;
+  }
+
+  .logout-button {
+    width: 100%;
+  }
 }

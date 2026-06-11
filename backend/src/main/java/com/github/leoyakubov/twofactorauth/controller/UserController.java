@@ -29,7 +29,9 @@ public class UserController {
         return new UserSummary(
                 userDetails.getId(),
                 userDetails.getUsername(),
+                userDetails.getEmail(),
                 userDetails.getUserProfile().getDisplayName(),
-                userDetails.getUserProfile().getProfilePictureUrl());
+                userDetails.getUserProfile().getProfilePictureUrl(),
+                userDetails.isMfa());
     }
 }

@@ -80,8 +80,8 @@ This is the setup path after cloning the project.
 Prerequisites:
 
 - Java 21 JDK or newer
-- Node.js and npm
-- Git Bash, WSL, Linux, or macOS shell for the `.sh` scripts
+- Node.js 20.19+ or 22.12+ with the npm version bundled with that Node install
+- Git Bash / WSL (at Windows)
 
 Check that the tools are available:
 
@@ -94,7 +94,7 @@ npm -v
 Start from the project root:
 
 1. Copy `backend/.env.example` to `backend/.env`: `cp backend/.env.example backend/.env`
-2. (Optional) Set `JWT_SECRET` in `backend/.env` to a long random value with at least 32 characters.
+2. Optional: Set `JWT_SECRET` in `backend/.env` to a long random value with at least 32 characters.
 3. Copy `frontend/.env.example` to `frontend/.env` if you want to change the backend URL: `cp frontend/.env.example frontend/.env`
 4. Run backend verification: `./scripts/backend-verify.sh`
 5. Run frontend verification: `./scripts/frontend-verify.sh`
@@ -416,19 +416,6 @@ OpenAPI documentation is available locally after starting the backend:
 
 This project implements a realistic local authentication flow, but it is still a demo. The notes below separate what is already handled from what would need hardening before a real deployment.
 
-### Limitations
-
-Demo limitations:
-
-- This is a demo project, not a production-ready identity platform.
-- Embedded MongoDB is convenient locally, but production deployments should use a managed or separately operated MongoDB instance.
-- Rate limiting is in-memory and resets on backend restart.
-- Email verification, password reset, and full lost-MFA recovery flows are not implemented.
-- Local development runs over HTTP; production use should enforce HTTPS and secure cookie settings.
-- Refresh token rotation is not implemented; the demo uses a single cookie-backed JWT access token.
-- MFA secrets are encrypted before storage, but the local default can derive the encryption key from `JWT_SECRET`; production systems should use managed key storage and rotation.
-- Recovery codes are shown once during signup; there is no UI for regenerating them.
-
 ### Current security posture:
 
 - Passwords are hashed with BCrypt before storage.
@@ -439,6 +426,16 @@ Demo limitations:
 - Repeated signup, signin, and MFA verification attempts are rate limited in memory.
 - Backend routes remain the authorization boundary; frontend routing is only a user experience layer.
 - Security headers are configured through Spring properties, including Content Security Policy.
+
+### Limitations
+
+- Embedded MongoDB is convenient locally, but production deployments should use a managed or separately operated MongoDB instance.
+- Rate limiting is in-memory and resets on backend restart.
+- Email verification, password reset, and full lost-MFA recovery flows are not implemented.
+- Local development runs over HTTP; production use should enforce HTTPS and secure cookie settings.
+- Refresh token rotation is not implemented; the demo uses a single cookie-backed JWT access token.
+- MFA secrets are encrypted before storage, but the local default can derive the encryption key from `JWT_SECRET`; production systems should use managed key storage and rotation.
+- Recovery codes are shown once during signup; there is no UI for regenerating them.
 
 ### Security concerns and possible solutions:
 

@@ -89,7 +89,7 @@ const Signin = () => {
             style={{ marginBottom: 16 }}
             type="error"
             showIcon
-            message="Sign in failed"
+            title="Sign in failed"
             description={errorMessage}
           />
         ) : null}

@@ -25,8 +25,10 @@ class UserControllerTest {
 
         assertEquals("user-1", summary.id());
         assertEquals("demo", summary.username());
+        assertEquals("demo@example.com", summary.email());
         assertEquals("Demo User", summary.name());
         assertEquals("https://example.com/demo.png", summary.profilePicture());
+        assertEquals(false, summary.mfaEnabled());
     }
 
     private static User buildUser(String username, String displayName) {

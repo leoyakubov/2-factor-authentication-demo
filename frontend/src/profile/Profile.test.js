@@ -52,19 +52,29 @@ describe("Profile", () => {
       .mockResolvedValueOnce({
         name: "Galileo Fin",
         username: "galileo",
+        email: "galileo.fin@example.com",
+        mfaEnabled: true,
         profilePicture: undefined,
       })
       .mockResolvedValueOnce({
         name: "Galileo Fin",
         username: "galileo",
+        email: "galileo.fin@example.com",
+        mfaEnabled: true,
         profilePicture: undefined,
       });
     logout.mockResolvedValueOnce({});
 
     renderComponent();
 
-    expect(await screen.findByText("Galileo Fin")).toBeInTheDocument();
-    expect(screen.getByText("@galileo")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Galileo Fin" })).toBeInTheDocument();
+    expect(screen.getByText("@galileo", { selector: ".profile-handle" })).toBeInTheDocument();
+    expect(
+      screen.getByText("galileo.fin@example.com", { selector: ".profile-email" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByText("Enabled", { selector: ".profile-detail-value, .mfa-status-tag" }).length
+    ).toBeGreaterThan(0);
     expect(screen.getByText("GF")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /logout/i }));

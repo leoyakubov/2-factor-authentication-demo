@@ -18,7 +18,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,14 +45,6 @@ public class User {
         this.mfa = user.mfa;
         this.secret = user.secret;
         this.recoveryCodes = user.recoveryCodes == null ? new HashSet<>() : new HashSet<>(user.recoveryCodes);
-    }
-
-    public User(String username, String password, String email) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.active = true;
-        this.roles = new HashSet<>(Collections.singleton(Role.USER));
     }
 
     @Id

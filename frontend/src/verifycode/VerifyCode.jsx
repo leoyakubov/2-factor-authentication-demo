@@ -53,7 +53,7 @@ const VerifyCode = () => {
           style={{ marginBottom: 16, maxWidth: 420 }}
           type="error"
           showIcon
-          message="Verification failed"
+          title="Verification failed"
           description={errorMessage}
         />
       ) : null}

@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Button, Card, Avatar } from "antd";
+import { Alert, Avatar, Button, Card, Divider, Tag, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
-import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { LogoutOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
 import { getCurrentUser } from "../shared/api/apiClient";
 import { getProfileErrorMessage } from "../shared/auth/authErrors";
 import { useAuth } from "../auth/AuthContext";
 import "./Profile.css";
 
-const { Meta } = Card;
+const { Text, Title } = Typography;
 
 const Profile = () => {
   const [currentUser, setCurrentUser] = useState({});
@@ -62,40 +62,77 @@ const Profile = () => {
           style={{ marginBottom: 16, maxWidth: 420 }}
           type="error"
           showIcon
-          message="Profile load failed"
+          title="Profile load failed"
           description={errorMessage}
         />
       ) : null}
-      <Card
-        style={{ width: 420, border: "1px solid #e1e0e0" }}
-        actions={[
+      <Card className="profile-card">
+        <div className="profile-card-hero">
+          <Avatar
+            size={104}
+            src={currentUser.profilePicture}
+            className="user-avatar-circle"
+            icon={currentUser.profilePicture ? <UserOutlined /> : undefined}
+            aria-label="User avatar"
+          >
+            {!currentUser.profilePicture ? getInitials() : null}
+          </Avatar>
+          <div className="profile-card-copy">
+            <Text className="profile-eyebrow">Signed in</Text>
+            <Title level={3} className="profile-name">
+              {currentUser.name || currentUser.username}
+            </Title>
+            <div className="profile-summary">
+              <Text className="profile-handle">@{currentUser.username}</Text>
+              <Text className="profile-email">
+                <MailOutlined /> {currentUser.email}
+              </Text>
+              <div className="profile-security-status">
+                <Text className="profile-detail-label">Two-factor authentication</Text>
+                <Tag color={currentUser.mfaEnabled ? "green" : "default"} className="mfa-status-tag">
+                  {currentUser.mfaEnabled ? "Enabled" : "Disabled"}
+                </Tag>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Divider />
+
+        <div className="profile-details">
+          <div className="profile-detail-row">
+            <Text className="profile-detail-label">Display name</Text>
+            <Text className="profile-detail-value">{currentUser.name || "Not set"}</Text>
+          </div>
+          <div className="profile-detail-row">
+            <Text className="profile-detail-label">Username</Text>
+            <Text className="profile-detail-value">@{currentUser.username}</Text>
+          </div>
+          <div className="profile-detail-row">
+            <Text className="profile-detail-label">Email</Text>
+            <Text className="profile-detail-value">{currentUser.email}</Text>
+          </div>
+          <div className="profile-detail-row">
+            <Text className="profile-detail-label">Two-factor authentication</Text>
+            <Text className="profile-detail-value">
+              {currentUser.mfaEnabled ? "Enabled" : "Disabled"}
+            </Text>
+          </div>
+        </div>
+
+        <div className="profile-actions">
           <Button
             key="logout"
-            type="text"
+            type="primary"
+            danger
             icon={<LogoutOutlined />}
             onClick={logout}
             className="logout-button"
             aria-label="Logout"
           >
             Logout
-          </Button>,
-        ]}
-      >
-        <Meta
-          avatar={
-            <Avatar
-              size={96}
-              src={currentUser.profilePicture}
-              className="user-avatar-circle"
-              icon={currentUser.profilePicture ? <UserOutlined /> : undefined}
-              aria-label="User avatar"
-            >
-              {!currentUser.profilePicture ? getInitials() : null}
-            </Avatar>
-          }
-          title={currentUser.name || currentUser.username}
-          description={"@" + currentUser.username}
-        />
+          </Button>
+        </div>
       </Card>
     </div>
   );

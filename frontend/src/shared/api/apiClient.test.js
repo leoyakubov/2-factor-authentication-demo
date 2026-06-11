@@ -49,7 +49,7 @@ describe("ApiUtil", () => {
       ok: true,
       status: 200,
       text: async () =>
-        JSON.stringify({ username: "demo", name: "Demo User" }),
+        JSON.stringify({ username: "demo", email: "demo@example.com", name: "Demo User" }),
     });
 
     const response = await getCurrentUser();
@@ -64,7 +64,7 @@ describe("ApiUtil", () => {
     );
     expect(fetch.mock.calls[0][1].headers.get("Authorization")).toBeNull();
     expect(fetch.mock.calls[0][1].headers.get("X-Request-Id")).toBe("test-request-id");
-    expect(response).toEqual({ username: "demo", name: "Demo User" });
+    expect(response).toEqual({ username: "demo", email: "demo@example.com", name: "Demo User" });
   });
 
   test("logout posts to the logout endpoint with cookies enabled", async () => {

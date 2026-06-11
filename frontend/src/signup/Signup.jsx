@@ -58,7 +58,7 @@ const Signup = () => {
             style={{ marginBottom: 16 }}
             type="success"
             showIcon
-            message="Account created"
+            title="Account created"
             description="Your account was created successfully. You can log in now."
           />
           {qrImageUrl ? (
@@ -78,7 +78,7 @@ const Signup = () => {
               <Alert
                 type="info"
                 showIcon
-                message="Save your recovery codes"
+                title="Save your recovery codes"
                 description={
                   <div>
                     <p style={{ marginBottom: 8 }}>
@@ -120,7 +120,7 @@ const Signup = () => {
               style={{ marginBottom: 16 }}
               type="error"
               showIcon
-              message="Sign up failed"
+              title="Sign up failed"
               description={errorMessage}
             />
           ) : null}
