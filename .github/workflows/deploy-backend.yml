@@ -13,6 +13,7 @@ jobs:
     environment: demo
     env:
       RENDER_BACKEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
+      RENDER_BACKEND_URL: ${{ vars.RENDER_BACKEND_URL || secrets.RENDER_BACKEND_URL }}
 
     steps:
       - name: Trigger Render backend deploy
@@ -25,3 +26,14 @@ jobs:
 
           curl --fail --silent --show-error --request POST "$RENDER_BACKEND_DEPLOY_HOOK_URL" >/dev/null
           echo "Triggered Render backend deploy"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 2
+
+      - name: Wait for backend to become ready
+        run: sh ./scripts/render-deploy-wait.sh
+        env:
+          DEPLOY_CHECK: backend

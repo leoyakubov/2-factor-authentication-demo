@@ -13,6 +13,7 @@ jobs:
     environment: demo
     env:
       RENDER_FRONTEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
+      RENDER_FRONTEND_URL: ${{ vars.RENDER_FRONTEND_URL || secrets.RENDER_FRONTEND_URL }}
 
     steps:
       - name: Trigger Render frontend deploy
@@ -25,3 +26,14 @@ jobs:
 
           curl --fail --silent --show-error --request POST "$RENDER_FRONTEND_DEPLOY_HOOK_URL" >/dev/null
           echo "Triggered Render frontend deploy"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 2
+
+      - name: Wait for frontend to become ready
+        run: sh ./scripts/render-deploy-wait.sh
+        env:
+          DEPLOY_CHECK: frontend

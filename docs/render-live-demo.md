@@ -92,8 +92,8 @@ Add these repository secrets or variables:
 What the workflows do:
 
 - `verify.yml` runs tests and build checks
-- `deploy-backend.yml` triggers the backend Render deploy hook
-- `deploy-frontend.yml` triggers the frontend Render deploy hook
+- `deploy-backend.yml` triggers the backend Render deploy hook and waits for `/actuator/health`
+- `deploy-frontend.yml` triggers the frontend Render deploy hook and waits for the app page
 - `smoke-backend.yml` checks the backend `/actuator/health` endpoint
 - `smoke-frontend.yml` checks the frontend page loads
 - `ping-render.yml` pings the backend `/actuator/health` endpoint every 5 minutes
