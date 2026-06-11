@@ -32,7 +32,7 @@ wait_for_frontend() {
   max_attempts="${RENDER_DEPLOY_WAIT_ATTEMPTS:-60}"
   delay_seconds="${RENDER_DEPLOY_WAIT_DELAY_SECONDS:-10}"
 
-  while [ "$attempt" -le "$max_attempts"; do
+  while [ "$attempt" -le "$max_attempts" ]; do
     if response="$(curl --silent --show-error --fail "$url")"; then
       case "$response" in
         *"Two Factor Demo"*)
