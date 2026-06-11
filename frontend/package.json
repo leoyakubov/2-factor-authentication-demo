@@ -12,10 +12,12 @@
   "scripts": {
     "dev": "node ./node_modules/vite/bin/vite.js --port 3000 --strictPort",
     "build": "node ./node_modules/vite/bin/vite.js build",
+    "build:ci": "node ./scripts/build-ci.cjs",
     "lint": "node ./node_modules/eslint/bin/eslint.js .",
     "test": "node ./node_modules/jest/bin/jest.js --watch",
     "test:ci": "node ./scripts/test-ci.cjs",
-    "verify": "npm run lint && npm run test:ci && npm run build",
+    "test:coverage": "node ./node_modules/jest/bin/jest.js --runInBand --coverage --config ./jest.config.cjs",
+    "verify": "npm run lint && npm run test:ci && npm run build:ci",
     "preview": "node ./node_modules/vite/bin/vite.js preview --port 3000 --strictPort"
   },
   "devDependencies": {

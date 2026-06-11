@@ -178,16 +178,24 @@ function Checkbox({ children, checked, onChange, ...props }) {
   );
 }
 
-function Alert({ message, description, type }) {
+function Alert({ message, title, description, type }) {
   return React.createElement(
     "div",
     {
       role: "alert",
       "data-type": type,
     },
-    React.createElement("strong", null, message),
+    React.createElement("strong", null, title || message),
     description ? React.createElement("div", null, description) : null
   );
+}
+
+function Divider(props) {
+  return React.createElement("hr", props);
+}
+
+function Tag({ children, color, ...props }) {
+  return React.createElement("span", { "data-color": color, ...props }, children);
 }
 
 function Avatar({ src, children, icon, ...props }) {
@@ -218,6 +226,7 @@ Card.Meta = function Meta({ avatar, title, description }) {
 };
 
 const Typography = {
+  Text: ({ children, ...props }) => React.createElement("span", props, children),
   Title: ({ children, level = 1 }) =>
     React.createElement(`h${level}`, null, children),
 };
@@ -231,9 +240,11 @@ module.exports = {
   Avatar,
   Button,
   Card,
+  Divider,
   Checkbox,
   Form,
   Input,
+  Tag,
   Typography,
   notification,
 };

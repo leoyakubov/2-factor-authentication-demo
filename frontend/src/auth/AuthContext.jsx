@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { getCurrentUser, logout as logoutRequest } from "../shared/api/apiClient";
 import { logAuthEvent } from "../shared/logging/logger";
 
@@ -7,15 +7,23 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const authCheckVersionRef = useRef(0);
 
   const refreshAuth = useCallback(async () => {
+    const requestVersion = ++authCheckVersionRef.current;
     setIsChecking(true);
 
     try {
       await getCurrentUser();
+      if (requestVersion !== authCheckVersionRef.current) {
+        return false;
+      }
       setIsAuthenticated(true);
       logAuthEvent("session check succeeded");
     } catch (error) {
+      if (requestVersion !== authCheckVersionRef.current) {
+        return false;
+      }
       setIsAuthenticated(false);
       logAuthEvent("session check failed", {
         status: error?.status,
@@ -23,7 +31,9 @@ export function AuthProvider({ children }) {
       });
       return false;
     } finally {
-      setIsChecking(false);
+      if (requestVersion === authCheckVersionRef.current) {
+        setIsChecking(false);
+      }
     }
 
     return true;
@@ -34,11 +44,13 @@ export function AuthProvider({ children }) {
   }, [refreshAuth]);
 
   const login = useCallback(() => {
+    authCheckVersionRef.current += 1;
     setIsAuthenticated(true);
     setIsChecking(false);
   }, []);
 
   const logout = useCallback(async () => {
+    authCheckVersionRef.current += 1;
     try {
       await logoutRequest();
       logAuthEvent("logout request succeeded");

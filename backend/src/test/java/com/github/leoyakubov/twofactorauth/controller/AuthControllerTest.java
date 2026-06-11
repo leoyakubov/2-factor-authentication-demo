@@ -163,6 +163,33 @@ class AuthControllerTest {
     }
 
     @Test
+    void shouldReturnCreatedResponseWhenSignupSucceedsWithoutMfa() throws Exception {
+        SignUpRequest request = new SignUpRequest("Demo User", "demo", "demo@example.com", "secret123", false);
+
+        User saved = User.builder()
+                .id("123")
+                .username("demo")
+                .email("demo@example.com")
+                .password("encoded")
+                .active(true)
+                .userProfile(Profile.builder().displayName("Demo User").build())
+                .roles(Set.of(Role.USER))
+                .mfa(false)
+                .build();
+
+        when(registrationService.register(any(User.class), eq(Role.USER), anyString())).thenReturn(
+                new RegistrationResult(saved, null, java.util.List.of()));
+
+        mockMvc.perform(post(ApiRoutes.USERS_PATH)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.mfa", is(false)))
+                .andExpect(jsonPath("$.secretImageUri", org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.recoveryCodes").isEmpty());
+    }
+
+    @Test
     void shouldReturnFieldSpecificValidationErrorsWhenSignupPayloadIsInvalid() throws Exception {
         SignUpRequest request = new SignUpRequest("Demo User", "demo", "demo@example.com", "user2", false);
 
