@@ -13,9 +13,22 @@ jobs:
     environment: demo
     env:
       RENDER_FRONTEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
-      RENDER_FRONTEND_URL: ${{ vars.RENDER_FRONTEND_URL || secrets.RENDER_FRONTEND_URL }}
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      RENDER_FRONTEND_SERVICE_ID: ${{ vars.RENDER_FRONTEND_SERVICE_ID }}
+      RENDER_API_BASE_URL: https://api.render.com/v1
 
     steps:
+      - name: Capture current frontend deploy id
+        id: baseline
+        run: |
+          set -eu
+          response="$(curl --silent --show-error --fail \
+            --header "Authorization: Bearer $RENDER_API_KEY" \
+            --header "Accept: application/json" \
+            "$RENDER_API_BASE_URL/services/$RENDER_FRONTEND_SERVICE_ID/deploys")"
+          deploy_id="$(printf '%s' "$response" | jq -r '.[0].id // .deploys[0].id // empty')"
+          printf 'baseline_deploy_id=%s\n' "$deploy_id" >> "$GITHUB_OUTPUT"
+
       - name: Trigger Render frontend deploy
         run: |
           set -eu
@@ -36,4 +49,4 @@ jobs:
       - name: Wait for frontend to become ready
         run: sh ./scripts/render-deploy-wait.sh
         env:
-          DEPLOY_CHECK: frontend
+          BASELINE_DEPLOY_ID: ${{ steps.baseline.outputs.baseline_deploy_id }}

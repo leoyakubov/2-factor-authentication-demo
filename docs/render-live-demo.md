@@ -86,14 +86,17 @@ Add these repository secrets or variables:
 
 - `RENDER_BACKEND_DEPLOY_HOOK_URL`
 - `RENDER_FRONTEND_DEPLOY_HOOK_URL`
+- `RENDER_API_KEY`
+- `RENDER_BACKEND_SERVICE_ID`
+- `RENDER_FRONTEND_SERVICE_ID`
 - `RENDER_BACKEND_URL`
 - `RENDER_FRONTEND_URL`
 
 What the workflows do:
 
 - `verify.yml` runs tests and build checks
-- `deploy-backend.yml` triggers the backend Render deploy hook and waits for `/actuator/health`
-- `deploy-frontend.yml` triggers the frontend Render deploy hook and waits for the app page
+- `deploy-backend.yml` triggers the backend Render deploy hook and waits for Render to mark the deployment live
+- `deploy-frontend.yml` triggers the frontend Render deploy hook and waits for Render to mark the deployment live
 - `smoke-backend.yml` checks the backend `/actuator/health` endpoint
 - `smoke-frontend.yml` checks the frontend page loads
 - `ping-render.yml` pings the backend `/actuator/health` endpoint every 5 minutes
