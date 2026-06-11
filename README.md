@@ -8,7 +8,9 @@
 
 A full-stack authentication demo for learning modern web authentication patterns. It demonstrates a browser-friendly signup and login flow with optional TOTP-based two-factor authentication, QR-code enrollment, recovery codes, CSRF protection, and JWT sessions stored in an `httpOnly` cookie.
 
-Live demo: [two-factor-authentication-demo-frontend.onrender.com](https://two-factor-authentication-demo-frontend.onrender.com)
+## Live Demo
+
+Open the deployed app here: [two-factor-authentication-demo-frontend.onrender.com](https://two-factor-authentication-demo-frontend.onrender.com)
 
 ## Preview
 
