@@ -5,6 +5,9 @@ services:
     plan: free
     dockerfilePath: infra/backend.Dockerfile
     dockerContext: .
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
 
   - type: web
     name: two-factor-authentication-demo-frontend

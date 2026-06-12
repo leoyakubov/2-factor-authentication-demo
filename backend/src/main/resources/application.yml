@@ -83,5 +83,9 @@ security:
 logging:
   level:
     com.github.leoyakubov.twofactorauth: DEBUG
+    de.flapdoodle.embed.mongo: WARN
+    de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongo: WARN
+    org.mongodb.driver.cluster: WARN
+    org.mongodb.driver.connection: WARN
   pattern:
     console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] [%X{requestId}] %logger{36} - %msg%n"
