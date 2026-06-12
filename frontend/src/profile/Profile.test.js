@@ -1,5 +1,5 @@
 import "../testSetup";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import Profile from "./Profile";
@@ -36,26 +36,9 @@ describe("Profile", () => {
       </AuthProvider>
     );
 
-  test("redirects to login when the session check fails", async () => {
-    getCurrentUser.mockRejectedValueOnce({ status: 401 });
-
-    renderComponent();
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/login", { replace: true });
-    });
-  });
-
   test("renders the current user and logs out cleanly", async () => {
     const user = userEvent.setup();
     getCurrentUser
-      .mockResolvedValueOnce({
-        name: "Galileo Fin",
-        username: "galileo",
-        email: "galileo.fin@example.com",
-        mfaEnabled: true,
-        profilePicture: undefined,
-      })
       .mockResolvedValueOnce({
         name: "Galileo Fin",
         username: "galileo",
@@ -68,6 +51,7 @@ describe("Profile", () => {
     renderComponent();
 
     expect(await screen.findByRole("heading", { name: "Galileo Fin" })).toBeInTheDocument();
+    expect(getCurrentUser).toHaveBeenCalledTimes(1);
     expect(screen.getByText("@galileo", { selector: ".profile-handle" })).toBeInTheDocument();
     expect(
       screen.getByText("galileo.fin@example.com", { selector: ".profile-email" })
@@ -81,16 +65,5 @@ describe("Profile", () => {
 
     expect(logout).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith("/login", { replace: true });
-  });
-
-  test("shows an error message when the profile request fails", async () => {
-    getCurrentUser.mockResolvedValueOnce({}).mockRejectedValueOnce({ status: 500 });
-
-    renderComponent();
-
-    expect(await screen.findByText("Profile load failed")).toBeInTheDocument();
-    expect(
-      screen.getByText("We couldn't load your profile right now. Please try again.")
-    ).toBeInTheDocument();
   });
 });

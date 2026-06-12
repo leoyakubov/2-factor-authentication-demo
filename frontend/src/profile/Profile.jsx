@@ -1,49 +1,22 @@
-import { useCallback, useEffect, useState } from "react";
-import { Alert, Avatar, Button, Card, Divider, Tag, Typography } from "antd";
+import { useCallback } from "react";
+import { Avatar, Button, Card, Divider, Tag, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
 import { LogoutOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
-import { getCurrentUser } from "../shared/api/apiClient";
-import { getProfileErrorMessage } from "../shared/auth/authErrors";
 import { useAuth } from "../auth/AuthContext";
 import "./Profile.css";
 
 const { Text, Title } = Typography;
 
 const Profile = () => {
-  const [currentUser, setCurrentUser] = useState({});
-  const [errorMessage, setErrorMessage] = useState();
   const auth = useAuth();
   const navigate = useNavigate();
+  const currentUser = auth.currentUser || {};
 
   const logout = useCallback(() => {
     auth.logout().finally(() => {
       navigate("/login", { replace: true });
     });
   }, [auth, navigate]);
-
-  useEffect(() => {
-    if (auth.isChecking) {
-      return;
-    }
-
-    if (!auth.isAuthenticated) {
-      navigate("/login", { replace: true });
-      return;
-    }
-
-    getCurrentUser()
-      .then((response) => {
-        setCurrentUser(response);
-      })
-      .catch((error) => {
-        if (error.status === 401) {
-          logout();
-          return;
-        }
-
-        setErrorMessage(getProfileErrorMessage(error));
-      });
-  }, [auth.isAuthenticated, auth.isChecking, logout, navigate]);
 
   const getInitials = () => {
     const label = currentUser.name || currentUser.username || "User";
@@ -57,15 +30,6 @@ const Profile = () => {
 
   return (
     <div className="profile-container">
-      {errorMessage ? (
-        <Alert
-          style={{ marginBottom: 16, maxWidth: 420 }}
-          type="error"
-          showIcon
-          title="Profile load failed"
-          description={errorMessage}
-        />
-      ) : null}
       <Card className="profile-card">
         <div className="profile-card-hero">
           <Avatar
@@ -80,12 +44,14 @@ const Profile = () => {
           <div className="profile-card-copy">
             <Text className="profile-eyebrow">Signed in</Text>
             <Title level={3} className="profile-name">
-              {currentUser.name || currentUser.username}
+              {currentUser.name || currentUser.username || "Signed in user"}
             </Title>
             <div className="profile-summary">
-              <Text className="profile-handle">@{currentUser.username}</Text>
+              <Text className="profile-handle">
+                {currentUser.username ? `@${currentUser.username}` : "Username not available"}
+              </Text>
               <Text className="profile-email">
-                <MailOutlined /> {currentUser.email}
+                <MailOutlined /> {currentUser.email || "Email not available"}
               </Text>
               <div className="profile-security-status">
                 <Text className="profile-detail-label">Two-factor authentication</Text>
@@ -106,11 +72,13 @@ const Profile = () => {
           </div>
           <div className="profile-detail-row">
             <Text className="profile-detail-label">Username</Text>
-            <Text className="profile-detail-value">@{currentUser.username}</Text>
+            <Text className="profile-detail-value">
+              {currentUser.username ? `@${currentUser.username}` : "Not set"}
+            </Text>
           </div>
           <div className="profile-detail-row">
             <Text className="profile-detail-label">Email</Text>
-            <Text className="profile-detail-value">{currentUser.email}</Text>
+            <Text className="profile-detail-value">{currentUser.email || "Not set"}</Text>
           </div>
           <div className="profile-detail-row">
             <Text className="profile-detail-label">Two-factor authentication</Text>

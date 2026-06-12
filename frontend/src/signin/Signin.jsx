@@ -31,7 +31,7 @@ const Signin = () => {
       if (response.mfa) {
         navigate("/verify", { state: { username: values.username } });
       } else {
-        auth.login();
+        await auth.login();
         navigate("/", { replace: true });
       }
     } catch (error) {

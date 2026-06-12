@@ -81,5 +81,7 @@ security:
         - ${BACKEND_ORIGIN:http://localhost:8081}
 
 logging:
+  level:
+    com.github.leoyakubov.twofactorauth: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] [%X{requestId}] %logger{36} - %msg%n"

@@ -7,6 +7,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
   const authCheckVersionRef = useRef(0);
 
   const refreshAuth = useCallback(async () => {
@@ -14,10 +15,11 @@ export function AuthProvider({ children }) {
     setIsChecking(true);
 
     try {
-      await getCurrentUser();
+      const user = await getCurrentUser();
       if (requestVersion !== authCheckVersionRef.current) {
         return false;
       }
+      setCurrentUser(user || null);
       setIsAuthenticated(true);
       logAuthEvent("session check succeeded");
     } catch (error) {
@@ -25,6 +27,7 @@ export function AuthProvider({ children }) {
         return false;
       }
       setIsAuthenticated(false);
+      setCurrentUser(null);
       logAuthEvent("session check failed", {
         status: error?.status,
         requestId: error?.requestId,
@@ -43,10 +46,22 @@ export function AuthProvider({ children }) {
     refreshAuth();
   }, [refreshAuth]);
 
-  const login = useCallback(() => {
+  const login = useCallback(async () => {
     authCheckVersionRef.current += 1;
-    setIsAuthenticated(true);
-    setIsChecking(false);
+    try {
+      const user = await getCurrentUser();
+      setCurrentUser(user || null);
+      logAuthEvent("session load succeeded after login");
+    } catch (error) {
+      setCurrentUser(null);
+      logAuthEvent("session load failed after login", {
+        status: error?.status,
+        requestId: error?.requestId,
+      });
+    } finally {
+      setIsAuthenticated(true);
+      setIsChecking(false);
+    }
   }, []);
 
   const logout = useCallback(async () => {
@@ -63,6 +78,7 @@ export function AuthProvider({ children }) {
     } finally {
       setIsAuthenticated(false);
       setIsChecking(false);
+      setCurrentUser(null);
     }
   }, []);
 
@@ -70,11 +86,12 @@ export function AuthProvider({ children }) {
     () => ({
       isAuthenticated,
       isChecking,
+      currentUser,
       refreshAuth,
       login,
       logout,
     }),
-    [isAuthenticated, isChecking, refreshAuth, login, logout]
+    [currentUser, isAuthenticated, isChecking, refreshAuth, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

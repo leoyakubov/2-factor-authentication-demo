@@ -32,7 +32,7 @@ const VerifyCode = () => {
 
     try {
       await verify(verifyRequest);
-      auth.login();
+      await auth.login();
       navigate("/", { replace: true });
     } catch (error) {
       setErrorMessage(getVerifyErrorMessage(error));
