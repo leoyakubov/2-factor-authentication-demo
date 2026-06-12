@@ -1,6 +1,7 @@
 package com.github.leoyakubov.twofactorauth.config;
 
 import com.github.leoyakubov.twofactorauth.config.properties.JwtConfigProperties;
+import com.github.leoyakubov.twofactorauth.config.properties.FrontendProperties;
 import com.github.leoyakubov.twofactorauth.model.AuthUserDetails;
 import com.github.leoyakubov.twofactorauth.model.Profile;
 import com.github.leoyakubov.twofactorauth.model.Role;
@@ -27,7 +28,9 @@ import static org.mockito.Mockito.when;
 class JwtTokenAuthenticationFilterTest {
 
     private final JwtConfigProperties jwtConfig = createJwtConfig();
-    private final JwtCookieManager cookieManager = new JwtCookieManager(jwtConfig);
+    private final JwtCookieManager cookieManager = new JwtCookieManager(
+            jwtConfig,
+            new FrontendProperties("http://localhost:3000"));
     private final JwtTokenService jwtTokenService = Mockito.mock(JwtTokenService.class);
     private final UserDetailsService userDetailsService = Mockito.mock(UserDetailsService.class);
     private final JwtTokenAuthenticationFilter filter =
