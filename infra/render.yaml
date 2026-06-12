@@ -1,4 +1,10 @@
 services:
+  - type: pserv
+    name: two-factor-authentication-demo-mongo
+    runtime: docker
+    dockerfilePath: infra/mongo.Dockerfile
+    dockerContext: .
+
   - type: web
     name: two-factor-authentication-demo-backend
     runtime: docker
@@ -7,7 +13,19 @@ services:
     dockerContext: .
     envVars:
       - key: SPRING_PROFILES_ACTIVE
-        value: render
+        value: demo
+      - key: MONGODB_HOST
+        fromService:
+          name: two-factor-authentication-demo-mongo
+          type: pserv
+          property: host
+      - key: MONGODB_PORT
+        fromService:
+          name: two-factor-authentication-demo-mongo
+          type: pserv
+          property: port
+      - key: MONGODB_DATABASE
+        value: two-factor-authentication-demo
 
   - type: web
     name: two-factor-authentication-demo-frontend

@@ -1,0 +1,16 @@
+spring:
+  autoconfigure:
+    exclude:
+      - de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration
+  data:
+    mongodb:
+      host: ${MONGODB_HOST:localhost}
+      database: ${MONGODB_DATABASE:two-factor-authentication-demo}
+      port: ${MONGODB_PORT:27017}
+      auto-index-creation: true
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: ${EMBEDDED_MONGODB_VERSION:8.0.5}

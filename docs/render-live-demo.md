@@ -1,10 +1,15 @@
 # Render Live Demo Setup
 
-This guide sets up the public demo on Render while keeping embedded MongoDB in the backend.
+This guide sets up the public demo on Render with three services:
+
+- a backend web service in Docker
+- a MongoDB private service in Docker
+- a frontend static site
 
 ## What you will create
 
 - A Render web service for the backend
+- A Render private service for MongoDB
 - A Render static site for the frontend
 - GitHub Actions verification on every push and pull request
 
@@ -19,11 +24,11 @@ This guide sets up the public demo on Render while keeping embedded MongoDB in t
 1. Open Render.
 2. Create a new Blueprint / deploy from GitHub repo.
 3. Select this repository.
-4. Render will read [`infra/render.yaml`](../infra/render.yaml) and create both services.
+4. Render will read [`infra/render.yaml`](../infra/render.yaml) and create all three services.
 
 ## Step 2: Configure the backend service
 
-Set these environment variables on the backend service:
+The blueprint wires the backend service to Mongo automatically. The backend service still needs these environment variables:
 
 - `JWT_SECRET`
 - `MFA_SECRET_ENCRYPTION_KEY`
@@ -36,11 +41,13 @@ Example values:
 
 - `FRONTEND_ORIGIN=https://two-factor-authentication-demo-frontend.onrender.com`
 - `BACKEND_ORIGIN=https://two-factor-authentication-demo-backend.onrender.com`
+- `MONGODB_DATABASE=two-factor-authentication-demo`
 
 Notes:
 
 - The backend reads `PORT` automatically on Render.
-- The backend still uses embedded MongoDB, so demo data can reset after restarts. That is fine for this demo.
+- The backend runs with the `demo` profile on Render.
+- MongoDB runs as a separate private Docker service, so the demo data is isolated from the backend container.
 
 ## Step 3: Configure the frontend service
 
@@ -110,4 +117,4 @@ What the workflows do:
 
 - If the frontend cannot reach the backend, confirm `VITE_API_BASE_URL` points to the backend Render URL.
 - If the backend returns CORS errors, confirm `FRONTEND_ORIGIN` matches the frontend Render URL exactly.
-- If Render redeploys reset the data, that is expected with embedded MongoDB.
+- If the backend cannot reach MongoDB on Render, confirm the private Mongo service exists and that the backend service uses the `demo` profile.

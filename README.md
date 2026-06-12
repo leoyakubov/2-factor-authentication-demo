@@ -13,7 +13,7 @@ A full-stack authentication demo for learning modern web authentication patterns
 
 Open the deployed app here: [two-factor-authentication-demo-frontend.onrender.com](https://two-factor-authentication-demo-frontend.onrender.com)
 
-Render free plans can sleep after about 15 minutes of inactivity, so the first open after a pause may take a few extra seconds while the backend wakes up.
+Render free services can sleep after about 15 minutes of inactivity, so the first open after a pause may take a few extra seconds while the services wake up.
 
 ## Preview
 
@@ -113,6 +113,8 @@ Start from the project root:
 7. Start the frontend in another terminal: `./scripts/frontend-run.sh`
 8. Open `http://localhost:3000`.
 9. Optional: open Swagger UI at `http://localhost:8081/swagger-ui.html`.
+
+Local runs use the `local` profile by default. Render uses the `demo` profile.
 
 Expected verification results:
 
@@ -238,7 +240,8 @@ flowchart LR
     User["User"] --> Browser["Browser"]
     Browser --> Frontend["React + Vite"]
     Frontend -->|API calls with CSRF token| Backend["Spring Boot API"]
-    Backend --> Mongo["Embedded MongoDB local demo"]
+    Backend --> MongoLocal["Embedded MongoDB local demo"]
+    Backend --> MongoDemo["MongoDB private service on Render"]
     Backend --> Cookies["httpOnly JWT cookie"]
     Backend --> MFA["TOTP, QR enrollment, recovery codes"]
     Backend --> Security["Spring Security, CSRF, rate limiting"]
@@ -249,7 +252,7 @@ Responsibility split:
 - Frontend: signup, login, MFA enrollment display, verification form, profile view, and user-friendly error messages.
 - Backend: input validation, password hashing, MFA secret handling, recovery code handling, credential checks, JWT issuing, cookie handling, CSRF checks, rate limiting, and profile authorization.
 - Browser: stores the auth cookie and sends it automatically on same-site API requests.
-- Database: stores users, hashed passwords, MFA state, encrypted MFA secrets, and hashed recovery codes.
+- Database: stores users, hashed passwords, MFA state, encrypted MFA secrets, and hashed recovery codes. Locally this is embedded MongoDB; on Render this is a private MongoDB Docker service.
 
 Security boundaries:
 
@@ -464,7 +467,7 @@ This project implements a realistic local authentication flow, but it is still a
 
 ### Limitations
 
-- Embedded MongoDB is convenient locally, but production deployments should use a managed or separately operated MongoDB instance.
+- Embedded MongoDB is convenient locally, but the Render demo now uses a separate MongoDB Docker service. Production deployments should still use a managed or separately operated MongoDB instance.
 - Rate limiting is in-memory and resets on backend restart.
 - Email verification, password reset, and full lost-MFA recovery flows are not implemented.
 - Local development runs over HTTP; production use should enforce HTTPS and secure cookie settings.
@@ -488,8 +491,8 @@ This project implements a realistic local authentication flow, but it is still a
   Possible solution: move rate-limit counters to Redis or another shared store and add edge-layer protection.
 - Recovery codes are one-time use, but there is no regeneration or recovery workflow yet.
   Possible solution: add authenticated recovery-code regeneration, password reset, email verification, and a documented lost-MFA flow.
-- Embedded MongoDB makes the demo easy to run, but it is not a production database setup.
-  Possible solution: use a managed or separately operated MongoDB deployment with backups, monitoring, access controls, and network restrictions.
+- Embedded MongoDB makes local development easy, but it is not a production database setup.
+  Possible solution: use a managed or separately operated MongoDB deployment with backups, monitoring, access controls, and network restrictions. The Render demo already uses a separate MongoDB Docker service.
 
 ### Hardening roadmap:
 

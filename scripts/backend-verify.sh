@@ -13,4 +13,4 @@ if ! ensure_java_home; then
 fi
 
 ensure_backend_env
-run_maven verify
+run_maven -Dskip.repackage=true verify
