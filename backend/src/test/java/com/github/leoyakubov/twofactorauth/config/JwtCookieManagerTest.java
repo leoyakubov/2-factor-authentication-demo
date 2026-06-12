@@ -1,5 +1,6 @@
 package com.github.leoyakubov.twofactorauth.config;
 
+import com.github.leoyakubov.twofactorauth.config.properties.FrontendProperties;
 import com.github.leoyakubov.twofactorauth.config.properties.JwtConfigProperties;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JwtCookieManagerTest {
 
-    private final JwtCookieManager cookieManager = new JwtCookieManager(createJwtConfig());
+    private final JwtCookieManager cookieManager = new JwtCookieManager(
+            createJwtConfig(),
+            new FrontendProperties("http://localhost:3000"));
+    private final JwtCookieManager secureCookieManager = new JwtCookieManager(
+            createJwtConfig(),
+            new FrontendProperties("https://demo.example.com"));
 
     @Test
     void shouldSetSecurityAttributesWhenCreatingCookie() {
@@ -25,6 +31,18 @@ class JwtCookieManagerTest {
         assertEquals("/", cookie.getPath());
         assertTrue(cookie.isHttpOnly());
         assertFalse(cookie.isSecure());
+    }
+
+    @Test
+    void shouldUseSecureNoneCookiePolicyForHttpsFrontend() {
+        ResponseCookie cookie = secureCookieManager.createCookie("jwt-token");
+
+        assertEquals("AUTH_TOKEN", cookie.getName());
+        assertEquals("jwt-token", cookie.getValue());
+        assertEquals("/", cookie.getPath());
+        assertTrue(cookie.isHttpOnly());
+        assertTrue(cookie.isSecure());
+        assertEquals("None", cookie.getSameSite());
     }
 
     @Test

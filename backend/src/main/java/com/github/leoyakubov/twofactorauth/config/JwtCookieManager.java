@@ -1,5 +1,6 @@
 package com.github.leoyakubov.twofactorauth.config;
 
+import com.github.leoyakubov.twofactorauth.config.properties.FrontendProperties;
 import com.github.leoyakubov.twofactorauth.config.properties.JwtConfigProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,17 +14,19 @@ import java.util.Arrays;
 public class JwtCookieManager {
 
     private final JwtConfigProperties jwtConfig;
+    private final FrontendProperties frontendProperties;
 
-    public JwtCookieManager(JwtConfigProperties jwtConfig) {
+    public JwtCookieManager(JwtConfigProperties jwtConfig, FrontendProperties frontendProperties) {
         this.jwtConfig = jwtConfig;
+        this.frontendProperties = frontendProperties;
     }
 
     public ResponseCookie createCookie(String token) {
         return ResponseCookie.from(jwtConfig.cookieName(), token)
                 .httpOnly(true)
-                .secure(jwtConfig.cookieSecure())
+                .secure(resolveSecure())
                 .path(jwtConfig.cookiePath())
-                .sameSite(jwtConfig.cookieSameSite())
+                .sameSite(resolveSameSite())
                 .maxAge(jwtConfig.expiration())
                 .build();
     }
@@ -31,9 +34,9 @@ public class JwtCookieManager {
     public ResponseCookie clearCookie() {
         return ResponseCookie.from(jwtConfig.cookieName(), "")
                 .httpOnly(true)
-                .secure(jwtConfig.cookieSecure())
+                .secure(resolveSecure())
                 .path(jwtConfig.cookiePath())
-                .sameSite(jwtConfig.cookieSameSite())
+                .sameSite(resolveSameSite())
                 .maxAge(Duration.ZERO)
                 .build();
     }
@@ -54,5 +57,17 @@ public class JwtCookieManager {
                 .map(Cookie::getValue)
                 .findFirst()
                 .orElse(null);
+    }
+
+    private boolean resolveSecure() {
+        return jwtConfig.cookieSecure() || frontendProperties.baseUrl().startsWith("https://");
+    }
+
+    private String resolveSameSite() {
+        if (frontendProperties.baseUrl().startsWith("https://")) {
+            return "None";
+        }
+
+        return jwtConfig.cookieSameSite();
     }
 }
