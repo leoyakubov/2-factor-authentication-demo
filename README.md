@@ -3,6 +3,7 @@
 [![Verify](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/verify.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/verify.yml)
 [![Deploy Backend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-backend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-backend.yml)
 [![Deploy Frontend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-frontend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-frontend.yml)
+[![Render Backend Health](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/ping-render.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/ping-render.yml)
 [![Smoke Backend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-backend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-backend.yml)
 [![Smoke Frontend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-frontend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-frontend.yml)
 
@@ -11,6 +12,8 @@ A full-stack authentication demo for learning modern web authentication patterns
 ## Live Demo
 
 Open the deployed app here: [two-factor-authentication-demo-frontend.onrender.com](https://two-factor-authentication-demo-frontend.onrender.com)
+
+Render free plans can sleep after about 15 minutes of inactivity, so the first open after a pause may take a few extra seconds while the backend wakes up.
 
 ## Preview
 
