@@ -15,15 +15,9 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: demo
       - key: MONGODB_HOST
-        fromService:
-          name: two-factor-authentication-demo-mongo
-          type: pserv
-          property: host
+        value: two-factor-authentication-demo-mongo
       - key: MONGODB_PORT
-        fromService:
-          name: two-factor-authentication-demo-mongo
-          type: pserv
-          property: port
+        value: "27017"
       - key: MONGODB_DATABASE
         value: two-factor-authentication-demo
 

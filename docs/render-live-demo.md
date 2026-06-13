@@ -47,6 +47,7 @@ Notes:
 
 - The backend reads `PORT` automatically on Render.
 - The backend runs with the `demo` profile on Render.
+- The backend connects to the Mongo private service by the internal host name `two-factor-authentication-demo-mongo`.
 - MongoDB runs as a separate private Docker service, so the demo data is isolated from the backend container.
 
 ## Step 3: Configure the frontend service

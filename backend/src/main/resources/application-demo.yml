@@ -4,7 +4,7 @@ spring:
       - de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration
   data:
     mongodb:
-      host: ${MONGODB_HOST:localhost}
+      host: ${MONGODB_HOST:two-factor-authentication-demo-mongo}
       database: ${MONGODB_DATABASE:two-factor-authentication-demo}
       port: ${MONGODB_PORT:27017}
       auto-index-creation: true
