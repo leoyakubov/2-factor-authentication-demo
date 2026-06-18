@@ -13,7 +13,7 @@ A full-stack authentication demo for learning modern web authentication patterns
 
 Open the deployed app here: [two-factor-authentication-demo-frontend.onrender.com](https://two-factor-authentication-demo-frontend.onrender.com)
 
-Render free services can sleep after about 15 minutes of inactivity, so the first open after a pause may take a few extra seconds while the services wake up.
+Render free services can sleep after about 15 minutes of inactivity, so the first open after a pause may take a few extra seconds while the services wake up. The ping workflow runs every 13 minutes to stay ahead of that window.
 
 ## Preview
 

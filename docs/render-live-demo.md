@@ -110,7 +110,7 @@ What the workflows do:
 - `deploy-frontend.yml` triggers the frontend Render deploy hook and waits for Render to mark the deployment live
 - `smoke-backend.yml` checks the backend `/actuator/health` endpoint
 - `smoke-frontend.yml` checks the frontend page loads
-- `ping-render.yml` pings the backend `/actuator/health` endpoint every 5 minutes
+- `ping-render.yml` pings the backend `/actuator/health` endpoint every 13 minutes so it stays ahead of the usual Render sleep window
 
 ## Troubleshooting
 
