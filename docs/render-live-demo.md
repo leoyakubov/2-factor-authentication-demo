@@ -1,15 +1,13 @@
 # Render Live Demo Setup
 
-This guide sets up the public demo on Render with three services:
+This guide sets up the public demo on Render with two services:
 
 - a backend web service in Docker
-- a MongoDB private service in Docker
 - a frontend static site
 
 ## What you will create
 
 - A Render web service for the backend
-- A Render private service for MongoDB
 - A Render static site for the frontend
 - GitHub Actions verification on every push and pull request
 
@@ -24,11 +22,11 @@ This guide sets up the public demo on Render with three services:
 1. Open Render.
 2. Create a new Blueprint / deploy from GitHub repo.
 3. Select this repository.
-4. Render will read [`infra/render.yaml`](../infra/render.yaml) and create all three services.
+4. Render will read [`infra/render.yaml`](../infra/render.yaml) and create both services.
 
 ## Step 2: Configure the backend service
 
-The blueprint wires the backend service to Mongo automatically. The backend service still needs these environment variables:
+The backend service still needs these environment variables:
 
 - `JWT_SECRET`
 - `MFA_SECRET_ENCRYPTION_KEY`
@@ -41,14 +39,14 @@ Example values:
 
 - `FRONTEND_ORIGIN=https://two-factor-authentication-demo-frontend.onrender.com`
 - `BACKEND_ORIGIN=https://two-factor-authentication-demo-backend.onrender.com`
-- `MONGODB_DATABASE=two-factor-authentication-demo`
 
 Notes:
 
 - The backend reads `PORT` automatically on Render.
 - The backend runs with the `demo` profile on Render.
-- The backend connects to the Mongo private service by the internal host name `two-factor-authentication-demo-mongo`.
-- MongoDB runs as a separate private Docker service, so the demo data is isolated from the backend container.
+- The backend uses embedded MongoDB inside the same Docker container.
+- Demo data can reset when Render restarts or spins down the web service. That is fine for this demo.
+- If the backend service still has old `MONGODB_HOST` or `MONGODB_PORT` env vars from an earlier setup, remove them so the embedded defaults are used.
 
 ## Step 3: Configure the frontend service
 
@@ -118,4 +116,4 @@ What the workflows do:
 
 - If the frontend cannot reach the backend, confirm `VITE_API_BASE_URL` points to the backend Render URL.
 - If the backend returns CORS errors, confirm `FRONTEND_ORIGIN` matches the frontend Render URL exactly.
-- If the backend cannot reach MongoDB on Render, confirm the private Mongo service exists and that the backend service uses the `demo` profile.
+- If the backend cannot start MongoDB on Render, confirm the backend service uses the `demo` profile and that no old Mongo env vars are overriding the local embedded defaults.

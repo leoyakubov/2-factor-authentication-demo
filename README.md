@@ -158,6 +158,7 @@ Important for Windows and WSL:
 - If WSL on `/mnt/c/...` fails with `EIO` while deleting Windows-native packages, delete `frontend/node_modules` from Windows File Explorer or PowerShell, then rerun `npm ci` from WSL.
 - If the authenticator code fails, make sure the QR code was scanned into the authenticator app for the same user account.
 - If embedded MongoDB fails to start in WSL, make sure your WSL distro is up to date and that the repo is not fighting Windows-native dependencies under `/mnt/c`.
+- If the Render demo still tries `localhost:27017`, remove any old `MONGODB_HOST` or `MONGODB_PORT` env vars from the backend service so the embedded defaults can take over.
 
 ## Demo Setup
 
@@ -241,7 +242,7 @@ flowchart LR
     Browser --> Frontend["React + Vite"]
     Frontend -->|API calls with CSRF token| Backend["Spring Boot API"]
     Backend --> MongoLocal["Embedded MongoDB local demo"]
-    Backend --> MongoDemo["MongoDB private service on Render"]
+    Backend --> MongoDemo["Embedded MongoDB on Render demo"]
     Backend --> Cookies["httpOnly JWT cookie"]
     Backend --> MFA["TOTP, QR enrollment, recovery codes"]
     Backend --> Security["Spring Security, CSRF, rate limiting"]
@@ -252,7 +253,7 @@ Responsibility split:
 - Frontend: signup, login, MFA enrollment display, verification form, profile view, and user-friendly error messages.
 - Backend: input validation, password hashing, MFA secret handling, recovery code handling, credential checks, JWT issuing, cookie handling, CSRF checks, rate limiting, and profile authorization.
 - Browser: stores the auth cookie and sends it automatically on same-site API requests.
-- Database: stores users, hashed passwords, MFA state, encrypted MFA secrets, and hashed recovery codes. Locally this is embedded MongoDB; on Render this is a private MongoDB Docker service.
+- Database: stores users, hashed passwords, MFA state, encrypted MFA secrets, and hashed recovery codes. Locally and on Render demo this is embedded MongoDB inside the backend container.
 
 Security boundaries:
 
@@ -467,7 +468,7 @@ This project implements a realistic local authentication flow, but it is still a
 
 ### Limitations
 
-- Embedded MongoDB is convenient locally, but the Render demo now uses a separate MongoDB Docker service. Production deployments should still use a managed or separately operated MongoDB instance.
+- Embedded MongoDB is convenient locally and for the Render demo. Production deployments should still use a managed or separately operated MongoDB instance.
 - Rate limiting is in-memory and resets on backend restart.
 - Email verification, password reset, and full lost-MFA recovery flows are not implemented.
 - Local development runs over HTTP; production use should enforce HTTPS and secure cookie settings.
@@ -492,7 +493,7 @@ This project implements a realistic local authentication flow, but it is still a
 - Recovery codes are one-time use, but there is no regeneration or recovery workflow yet.
   Possible solution: add authenticated recovery-code regeneration, password reset, email verification, and a documented lost-MFA flow.
 - Embedded MongoDB makes local development easy, but it is not a production database setup.
-  Possible solution: use a managed or separately operated MongoDB deployment with backups, monitoring, access controls, and network restrictions. The Render demo already uses a separate MongoDB Docker service.
+  Possible solution: use a managed or separately operated MongoDB deployment with backups, monitoring, access controls, and network restrictions.
 
 ### Hardening roadmap:
 
