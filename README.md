@@ -1,15 +1,14 @@
 # 2-Factor Authentication Demo
 
-[![Verify](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/verify.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/verify.yml)
-[![Deploy Backend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-backend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-backend.yml)
-[![Deploy Frontend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-frontend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-frontend.yml)
-[![Render Backend Health](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/ping-render.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/ping-render.yml)
-[![Smoke Backend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-backend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-backend.yml)
-[![Smoke Frontend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-frontend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-frontend.yml)
-
 A full-stack authentication demo for learning modern web authentication patterns. It demonstrates a browser-friendly signup and login flow with optional TOTP-based two-factor authentication, QR-code enrollment, recovery codes, CSRF protection, and JWT sessions stored in an `httpOnly` cookie.
 
 ## Live Demo
+
+[![CI](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/verify.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/verify.yml)
+[![Deploy Backend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-backend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-backend.yml)
+[![Deploy Frontend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-frontend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/deploy-frontend.yml)
+[![Smoke Backend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-backend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-backend.yml)
+[![Smoke Frontend](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-frontend.yml/badge.svg)](https://github.com/leoyakubov/two-factor-authentication-demo/actions/workflows/smoke-frontend.yml)
 
 Open the deployed app here: [two-factor-authentication-demo-frontend.onrender.com](https://two-factor-authentication-demo-frontend.onrender.com)
 
