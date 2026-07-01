@@ -2,7 +2,7 @@ name: Deploy Frontend
 
 on:
   workflow_run:
-    workflows: [CI]
+    workflows: [Verify]
     types: [completed]
   workflow_dispatch:
 
